@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac4dabfdc1d56c9cf7ed058b3b2cfe675b2122a1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80266ccf5714b5073f302a460c065d11973d4799")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
