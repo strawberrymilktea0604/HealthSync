@@ -6,6 +6,7 @@ public class NutritionLog
     public Guid UserId { get; set; }
     public DateTime LogDate { get; set; }
     public decimal? TotalCalories { get; set; }
+    public string? Notes { get; set; }
 
     // Navigation properties
     public ApplicationUser User { get; set; } = null!;
