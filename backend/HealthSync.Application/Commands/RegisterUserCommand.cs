@@ -2,7 +2,7 @@ using MediatR;
 
 namespace HealthSync.Application.Commands;
 
-public class RegisterUserCommand : IRequest<Guid>
+public class RegisterUserCommand : IRequest<int>
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

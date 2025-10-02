@@ -1,0 +1,18 @@
+using HealthSync.Domain.Entities;
+
+namespace HealthSync.Domain.Interfaces;
+
+public interface IAuthService
+{
+    string HashPassword(string password);
+    bool VerifyPassword(string password, string hashedPassword);
+    string GenerateJwtToken(ApplicationUser user);
+}
+
+public interface IApplicationDbContext
+{
+    IQueryable<ApplicationUser> ApplicationUsers { get; }
+    IQueryable<UserProfile> UserProfiles { get; }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    void Add<T>(T entity) where T : class;
+}

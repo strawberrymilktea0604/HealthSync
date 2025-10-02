@@ -986,7 +986,8 @@
           "FluentValidation": "12.0.0",
           "FluentValidation.DependencyInjectionExtensions": "12.0.0",
           "HealthSync.Domain": "1.0.0",
-          "MediatR": "13.0.0"
+          "MediatR": "13.0.0",
+          "Microsoft.EntityFrameworkCore": "8.0.10"
         },
         "runtime": {
           "HealthSync.Application.dll": {

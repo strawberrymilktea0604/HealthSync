@@ -1,9 +1,10 @@
+using HealthSync.Domain.Interfaces;
 using HealthSync.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthSync.Infrastructure.Persistence;
 
-public class HealthSyncDbContext : DbContext
+public class HealthSyncDbContext : DbContext, IApplicationDbContext
 {
     public HealthSyncDbContext(DbContextOptions<HealthSyncDbContext> options)
         : base(options)
@@ -20,6 +21,14 @@ public class HealthSyncDbContext : DbContext
     public DbSet<NutritionLog> NutritionLogs { get; set; }
     public DbSet<FoodEntry> FoodEntries { get; set; }
     public DbSet<FoodItem> FoodItems { get; set; }
+
+    IQueryable<ApplicationUser> IApplicationDbContext.ApplicationUsers => ApplicationUsers;
+    IQueryable<UserProfile> IApplicationDbContext.UserProfiles => UserProfiles;
+
+    void IApplicationDbContext.Add<T>(T entity)
+    {
+        Add(entity);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
