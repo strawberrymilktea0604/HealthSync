@@ -8,20 +8,28 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     public RegisterUserCommandValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+            .NotEmpty().WithMessage("Email là bắt buộc")
+            .EmailAddress().WithMessage("Định dạng email không hợp lệ");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters");
+            .NotEmpty().WithMessage("Mật khẩu là bắt buộc")
+            .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 ký tự");
 
         RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage("Full name is required");
+            .NotEmpty().WithMessage("Họ tên là bắt buộc");
+
+        RuleFor(x => x.DateOfBirth)
+            .NotEmpty().WithMessage("Ngày sinh là bắt buộc");
+
+        RuleFor(x => x.Gender)
+            .NotEmpty().WithMessage("Giới tính là bắt buộc");
 
         RuleFor(x => x.HeightCm)
-            .GreaterThan(0).WithMessage("Height must be greater than 0");
+            .NotEmpty().WithMessage("Chiều cao là bắt buộc")
+            .GreaterThan(0).WithMessage("Chiều cao phải lớn hơn 0");
 
         RuleFor(x => x.WeightKg)
-            .GreaterThan(0).WithMessage("Weight must be greater than 0");
+            .NotEmpty().WithMessage("Cân nặng là bắt buộc")
+            .GreaterThan(0).WithMessage("Cân nặng phải lớn hơn 0");
     }
 }
