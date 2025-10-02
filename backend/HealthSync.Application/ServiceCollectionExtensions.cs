@@ -1,3 +1,5 @@
+using HealthSync.Application.Services;
+using HealthSync.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using FluentValidation;
@@ -14,6 +16,9 @@ public static class ServiceCollectionExtensions
 
         // Add FluentValidation
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Register services
+        services.AddScoped<IApplicationUserService, ApplicationUserService>();
 
         // Add AutoMapper if needed
         // services.AddAutoMapper(Assembly.GetExecutingAssembly());

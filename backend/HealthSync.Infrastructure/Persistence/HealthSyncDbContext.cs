@@ -30,6 +30,16 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
         Add(entity);
     }
 
+    void IApplicationDbContext.Update<T>(T entity)
+    {
+        Update(entity);
+    }
+
+    void IApplicationDbContext.Remove<T>(T entity)
+    {
+        Remove(entity);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
