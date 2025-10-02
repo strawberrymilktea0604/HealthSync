@@ -34,7 +34,8 @@ public class HealthSyncDbContext : DbContext
             entity.HasKey(e => e.UserId);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.Role).IsRequired();
+            entity.Property(e => e.Role).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
         });
 
         // --- UserProfile (One-to-One with ApplicationUser) ---
@@ -42,9 +43,11 @@ public class HealthSyncDbContext : DbContext
         {
             entity.HasKey(e => e.UserId); // PK is also the FK
             entity.HasOne(e => e.User)
-                .WithOne(u => u.UserProfile)
+                .WithOne(u => u.Profile)
                 .HasForeignKey<UserProfile>(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.HeightCm).HasPrecision(5, 2);
+            entity.Property(e => e.WeightKg).HasPrecision(5, 2);
         });
 
         // --- WorkoutLog (Many-to-One with ApplicationUser) ---
@@ -63,10 +66,14 @@ public class HealthSyncDbContext : DbContext
             entity.HasKey(e => e.ExerciseSessionId);
             entity.HasOne(e => e.WorkoutLog)
                 .WithMany(wl => wl.ExerciseSessions)
-                .HasForeignKey(e => e.WorkoutLogId);
+                .HasForeignKey(e => e.WorkoutLogId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Exercise)
                 .WithMany(ex => ex.ExerciseSessions)
-                .HasForeignKey(e => e.ExerciseId);
+                .HasForeignKey(e => e.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.WeightKg).HasPrecision(5, 2);
+            entity.Property(e => e.Rpe).HasPrecision(4, 2);
         });
 
         // --- Exercise ---
@@ -85,6 +92,10 @@ public class HealthSyncDbContext : DbContext
                 .WithMany(u => u.NutritionLogs)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.TotalCalories).HasPrecision(8, 2);
+            entity.Property(e => e.ProteinG).HasPrecision(8, 2);
+            entity.Property(e => e.CarbsG).HasPrecision(8, 2);
+            entity.Property(e => e.FatG).HasPrecision(8, 2);
         });
 
         // --- FoodEntry (Many-to-Many between NutritionLog and FoodItem) ---
@@ -93,10 +104,17 @@ public class HealthSyncDbContext : DbContext
             entity.HasKey(e => e.FoodEntryId);
             entity.HasOne(e => e.NutritionLog)
                 .WithMany(nl => nl.FoodEntries)
-                .HasForeignKey(e => e.NutritionLogId);
+                .HasForeignKey(e => e.NutritionLogId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.FoodItem)
                 .WithMany(fi => fi.FoodEntries)
-                .HasForeignKey(e => e.FoodItemId);
+                .HasForeignKey(e => e.FoodItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.Quantity).HasPrecision(8, 2);
+            entity.Property(e => e.CaloriesKcal).HasPrecision(8, 2);
+            entity.Property(e => e.ProteinG).HasPrecision(8, 2);
+            entity.Property(e => e.CarbsG).HasPrecision(8, 2);
+            entity.Property(e => e.FatG).HasPrecision(8, 2);
         });
 
         // --- FoodItem ---
@@ -105,6 +123,11 @@ public class HealthSyncDbContext : DbContext
             entity.HasKey(e => e.FoodItemId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.HasIndex(e => e.Name).IsUnique();
+            entity.Property(e => e.ServingSize).HasPrecision(8, 2);
+            entity.Property(e => e.CaloriesKcal).HasPrecision(8, 2);
+            entity.Property(e => e.ProteinG).HasPrecision(8, 2);
+            entity.Property(e => e.CarbsG).HasPrecision(8, 2);
+            entity.Property(e => e.FatG).HasPrecision(8, 2);
         });
 
         // --- Goal (Many-to-One with ApplicationUser) ---
@@ -115,6 +138,7 @@ public class HealthSyncDbContext : DbContext
                 .WithMany(u => u.Goals)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.TargetValue).HasPrecision(8, 2);
         });
 
         // --- ProgressRecord (Many-to-One with Goal) ---
@@ -125,6 +149,9 @@ public class HealthSyncDbContext : DbContext
                 .WithMany(g => g.ProgressRecords)
                 .HasForeignKey(e => e.GoalId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.Value).HasPrecision(8, 2);
+            entity.Property(e => e.WeightKg).HasPrecision(5, 2);
+            entity.Property(e => e.WaistCm).HasPrecision(5, 2);
         });
     }
 }

@@ -2,7 +2,7 @@ namespace HealthSync.Domain.Entities;
 
 public class UserProfile
 {
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public string FullName { get; set; } = string.Empty;
     public DateTime Dob { get; set; }
     public string Gender { get; set; } = string.Empty;

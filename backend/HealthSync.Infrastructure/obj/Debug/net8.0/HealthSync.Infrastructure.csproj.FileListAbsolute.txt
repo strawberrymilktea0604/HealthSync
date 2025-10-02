@@ -34,3 +34,5 @@ C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Infrastruc
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Infrastructure\obj\Debug\net8.0\refint\HealthSync.Infrastructure.dll
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Infrastructure\obj\Debug\net8.0\HealthSync.Infrastructure.pdb
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Infrastructure\obj\Debug\net8.0\ref\HealthSync.Infrastructure.dll
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Infrastructure\bin\Debug\net8.0\HealthSync.Infrastructure.runtimeconfig.json
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Infrastructure\obj\Debug\net8.0\HealthSync.Infrastructure.genruntimeconfig.cache

@@ -2,9 +2,9 @@ namespace HealthSync.Domain.Entities;
 
 public class FoodEntry
 {
-    public Guid FoodEntryId { get; set; }
-    public Guid NutritionLogId { get; set; }
-    public Guid FoodItemId { get; set; }
+    public int FoodEntryId { get; set; }
+    public int NutritionLogId { get; set; }
+    public int FoodItemId { get; set; }
     public decimal Quantity { get; set; }
     public string MealType { get; set; } = string.Empty; // Breakfast, Lunch, Dinner, Snack
     public decimal? CaloriesKcal { get; set; }

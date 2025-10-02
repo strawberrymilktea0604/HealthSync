@@ -2,10 +2,10 @@ namespace HealthSync.Domain.Entities;
 
 public class WorkoutLog
 {
-    public Guid WorkoutLogId { get; set; }
-    public Guid UserId { get; set; }
+    public int WorkoutLogId { get; set; }
+    public int UserId { get; set; }
     public DateTime WorkoutDate { get; set; }
-    public int? DurationMin { get; set; }
+    public int DurationMin { get; set; }
     public string? Notes { get; set; }
 
     // Navigation properties
