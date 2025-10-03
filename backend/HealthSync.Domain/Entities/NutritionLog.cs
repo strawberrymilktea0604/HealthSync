@@ -2,10 +2,13 @@ namespace HealthSync.Domain.Entities;
 
 public class NutritionLog
 {
-    public Guid NutritionLogId { get; set; }
-    public Guid UserId { get; set; }
+    public int NutritionLogId { get; set; }
+    public int UserId { get; set; }
     public DateTime LogDate { get; set; }
-    public decimal? TotalCalories { get; set; }
+    public decimal TotalCalories { get; set; }
+    public decimal ProteinG { get; set; }
+    public decimal CarbsG { get; set; }
+    public decimal FatG { get; set; }
     public string? Notes { get; set; }
 
     // Navigation properties

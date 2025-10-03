@@ -2,7 +2,7 @@ namespace HealthSync.Domain.Entities;
 
 public class FoodItem
 {
-    public Guid FoodItemId { get; set; }
+    public int FoodItemId { get; set; }
     public string Name { get; set; } = string.Empty;
     public decimal ServingSize { get; set; }
     public string ServingUnit { get; set; } = "g";

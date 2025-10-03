@@ -2,9 +2,9 @@ namespace HealthSync.Domain.Entities;
 
 public class ExerciseSession
 {
-    public Guid ExerciseSessionId { get; set; }
-    public Guid WorkoutLogId { get; set; }
-    public Guid ExerciseId { get; set; }
+    public int ExerciseSessionId { get; set; }
+    public int WorkoutLogId { get; set; }
+    public int ExerciseId { get; set; }
     public int Sets { get; set; }
     public int Reps { get; set; }
     public decimal WeightKg { get; set; }
