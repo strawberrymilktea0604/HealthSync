@@ -22,3 +22,15 @@ C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Domain\obj
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\refint\HealthSync.Domain.dll
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.pdb
 C:\Users\Admin\Documents\projectmanager\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\ref\HealthSync.Domain.dll
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\bin\Debug\net8.0\HealthSync.Domain.deps.json
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\bin\Debug\net8.0\HealthSync.Domain.dll
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\bin\Debug\net8.0\HealthSync.Domain.pdb
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.AssemblyInfoInputs.cache
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.AssemblyInfo.cs
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.csproj.CoreCompileInputs.cache
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.sourcelink.json
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.dll
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\refint\HealthSync.Domain.dll
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\HealthSync.Domain.pdb
+C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Domain\obj\Debug\net8.0\ref\HealthSync.Domain.dll

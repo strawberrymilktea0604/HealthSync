@@ -3,37 +3,64 @@ using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
 using HealthSync.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod(); 
+    });
+});
+
+
+// Cấu hình API Explorer và Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// 👉 Bật Swagger cả ở môi trường Development và Production
 
-app.UseAuthentication();
-app.UseAuthorization();
+// Bật CORS sớm trong pipeline để xử lý Preflight (OPTIONS) request
+// Buộc sử dụng DevCorsPolicy để giải quyết lỗi 405/CORS
+app.UseCors("DevCorsPolicy");
+app.Use(async (context, next) =>
+{
+    // Kiểm tra nếu là request OPTIONS và CORS đã xử lý thành công (hoặc đang chờ xử lý)
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next(context);
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "HealthSync API v1");
-    c.RoutePrefix = string.Empty; // truy cập trực tiếp ở http://localhost:5000
+    c.RoutePrefix = string.Empty; 
 });
 
-// Map endpoint
+// Middleware xác thực và ủy quyền
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Endpoint kiểm tra sức khỏe của API
 app.MapGet("/health", () => "HealthSync API is running!")
     .WithName("GetHealth")
     .WithOpenApi();
 
-// Authentication endpoints
-app.MapPost("/api/auth/register", async (RegisterRequest request, IMediator mediator) =>
+app.MapPost("/api/auth/register", async ([FromBody] RegisterRequest request, IMediator mediator) =>
 {
     try
     {
@@ -49,7 +76,7 @@ app.MapPost("/api/auth/register", async (RegisterRequest request, IMediator medi
         };
 
         var userId = await mediator.Send(command);
-        return Results.Created($"/api/users/{userId}", new { UserId = userId, Message = "Đăng ký thành công!" });
+        return Results.Created($"/api/users/{userId}", new object[] { new { UserId = userId, Message = "Đăng ký thành công!" } });
     }
     catch (InvalidOperationException ex)
     {
@@ -63,7 +90,8 @@ app.MapPost("/api/auth/register", async (RegisterRequest request, IMediator medi
 .WithName("Register")
 .WithOpenApi();
 
-app.MapPost("/api/auth/login", async (LoginRequest request, IMediator mediator) =>
+// Đăng nhập người dùng
+app.MapPost("/api/auth/login", async ([FromBody] LoginRequest request, IMediator mediator) =>
 {
     try
     {
@@ -89,3 +117,4 @@ app.MapPost("/api/auth/login", async (LoginRequest request, IMediator mediator) 
 .WithOpenApi();
 
 app.Run();
+

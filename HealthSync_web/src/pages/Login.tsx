@@ -1,168 +1,218 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { login } from "../constant/apiService";
+
+const bgImage = new URL("../assets/anhnen.jpg", import.meta.url).href;
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const nav = useNavigate();
+
+  const isValid = useMemo(() => /.+@.+\..+/.test(email) && pw.length >= 6, [email, pw]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValid) return;
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await login({ email, password: pw });
+
+      if ((res as any).token) {
+        localStorage.setItem("token", (res as any).token);
+
+        toast.success("Đăng nhập thành công!");
+        nav("/dashboard", { replace: true });
+      } else {
+        const msg =
+          (res as any).message || "Đăng nhập thành công nhưng không nhận được token.";
+        toast.warn(msg);
+        setError(msg);
+      }
+    } catch (err: any) {
+      console.error("Lỗi đăng nhập:", err);
+
+      let errorMessage = "Có lỗi xảy ra, vui lòng thử lại.";
+      if (err.status === 401 || err.status === 400) {
+        errorMessage =
+          err.data?.error ||
+          err.data?.message ||
+          "Email hoặc mật khẩu không chính xác.";
+      } else if (err.status > 0) {
+        errorMessage = `Lỗi Server (${err.status}): Không thể kết nối.`;
+      } else {
+        errorMessage =
+          "Không thể kết nối đến máy chủ API. Vui lòng kiểm tra kết nối mạng.";
+      }
+
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="min-h-[100svh] w-full bg-[#f2edcf] text-[#1e201e] flex flex-col">
-      {/* Header */}
-      <header className="py-3">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
-          <div className="font-extrabold inline-flex items-baseline gap-1 text-[18px] tracking-[.3px]">
-            <span className="text-black">health</span>
-            <span className="text-[#1b8f5a]">sync</span>
+    <div
+      className="relative h-screen w-full bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${bgImage})` }}
+    >
+      <div className="absolute inset-0 bg-black/20" />
+
+      <div className="relative z-10 flex h-screen w-full items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl text-zinc-900">
+          {/* Header */}
+          <div className="mb-5 flex items-center justify-between">
+            <button
+              onClick={() => (window.history.length > 1 ? nav(-1) : nav("/"))}
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              Quay lại
+            </button>
+            <div className="font-extrabold">
+              Health<span className="text-emerald-600">Sync</span>
+            </div>
           </div>
-        </div>
-      </header>
 
-      {/* Main */}
-      <main className="flex-1">
-        <div className="container">
-          {/* Card content */}
-          <div className="mx-auto max-w-[720px] rounded-2xl border border-[#d7d1bc] bg-[#fff8d9] shadow-[0_8px_16px_rgba(0,0,0,.08)] p-5 sm:p-7">
-            <div className="mx-auto max-w-[560px] text-center">
-              <div className="font-extrabold text-xs mb-1">healthsync</div>
-              <h1 className="text-[32px] sm:text-[36px] font-extrabold mb-5 leading-tight">Welcome back!</h1>
+          <h1 className="text-xl font-semibold">Đăng nhập</h1>
+          <p className="mt-1 text-sm text-zinc-600">
+            Nhập thông tin tài khoản của bạn
+          </p>
 
-              <form className="grid gap-3 text-left" onSubmit={(e) => e.preventDefault()}>
-                {/* Email */}
-                <label className="grid">
-                  <span className="sr-only">Email address</span>
-                  <input
-                    type="email"
-                    id="email"
-                    placeholder="Your email address"
-                    required
-                    className="w-full rounded-lg border border-[#cfc9b6] bg-[#dcd7c7] text-[#1e201e] placeholder:text-[#5f615e] px-4 py-3 outline-none focus:border-[#1e201e] focus:ring-0"
-                  />
-                </label>
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-medium"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-emerald-600 focus:ring-4 ring-emerald-500/20 transition"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            </div>
 
-                {/* Password + toggle */}
-                <div className="relative">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    placeholder="Enter a password (min. 8 characters)"
-                    minLength={8}
-                    required
-                    className="w-full rounded-lg border border-[#cfc9b6] bg-[#dcd7c7] text-[#1e201e] placeholder:text-[#5f615e] pl-4 pr-12 py-3 outline-none focus:border-[#1e201e] focus:ring-0"
-                  />
-                  <button
-                    type="button"
-                    aria-label={showPw ? "Hide password" : "Show password"}
-                    onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-0 h-full flex items-center justify-center w-10 text-[#50524f] bg-transparent border-0 p-0"
-                  >
-                    {showPw ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-3.5-10.5-7 1.05-2.25 3.15-4.5 6-5.625M9.88 9.88A3 3 0 1114.12 14.12M15 12a3 3 0 01-3 3" />
-                      </svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1.5 12C3.75 7.5 7.5 5 12 5s8.25 2.5 10.5 7c-2.25 4.5-6 7-10.5 7S3.75 16.5 1.5 12z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-
-                {/* Forgot password */}
-                <div className="text-right -mt-1 mb-2">
-                  <Link
-                    to="/forgot-password"
-                    className="text-[#1e201e] no-underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                {/* Login button */}
-                <div className="flex justify-center">
-                  <button
-                    type="submit"
-                    className="rounded-full border border-[#1e201e] px-7 py-3 font-semibold text-[#1e201e] bg-transparent"
-                  >
-                    Login
-                  </button>
-                </div>
-
-                {/* OAuth buttons */}
-                <div className="grid gap-3 mt-3">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-3 rounded-full border border-[#cfc9b6] bg-white px-5 py-2.5"
-                  >
-                    <img
-                      src="https://placehold.co/20x20"
-                      alt="Google"
-                      className="w-5 h-5"
-                    />
-                    <span className="font-medium">Sign in with Google</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="flex items-center justify-center gap-3 rounded-full bg-[#1877F2] text-white px-5 py-2.5"
-                  >
-                    <img
-                      src="https://placehold.co/20x20/1877F2/fff"
-                      alt="Facebook"
-                      className="w-5 h-5"
-                    />
-                    <span className="font-medium">Sign in with Facebook</span>
-                  </button>
-                </div>
-              </form>
-
-              {/* Register link */}
-              <div className="mt-5 flex items-center justify-center gap-2 text-[16px]">
-                <span>Don’t have an account?</span>
-                <Link
-                  to="/signup"
-                  className="rounded-full border border-[#1e201e] px-5 py-2.5 text-inherit no-underline bg-transparent"
+            {/* Mật khẩu */}
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <label
+                  htmlFor="pw"
+                  className="block text-sm font-medium"
                 >
-                  Register
-                </Link>
+                  Mật khẩu
+                </label>
+                <a
+                  className="text-sm text-emerald-700 hover:underline"
+                  href="/forgot-password"
+                >
+                  Quên mật khẩu?
+                </a>
+              </div>
+
+              <div className="relative">
+                <input
+                  id="pw"
+                  type={showPw ? "text" : "password"}
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 pr-12 outline-none focus:border-emerald-600 focus:ring-4 ring-emerald-500/20 transition"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((s) => !s)}
+                  aria-label={showPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  className="absolute inset-y-0 right-0 grid place-items-center px-3 text-zinc-700 hover:text-zinc-900"
+                >
+                  {showPw ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                      <circle cx="12" cy="12" r="3.5" />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 5.1A9.77 9.77 0 0112 5c6.5 0 10 7 10 7a17.4 17.4 0 01-3.3 4.3M7.5 7.8C4.3 9.8 2 12 2 12s3.5 7 10 7a9.9 9.9 0 003.4-.6" />
+                      <path d="M9.9 9.9a3.5 3.5 0 004.2 4.2" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-[#e4dfcf] bg-[#e9e4cd]">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
-          <div className="py-4 grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-3 sm:gap-5 items-center">
-            <div className="font-extrabold inline-flex items-baseline gap-1 text-[18px] tracking-[.3px]">
-              <span className="text-black">health</span>
-              <span className="text-[#1b8f5a]">sync</span>
-            </div>
-            <ul className="flex flex-wrap items-center gap-4 sm:gap-5 text-[16px]">
-              <li><a href="#inspiration" className="no-underline text-inherit">Inspiration</a></li>
-              <li><a href="#support" className="no-underline text-inherit">Support</a></li>
-              <li><a href="#about" className="no-underline text-inherit">About</a></li>
-              <li><a href="#blog" className="no-underline text-inherit">Blog</a></li>
-              <li><a href="#pfs" className="no-underline text-inherit">Pfs</a></li>
-              <li className="ml-auto inline-flex gap-3 text-lg">
-                <a href="#x" aria-label="X">𝕏</a>
-                <a href="#ig" aria-label="Instagram">⌾</a>
-                <a href="#fb" aria-label="Facebook">f</a>
-                <a href="#pi" aria-label="Pinterest">𝒑</a>
-              </li>
-            </ul>
+            {/* Nút Đăng nhập */}
+            <button
+              type="submit"
+              disabled={!isValid || loading}
+              className="grid w-full place-items-center rounded-xl 
+             border border-emerald-600 bg-white px-4 py-3 font-semibold text-emerald-700 
+             hover:bg-emerald-50 transition 
+             disabled:cursor-not-allowed disabled:bg-emerald-100"
+            >
+              {loading ? "Đang xử lý…" : "Đăng nhập"}
+            </button>
+
+
+
+            {error && (
+              <div className="mt-2 text-sm text-red-600" role="alert">
+                {error}
+              </div>
+            )}
+          </form>
+
+          {/* Đăng ký */}
+          <div className="mt-6 text-center text-sm text-zinc-600">
+            Chưa có tài khoản?{" "}
+            <a
+              href="/signup"
+              className="text-emerald-700 hover:underline"
+            >
+              Đăng ký
+            </a>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-[#5b5f5a] text-[14px] pb-4">
-            <span>© healthsync 2025</span>
-            <a href="#terms">Terms&Conditions</a>
-            <a href="#cookies">Cookies</a>
-            <a href="#privacy">Privacy</a>
-            <a href="#problems">Problems</a>
-            <a href="#resource">Resource</a>
-            <a href="#tags">Tags</a>
-          </div>
+          <p className="mt-6 text-center text-xs text-zinc-500">
+            © {new Date().getFullYear()} HealthSync
+          </p>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
