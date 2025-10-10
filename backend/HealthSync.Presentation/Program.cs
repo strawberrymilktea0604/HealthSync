@@ -25,6 +25,7 @@ builder.Services.AddCors(options =>
 // Cấu hình API Explorer và Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -60,61 +61,9 @@ app.MapGet("/health", () => "HealthSync API is running!")
     .WithName("GetHealth")
     .WithOpenApi();
 
-app.MapPost("/api/auth/register", async ([FromBody] RegisterRequest request, IMediator mediator) =>
-{
-    try
-    {
-        var command = new RegisterUserCommand
-        {
-            Email = request.Email,
-            Password = request.Password,
-            FullName = request.FullName,
-            DateOfBirth = request.DateOfBirth,
-            Gender = request.Gender,
-            HeightCm = request.HeightCm,
-            WeightKg = request.WeightKg
-        };
+app.MapControllers();
 
-        var userId = await mediator.Send(command);
-        return Results.Created($"/api/users/{userId}", new object[] { new { UserId = userId, Message = "Đăng ký thành công!" } });
-    }
-    catch (InvalidOperationException ex)
-    {
-        return Results.BadRequest(new { Error = ex.Message });
-    }
-    catch (Exception)
-    {
-        return Results.Problem("Lỗi server nội bộ", statusCode: 500);
-    }
-})
-.WithName("Register")
-.WithOpenApi();
-
-// Đăng nhập người dùng
-app.MapPost("/api/auth/login", async ([FromBody] LoginRequest request, IMediator mediator) =>
-{
-    try
-    {
-        var query = new LoginQuery
-        {
-            Email = request.Email,
-            Password = request.Password
-        };
-
-        var response = await mediator.Send(query);
-        return Results.Ok(response);
-    }
-    catch (UnauthorizedAccessException)
-    {
-        return Results.Unauthorized();
-    }
-    catch (Exception)
-    {
-        return Results.Problem("Lỗi server nội bộ", statusCode: 500);
-    }
-})
-.WithName("Login")
-.WithOpenApi();
+app.MapControllers();
 
 app.Run();
 
