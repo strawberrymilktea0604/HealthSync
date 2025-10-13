@@ -29,7 +29,7 @@ export default function Header() {
             <Search className="w-6 h-6 text-[#49454F] flex-shrink-0" />
           </div>
 
-          <nav className="flex items-center gap-2 flex-wrap justify-end">
+          <nav className="flex items-center gap-2 flex-wrap justify-end ml-6">
             <div className="hidden md:flex items-center gap-2">
               <button className="px-3 lg:px-4 py-1.5 bg-white rounded-md border border-black/[0.08] text-xs lg:text-sm font-medium hover:bg-gray-50 whitespace-nowrap">
                 Explore ▼
@@ -46,7 +46,7 @@ export default function Header() {
               Blog
             </Button>
 
-            <div className="bg-[#FDFBD4] rounded-2xl flex items-center p-0.5">
+            <div className="bg-[#FDFBD4] rounded-2xl flex items-center p-3 gap-3">
               <Link to="/register">
                 <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-xl px-3 lg:px-6 h-8 lg:h-9 border border-black text-xs lg:text-base">
                   Sign up
