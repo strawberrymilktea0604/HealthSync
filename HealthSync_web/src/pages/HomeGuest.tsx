@@ -25,7 +25,7 @@ export default function HomeGuest() {
     <div className="min-h-svh w-full grid grid-rows-[auto,1fr,auto] bg-theme text-ink">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-paper border-b border-theme">
-        <div className="mx-auto w-full max-w-[1200px] px-4 py-3 flex items-center gap-4">
+        <div className="mx-auto w-full max-w-[900px] px-4 py-3 flex items-center gap-4">
           {/* Brand */}
           <div className="font-extrabold inline-flex items-baseline gap-1 text-[20px]">
             <span className="text-ink">health</span>
@@ -82,7 +82,7 @@ export default function HomeGuest() {
       </header>
 
       {/* Main */}
-      <main className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-16">
+      <main className="mx-auto w-full max-w-[900px] px-4 pt-6 pb-16">
         {/* Hero Section */}
         <section className="py-8">
           <h1 className="text-3xl font-bold">Dynamic Fitness Coaching Website</h1>
@@ -164,7 +164,7 @@ export default function HomeGuest() {
 
       {/* Footer */}
       <footer className="w-full bg-paper border-t border-theme">
-        <div className="mx-auto w-full max-w-[1200px] px-4 py-6 grid items-center gap-4 md:grid-cols-[1fr,auto,auto]">
+        <div className="mx-auto w-full max-w-[900px] px-4 py-6 grid items-center gap-4 md:grid-cols-[1fr,auto,auto]">
           <div className="font-extrabold tracking-[.3px] inline-flex items-baseline gap-1.5">
             <span className="text-black">health</span>
             <span className="text-green-600">sync</span>
@@ -186,7 +186,7 @@ export default function HomeGuest() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[1200px] px-4 pb-6 flex flex-wrap gap-4 text-[12px] text-gray-500">
+        <div className="mx-auto w-full max-w-[900px] px-4 pb-6 flex flex-wrap gap-4 text-[12px] text-gray-500">
           <span>© healthsync 2025</span>
           <a className="text-inherit" href="#terms">Terms</a>
           <a className="text-inherit" href="#cookies">Cookies</a>

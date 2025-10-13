@@ -101,7 +101,7 @@ export default function ConfirmEmail() {
     <div className="min-h-[100svh] w-full grid grid-rows-[auto,1fr,auto] bg-[#f2edcf] text-[#1e201e]">
       {/* Header */}
       <header className="py-3">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
+        <div className="mx-auto w-full max-w-[900px] px-4">
           <div className="font-extrabold inline-flex items-baseline gap-1 text-[18px] tracking-[.3px]">
             <span className="text-black">health</span>
             <span className="text-[#1b8f5a]">sync</span>
@@ -111,7 +111,7 @@ export default function ConfirmEmail() {
 
       {/* Main */}
       <main className="w-full">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
+        <div className="mx-auto w-full max-w-[900px] px-4">
           <section className="mx-auto max-w-[720px] rounded-2xl border border-[#d7d1bc] bg-[#fff8d9] shadow-[0_8px_16px_rgba(0,0,0,.08)] p-6 sm:p-8">
             {/* Back */}
             <button
@@ -189,7 +189,7 @@ export default function ConfirmEmail() {
 
       {/* Footer */}
       <footer className="w-full border-t border-[#e4dfcf] bg-[#e9e4cd] mt-6">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
+        <div className="mx-auto w-full max-w-[900px] px-4">
           <div className="py-4 grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-3 sm:gap-5 items-center">
             <div className="font-extrabold inline-flex items-baseline gap-1 text-[18px] tracking-[.3px]">
               <span className="text-black">health</span>

@@ -4,6 +4,7 @@ import { register } from "../constant/apiService";
 import { toast } from "react-toastify";
 
 const bgImage = new URL("../assets/anhnen.jpg", import.meta.url).href;
+const logoheader = new URL("../assets/logoheader.png", import.meta.url).href;
 
 export default function SignUp() {
   const nav = useNavigate();
@@ -330,7 +331,7 @@ export default function SignUp() {
           </div>
 
           <p className="mt-6 text-center text-xs text-zinc-500">
-            © {new Date().getFullYear()} HealthSync
+            © {new Date().getFullYear()} <img src={logoheader} alt="HealthSync" className="inline w-24 h-auto" />
           </p>
         </div>
       </div>

@@ -1,218 +1,119 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { login } from "../constant/apiService";
-
-const bgImage = new URL("../assets/anhnen.jpg", import.meta.url).href;
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Footer from "@/components/Footer";
+import logo from "@/assets/logo.png";
+import logoheader from "@/assets/logoheader.png";
+import { motion } from "framer-motion";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const nav = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const isValid = useMemo(() => /.+@.+\..+/.test(email) && pw.length >= 6, [email, pw]);
-  const [error, setError] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
-
-    setError(null);
-    setLoading(true);
-
-    try {
-      const res = await login({ email, password: pw });
-
-      if ((res as any).token) {
-        localStorage.setItem("token", (res as any).token);
-
-        toast.success("Đăng nhập thành công!");
-        nav("/dashboard", { replace: true });
-      } else {
-        const msg =
-          (res as any).message || "Đăng nhập thành công nhưng không nhận được token.";
-        toast.warn(msg);
-        setError(msg);
-      }
-    } catch (err: any) {
-      console.error("Lỗi đăng nhập:", err);
-
-      let errorMessage = "Có lỗi xảy ra, vui lòng thử lại.";
-      if (err.status === 401 || err.status === 400) {
-        errorMessage =
-          err.data?.error ||
-          err.data?.message ||
-          "Email hoặc mật khẩu không chính xác.";
-      } else if (err.status > 0) {
-        errorMessage = `Lỗi Server (${err.status}): Không thể kết nối.`;
-      } else {
-        errorMessage =
-          "Không thể kết nối đến máy chủ API. Vui lòng kiểm tra kết nối mạng.";
-      }
-
-      toast.error(errorMessage);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }
+    navigate("/dashboard");
+  };
 
   return (
-    <div
-      className="relative h-screen w-full bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${bgImage})` }}
-    >
-      <div className="absolute inset-0 bg-black/20" />
+    <div className="min-h-screen bg-[#D9D7B6] flex flex-col">
+      <div className="py-4 md:py-6 px-4 md:px-8">
+        <Link to="/">
+          <img src={logoheader} alt="HealthSync" className="w-32 h-auto" />
+        </Link>
+      </div>
 
-      <div className="relative z-10 flex h-screen w-full items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl text-zinc-900">
-          {/* Header */}
-          <div className="mb-5 flex items-center justify-between">
-            <button
-              onClick={() => (window.history.length > 1 ? nav(-1) : nav("/"))}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-              Quay lại
-            </button>
-            <div className="font-extrabold">
-              Health<span className="text-emerald-600">Sync</span>
-            </div>
-          </div>
-
-          <h1 className="text-xl font-semibold">Đăng nhập</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            Nhập thông tin tài khoản của bạn
-          </p>
-
-          <form onSubmit={onSubmit} className="mt-6 space-y-4">
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1 block text-sm font-medium"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-emerald-600 focus:ring-4 ring-emerald-500/20 transition"
-                placeholder="you@example.com"
-                autoComplete="email"
+      <div className="flex-1 flex items-center justify-center px-4 py-8 md:py-12">
+        <div className="w-full max-w-[1100px] bg-[#FDFBD4] rounded-[50px] shadow-lg p-4 md:p-8 lg:p-12 xl:p-16">
+          <div className="max-w-[918px] mx-auto">
+            <div className="text-center mb-8 md:mb-12">
+              <motion.img
+                src={logo}
+                alt="HealthSync"
+                className="w-40 h-auto mx-auto mb-4 md:mb-6"
+                animate={{ rotate: [0, -5, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
               />
+              <h2 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 md:mb-8">
+                Welcome back!
+              </h2>
             </div>
 
-            {/* Mật khẩu */}
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label
-                  htmlFor="pw"
-                  className="block text-sm font-medium"
-                >
-                  Mật khẩu
-                </label>
-                <a
-                  className="text-sm text-emerald-700 hover:underline"
-                  href="/forgot-password"
-                >
-                  Quên mật khẩu?
-                </a>
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 mb-8 md:mb-12">
+              <div>
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="w-full px-4 md:px-6 py-4 md:py-6 text-lg md:text-2xl lg:text-3xl bg-[#D9D7B6] rounded-lg md:rounded-xl border-2 md:border-[3px] border-white/30 outline-none focus:border-white/50 transition-colors"
+                />
               </div>
 
               <div className="relative">
                 <input
-                  id="pw"
-                  type={showPw ? "text" : "password"}
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-300 px-4 py-3 pr-12 outline-none focus:border-emerald-600 focus:ring-4 ring-emerald-500/20 transition"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter a password (min. 8 characters)"
+                  className="w-full px-4 md:px-6 py-4 md:py-6 text-lg md:text-2xl lg:text-3xl bg-[#D9D7B6] rounded-lg md:rounded-xl border-2 md:border-[3px] border-white/30 outline-none focus:border-white/50 transition-colors pr-16 md:pr-20"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPw((s) => !s)}
-                  aria-label={showPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                  className="absolute inset-y-0 right-0 grid place-items-center px-3 text-zinc-700 hover:text-zinc-900"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-black hover:opacity-70 transition-opacity"
                 >
-                  {showPw ? (
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-                      <circle cx="12" cy="12" r="3.5" />
-                    </svg>
+                  {showPassword ? (
+                    <Eye className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16" />
                   ) : (
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M3 3l18 18" />
-                      <path d="M10.6 5.1A9.77 9.77 0 0112 5c6.5 0 10 7 10 7a17.4 17.4 0 01-3.3 4.3M7.5 7.8C4.3 9.8 2 12 2 12s3.5 7 10 7a9.9 9.9 0 003.4-.6" />
-                      <path d="M9.9 9.9a3.5 3.5 0 004.2 4.2" />
-                    </svg>
+                    <EyeOff className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16" />
                   )}
                 </button>
               </div>
+
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-xl md:text-2xl lg:text-3xl xl:text-4xl hover:opacity-70 transition-opacity"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <div className="flex justify-center">
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal"
+                >
+                  Login
+                </motion.button>
+              </div>
+            </form>
+
+            <div className="mb-8 md:mb-12">
+              <button className="w-full bg-white hover:bg-gray-50 text-black rounded-full border border-black py-4 md:py-6 lg:py-8 text-xl md:text-2xl lg:text-3xl xl:text-4xl font-normal flex items-center justify-center gap-3 md:gap-4 transition-colors">
+                <img
+                  src="https://api.builder.io/api/v1/image/assets/TEMP/0b7815aadcf6f5168e58fd8b52e66a47ca2ea51a?width=140"
+                  alt="Google"
+                  className="w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16"
+                />
+                Sign in with Google
+              </button>
             </div>
 
-            {/* Nút Đăng nhập */}
-            <button
-              type="submit"
-              disabled={!isValid || loading}
-              className="grid w-full place-items-center rounded-xl 
-             border border-emerald-600 bg-white px-4 py-3 font-semibold text-emerald-700 
-             hover:bg-emerald-50 transition 
-             disabled:cursor-not-allowed disabled:bg-emerald-100"
-            >
-              {loading ? "Đang xử lý…" : "Đăng nhập"}
-            </button>
-
-
-
-            {error && (
-              <div className="mt-2 text-sm text-red-600" role="alert">
-                {error}
-              </div>
-            )}
-          </form>
-
-          {/* Đăng ký */}
-          <div className="mt-6 text-center text-sm text-zinc-600">
-            Chưa có tài khoản?{" "}
-            <a
-              href="/signup"
-              className="text-emerald-700 hover:underline"
-            >
-              Đăng ký
-            </a>
+            <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
+              <span className="text-xl md:text-2xl lg:text-3xl">Don't have an account?</span>
+              <Link to="/register">
+                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal">
+                  Register
+                </Button>
+              </Link>
+            </div>
           </div>
-
-          <p className="mt-6 text-center text-xs text-zinc-500">
-            © {new Date().getFullYear()} HealthSync
-          </p>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
