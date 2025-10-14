@@ -21,7 +21,7 @@ public class GoogleAuthService : IGoogleAuthService
     public Task<string> GetAuthorizationUrl(string state)
     {
         var clientId = _configuration["GoogleOAuth:ClientId"] ?? "";
-        var redirectUri = "https://yourdomain.com/api/auth/google/callback"; // Hardcode or get from env
+        var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? "http://localhost:5274/api/auth/google/callback";
 
         var url = $"https://accounts.google.com/o/oauth2/v2/auth?" +
                   $"client_id={HttpUtility.UrlEncode(clientId)}&" +
@@ -37,7 +37,7 @@ public class GoogleAuthService : IGoogleAuthService
     {
         var clientId = _configuration["GoogleOAuth:ClientId"] ?? "";
         var clientSecret = _configuration["GoogleOAuth:ClientSecret"] ?? "";
-        var redirectUri = "https://yourdomain.com/api/auth/google/callback"; // Hardcode or get from env
+        var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? "http://localhost:5274/api/auth/google/callback";
 
         // Exchange code for access token
         var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
