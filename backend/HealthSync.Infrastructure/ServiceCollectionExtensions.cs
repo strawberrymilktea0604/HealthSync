@@ -31,6 +31,9 @@ public static class ServiceCollectionExtensions
         // Register AuthService
         services.AddScoped<IAuthService, AuthService>();
 
+        // Register EmailService
+        services.AddScoped<IEmailService, EmailService>();
+
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 

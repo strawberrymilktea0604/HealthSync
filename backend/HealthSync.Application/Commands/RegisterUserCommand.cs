@@ -11,4 +11,5 @@ public class RegisterUserCommand : IRequest<int>
     public string Gender { get; set; } = string.Empty;
     public decimal HeightCm { get; set; }
     public decimal WeightKg { get; set; }
+    public string VerificationCode { get; set; } = string.Empty;
 }

@@ -9,6 +9,7 @@ public class RegisterRequest
     public string Gender { get; set; } = string.Empty;
     public decimal HeightCm { get; set; }
     public decimal WeightKg { get; set; }
+    public string VerificationCode { get; set; } = string.Empty;
 }
 
 public class LoginRequest
@@ -25,4 +26,15 @@ public class AuthResponse
     public string Role { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
+}
+
+public class SendVerificationCodeRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+public class VerifyCodeRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
 }

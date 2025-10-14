@@ -28,8 +28,8 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .NotEmpty().WithMessage("Chiều cao là bắt buộc")
             .GreaterThan(0).WithMessage("Chiều cao phải lớn hơn 0");
 
-        RuleFor(x => x.WeightKg)
-            .NotEmpty().WithMessage("Cân nặng là bắt buộc")
-            .GreaterThan(0).WithMessage("Cân nặng phải lớn hơn 0");
+        RuleFor(x => x.VerificationCode)
+            .NotEmpty().WithMessage("Mã xác thực là bắt buộc")
+            .Length(6).WithMessage("Mã xác thực phải có 6 ký tự");
     }
 }

@@ -30,7 +30,8 @@ public class AuthController : ControllerBase
                 DateOfBirth = request.DateOfBirth,
                 Gender = request.Gender,
                 HeightCm = request.HeightCm,
-                WeightKg = request.WeightKg
+                WeightKg = request.WeightKg,
+                VerificationCode = request.VerificationCode
             };
 
             var userId = await _mediator.Send(command);
@@ -63,6 +64,52 @@ public class AuthController : ControllerBase
         catch (UnauthorizedAccessException)
         {
             return Unauthorized(new { Error = "Sai email hoặc mật khẩu!" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("send-verification-code")]
+    public async Task<IActionResult> SendVerificationCode([FromBody] SendVerificationCodeRequest request)
+    {
+        try
+        {
+            var command = new SendVerificationCodeCommand
+            {
+                Email = request.Email
+            };
+
+            await _mediator.Send(command);
+            return Ok(new { Message = "Mã xác thực đã được gửi đến email của bạn!" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("verify-code")]
+    public async Task<IActionResult> VerifyCode([FromBody] VerifyCodeRequest request)
+    {
+        try
+        {
+            var command = new VerifyEmailCodeCommand
+            {
+                Email = request.Email,
+                Code = request.Code
+            };
+
+            var isVerified = await _mediator.Send(command);
+            if (isVerified)
+            {
+                return Ok(new { Message = "Mã xác thực hợp lệ!" });
+            }
+            else
+            {
+                return BadRequest(new { Error = "Mã xác thực không hợp lệ!" });
+            }
         }
         catch (Exception)
         {

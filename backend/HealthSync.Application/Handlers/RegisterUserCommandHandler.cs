@@ -10,15 +10,30 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, i
 {
     private readonly IApplicationDbContext _context;
     private readonly IAuthService _authService;
+    private readonly IMediator _mediator;
 
-    public RegisterUserCommandHandler(IApplicationDbContext context, IAuthService authService)
+    public RegisterUserCommandHandler(IApplicationDbContext context, IAuthService authService, IMediator mediator)
     {
         _context = context;
         _authService = authService;
+        _mediator = mediator;
     }
 
     public async Task<int> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+        // Verify the email code first
+        var verifyCommand = new VerifyEmailCodeCommand
+        {
+            Email = request.Email,
+            Code = request.VerificationCode
+        };
+
+        var isVerified = await _mediator.Send(verifyCommand, cancellationToken);
+        if (!isVerified)
+        {
+            throw new InvalidOperationException("Mã xác thực không hợp lệ!");
+        }
+
         // Kiểm tra email đã tồn tại chưa (tương tự logic Java)
         var existingUser = await _context.ApplicationUsers
             .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
