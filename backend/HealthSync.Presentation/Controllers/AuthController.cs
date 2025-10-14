@@ -116,4 +116,66 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { Error = "Lỗi server nội bộ" });
         }
     }
+
+    [HttpGet("google/web")]
+    public IActionResult GoogleLoginWeb([FromQuery] string state = "")
+    {
+        try
+        {
+            var command = new GetGoogleAuthUrlQuery { State = state };
+            var authUrl = _mediator.Send(command).Result;
+            return Redirect(authUrl);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpGet("google/callback")]
+    public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)
+    {
+        try
+        {
+            var command = new GoogleLoginWebCommand
+            {
+                Code = code,
+                State = state
+            };
+
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { Error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("google/mobile")]
+    public async Task<IActionResult> GoogleLoginMobile([FromBody] GoogleLoginMobileRequest request)
+    {
+        try
+        {
+            var command = new GoogleLoginMobileCommand
+            {
+                IdToken = request.IdToken
+            };
+
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { Error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
 }

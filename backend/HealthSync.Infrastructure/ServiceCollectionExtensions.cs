@@ -34,6 +34,10 @@ public static class ServiceCollectionExtensions
         // Register EmailService
         services.AddScoped<IEmailService, EmailService>();
 
+        // Register GoogleAuthService
+        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+        services.AddHttpClient<GoogleAuthService>();
+
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
