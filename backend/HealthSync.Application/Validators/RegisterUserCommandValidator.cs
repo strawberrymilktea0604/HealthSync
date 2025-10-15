@@ -15,19 +15,6 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .NotEmpty().WithMessage("Mật khẩu là bắt buộc")
             .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 ký tự");
 
-        RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage("Họ tên là bắt buộc");
-
-        RuleFor(x => x.DateOfBirth)
-            .NotEmpty().WithMessage("Ngày sinh là bắt buộc");
-
-        RuleFor(x => x.Gender)
-            .NotEmpty().WithMessage("Giới tính là bắt buộc");
-
-        RuleFor(x => x.HeightCm)
-            .NotEmpty().WithMessage("Chiều cao là bắt buộc")
-            .GreaterThan(0).WithMessage("Chiều cao phải lớn hơn 0");
-
         RuleFor(x => x.VerificationCode)
             .NotEmpty().WithMessage("Mã xác thực là bắt buộc")
             .Length(6).WithMessage("Mã xác thực phải có 6 ký tự");

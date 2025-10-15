@@ -1,10 +1,14 @@
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoheader from "@/assets/logoheader.png";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <header className="w-full py-4 md:py-6 px-4 md:px-8 lg:px-12 xl:px-16">
       <div className="max-w-[1434px] mx-auto">
@@ -46,18 +50,39 @@ export default function Header() {
               Blog
             </Button>
 
-            <div className="bg-[#FDFBD4] rounded-2xl flex items-center p-3 gap-3">
-              <Link to="/register">
-                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-xl px-3 lg:px-6 h-8 lg:h-9 border border-black text-xs lg:text-base">
-                  Sign up
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button className="bg-black text-white hover:bg-black/90 rounded-xl px-3 lg:px-6 h-8 lg:h-9 text-xs lg:text-base">
-                  Login
-                </Button>
-              </Link>
-            </div>
+            {user ? (
+              <div className="bg-[#FDFBD4] rounded-2xl flex items-center p-3 gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <span className="text-sm font-medium">{user.fullName}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                  className="p-1 hover:bg-gray-200 rounded"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="bg-[#FDFBD4] rounded-2xl flex items-center p-3 gap-3">
+                <Link to="/register">
+                  <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-xl px-3 lg:px-6 h-8 lg:h-9 border border-black text-xs lg:text-base">
+                    Sign up
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button className="bg-black text-white hover:bg-black/90 rounded-xl px-3 lg:px-6 h-8 lg:h-9 text-xs lg:text-base">
+                    Login
+                  </Button>
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
 

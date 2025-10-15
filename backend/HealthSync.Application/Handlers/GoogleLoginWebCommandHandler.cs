@@ -26,20 +26,20 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
     public async Task<AuthResponse> Handle(GoogleLoginWebCommand request, CancellationToken cancellationToken)
     {
         // Process Google OAuth callback
-        var googleUser = await _googleAuthService.ProcessCallbackAsync(request.Code, request.State);
+        var googleUser = await _googleAuthService.ProcessCallbackAsync(request.Code);
         if (googleUser == null)
         {
             throw new UnauthorizedAccessException("Invalid Google authorization code");
         }
 
-        // Find or create user
+        // Find user by email (works for both Google OAuth users and regular email users)
         var user = await _context.ApplicationUsers
             .Include(u => u.Profile)
             .FirstOrDefaultAsync(u => u.Email == googleUser.Email, cancellationToken);
 
         if (user == null)
         {
-            // Create new user
+            // Create new user for first-time Google login
             user = new ApplicationUser
             {
                 Email = googleUser.Email,
@@ -52,20 +52,46 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
             _context.Add(user);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Create profile
+            // Create profile with Google info
             var profile = new UserProfile
             {
                 UserId = user.UserId,
-                FullName = googleUser.Name,
+                FullName = googleUser.Name ?? googleUser.Email,
+                AvatarUrl = googleUser.Picture ?? "",
                 Dob = DateTime.UtcNow.AddYears(-25), // Default age
                 Gender = "Unknown",
-                HeightCm = 170, // Default
-                WeightKg = 70, // Default
+                HeightCm = 0, // Will be filled later
+                WeightKg = 0, // Will be filled later
                 ActivityLevel = "Moderate"
             };
 
             _context.Add(profile);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Reload user with profile
+            user = await _context.ApplicationUsers
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.UserId == user.UserId, cancellationToken);
+        }
+        else
+        {
+            // User exists (either from regular registration or previous Google login)
+            // Update profile with latest Google info if available
+            if (user.Profile != null && !string.IsNullOrEmpty(googleUser.Picture))
+            {
+                user.Profile.AvatarUrl = googleUser.Picture;
+                if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
+                {
+                    user.Profile.FullName = googleUser.Name;
+                }
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        // Ensure user and profile are loaded
+        if (user == null)
+        {
+            throw new InvalidOperationException("Failed to load user data");
         }
 
         // Generate JWT token
@@ -74,7 +100,7 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
         {
             UserId = user.UserId,
             Email = user.Email,
-            FullName = user.Profile?.FullName ?? user.Email,
+            FullName = user.Profile?.FullName ?? googleUser.Name ?? user.Email,
             Role = user.Role,
             Token = token,
             ExpiresAt = DateTime.UtcNow.AddMinutes(60)

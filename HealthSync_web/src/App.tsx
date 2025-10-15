@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -13,6 +14,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyPasswordReset from "./pages/VerifyPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
 import ResetSuccess from "./pages/ResetSuccess";
+import ChangePasswordSuccess from "./pages/ChangePasswordSuccess";
+import CreatePasswordForGoogle from "./pages/CreatePasswordForGoogle";
+import GoogleCallback from "./pages/GoogleCallback";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -114,6 +118,36 @@ function AppContent() {
             <ResetSuccess />
           </motion.div>
         } />
+        <Route path="/change-password-success" element={
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            transition={{ duration: 0.5 }}
+          >
+            <ChangePasswordSuccess />
+          </motion.div>
+        } />
+        <Route path="/create-password-google" element={
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CreatePasswordForGoogle />
+          </motion.div>
+        } />
+        <Route path="/google/callback" element={
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <GoogleCallback />
+          </motion.div>
+        } />
         <Route path="/dashboard" element={
           <motion.div
             initial={{ opacity: 0, x: -100 }}
@@ -142,13 +176,15 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

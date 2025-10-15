@@ -28,6 +28,12 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse>
             throw new UnauthorizedAccessException("Sai email hoặc mật khẩu!");
         }
 
+        // Kiểm tra nếu user đăng ký qua Google (chưa set password)
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            throw new UnauthorizedAccessException("Tài khoản này đăng ký qua Google. Vui lòng đăng nhập bằng Google hoặc đặt mật khẩu trước.");
+        }
+
         // Kiểm tra password
         if (!_authService.VerifyPassword(request.Password, user.PasswordHash))
         {

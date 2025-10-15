@@ -32,14 +32,14 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
             throw new UnauthorizedAccessException("Invalid Google ID token");
         }
 
-        // Find or create user
+        // Find user by email (works for both Google OAuth users and regular email users)
         var user = await _context.ApplicationUsers
             .Include(u => u.Profile)
             .FirstOrDefaultAsync(u => u.Email == googleUser.Email, cancellationToken);
 
         if (user == null)
         {
-            // Create new user
+            // Create new user for first-time Google login
             user = new ApplicationUser
             {
                 Email = googleUser.Email,
@@ -66,6 +66,14 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
 
             _context.Add(profile);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            // User exists (either from regular registration or previous Google login)
+            // Allow login regardless of whether they have a password or not
+            // This enables: 
+            // 1. Regular email users with Gmail to login via Google
+            // 2. Previous Google users to login again
         }
 
         // Generate JWT token

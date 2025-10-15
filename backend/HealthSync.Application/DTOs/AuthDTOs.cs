@@ -4,11 +4,6 @@ public class RegisterRequest
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public DateTime DateOfBirth { get; set; }
-    public string Gender { get; set; } = string.Empty;
-    public decimal HeightCm { get; set; }
-    public decimal WeightKg { get; set; }
     public string VerificationCode { get; set; } = string.Empty;
 }
 
@@ -42,4 +37,10 @@ public class VerifyCodeRequest
 public class GoogleLoginMobileRequest
 {
     public string IdToken { get; set; } = string.Empty;
+}
+
+public class SetPasswordRequest
+{
+    public int UserId { get; set; }
+    public string Password { get; set; } = string.Empty;
 }
