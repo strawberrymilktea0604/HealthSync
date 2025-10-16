@@ -8,6 +8,7 @@ public interface IGoogleAuthService
     Task<string> GetAuthorizationUrl(string state);
     Task<GoogleUserInfo?> ProcessCallbackAsync(string code);
     Task<GoogleUserInfo?> VerifyIdTokenAsync(string idToken);
+    Task<string> GetAndroidClientIdAsync();
 }
 
 public class GoogleUserInfo

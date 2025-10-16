@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'email_verification_screen.dart';
 import 'sign_in_screen.dart';
 
@@ -326,38 +328,77 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // Validate and navigate to email verification
-                              if (_emailController.text.isEmpty) {
+                            onPressed: () async {
+                              // Validate
+                              final email = _emailController.text.trim();
+                              final password = _passwordController.text;
+                              final confirmPassword = _confirmPasswordController.text;
+
+                              if (email.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please enter your email')),
+                                  const SnackBar(
+                                    content: Text('Please enter your email'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 return;
                               }
                               
-                              if (_passwordController.text != _confirmPasswordController.text) {
+                              if (password != confirmPassword) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Passwords do not match')),
+                                  const SnackBar(
+                                    content: Text('Passwords do not match'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 return;
                               }
                               
-                              if (_passwordController.text.length < 8) {
+                              if (password.length < 8) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Password must be at least 8 characters')),
+                                  const SnackBar(
+                                    content: Text('Password must be at least 8 characters'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 return;
                               }
                               
-                              // Navigate to email verification
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EmailVerificationScreen(
-                                email: _emailController.text,
-                              ),
-                            ),
-                              );
+                              // Send verification code
+                              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                              
+                              try {
+                                await authProvider.sendVerificationCode(email);
+                                
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Verification code sent to your email!'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  
+                                  // Navigate to email verification
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EmailVerificationScreen(
+                                        email: email,
+                                        password: password,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
@@ -368,12 +409,26 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                 side: const BorderSide(color: Colors.black, width: 2),
                               ),
                             ),
-                            child: const Text(
-                              'Sign up',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Consumer<AuthProvider>(
+                              builder: (context, auth, child) {
+                                if (auth.isLoading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  'Sign up',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),

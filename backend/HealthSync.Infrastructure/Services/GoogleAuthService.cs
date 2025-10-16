@@ -135,4 +135,10 @@ public class GoogleAuthService : IGoogleAuthService
 
         return userInfo;
     }
+
+    public Task<string> GetAndroidClientIdAsync()
+    {
+        var androidClientId = _configuration["GoogleOAuth:AndroidClientId"] ?? "";
+        return Task.FromResult(androidClientId);
+    }
 }

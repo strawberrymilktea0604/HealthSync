@@ -226,4 +226,25 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { Error = "Lỗi server nội bộ" });
         }
     }
+
+    [HttpGet("google/android-client-id")]
+    public async Task<IActionResult> GetGoogleAndroidClientId()
+    {
+        try
+        {
+            var query = new GetGoogleAndroidClientIdQuery();
+            var androidClientId = await _mediator.Send(query);
+            
+            if (string.IsNullOrEmpty(androidClientId))
+            {
+                return NotFound(new { Error = "Android Client ID not configured" });
+            }
+
+            return Ok(new { ClientId = androidClientId });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
 }

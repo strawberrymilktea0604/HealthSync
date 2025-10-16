@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
+import '../providers/auth_provider.dart';
 import 'welcome_screen.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -46,11 +49,22 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Chuyển đến màn hình chính sau 3 giây
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const WelcomeScreen(),
-          ),
-        );
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        
+        // Kiểm tra xem user đã đăng nhập chưa
+        if (authProvider.isAuthenticated) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const WelcomeScreen(),
+            ),
+          );
+        }
       }
     });
   }

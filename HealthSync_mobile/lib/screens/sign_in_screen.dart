@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'sign_up_screen.dart';
 import 'account_recovery_screen.dart';
+import 'home_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -303,11 +306,43 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // TODO: Implement login logic
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Login pressed')),
-                              );
+                            onPressed: () async {
+                              final email = _emailController.text.trim();
+                              final password = _passwordController.text;
+
+                              if (email.isEmpty || password.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                              
+                              try {
+                                await authProvider.login(email, password);
+                                
+                                if (context.mounted) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (context) => const HomeScreen(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
@@ -318,12 +353,26 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 side: const BorderSide(color: Colors.black, width: 2),
                               ),
                             ),
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Consumer<AuthProvider>(
+                              builder: (context, auth, child) {
+                                if (auth.isLoading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -382,11 +431,72 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 width: 24,
                                 height: 24,
                               ),
-                              onPressed: () {
-                                // TODO: Implement Google sign in
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Google sign in pressed')),
-                                );
+                              onPressed: () async {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                
+                                try {
+                                  await authProvider.signInWithGoogle();
+                                  
+                                  if (context.mounted) {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    final errorMessage = e.toString().replaceAll('Exception: ', '');
+                                    
+                                    // Show detailed error dialog for Google Sign In setup issues
+                                    if (errorMessage.contains('Failed to get ID token') || 
+                                        errorMessage.contains('Google Sign In chưa được cấu hình')) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Google Sign In chưa sẵn sàng'),
+                                          content: SingleChildScrollView(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text(
+                                                  'Để sử dụng Google Sign In, bạn cần:\n',
+                                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                                ),
+                                                const Text('1. Tạo OAuth Client ID tại Google Cloud Console'),
+                                                const Text('2. Thêm SHA-1 fingerprint'),
+                                                const Text('3. Cấu hình ClientId trong backend'),
+                                                const SizedBox(height: 16),
+                                                const SizedBox(height: 16),
+                                                const Text(
+                                                  'Bạn có thể dùng đăng nhập Email/Password để test app trước.',
+                                                  style: TextStyle(fontWeight: FontWeight.w500),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.of(context).pop(),
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      // Show normal snackbar for other errors
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(errorMessage),
+                                          backgroundColor: Colors.red,
+                                          duration: const Duration(seconds: 4),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
                               },
                             ),
                           ),

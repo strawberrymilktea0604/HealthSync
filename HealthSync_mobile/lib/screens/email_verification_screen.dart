@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'reset_password_screen.dart';
-import 'signup_success_screen.dart';
+import 'home_screen.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
+  final String? password;
   final bool isFromRecovery;
   
   const EmailVerificationScreen({
     super.key,
     required this.email,
+    this.password,
     this.isFromRecovery = false,
   });
 
@@ -315,11 +319,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               final code = _getVerificationCode();
                               if (code.length != 6) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please enter complete 6-digit code')),
+                                  const SnackBar(
+                                    content: Text('Please enter complete 6-digit code'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 return;
                               }
@@ -333,12 +340,52 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                                   ),
                                 );
                               } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignUpSuccessScreen(),
-                                  ),
-                                );
+                                // Register user
+                                if (widget.password == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Password is missing'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                
+                                try {
+                                  await authProvider.register(
+                                    email: widget.email,
+                                    password: widget.password!,
+                                    verificationCode: code,
+                                  );
+                                  
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Registration successful!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                    
+                                    // Navigate to home screen
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(e.toString().replaceAll('Exception: ', '')),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -350,12 +397,26 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                                 side: const BorderSide(color: Colors.black, width: 2),
                               ),
                             ),
-                            child: const Text(
-                              'Confirm',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Consumer<AuthProvider>(
+                              builder: (context, auth, child) {
+                                if (auth.isLoading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  'Confirm',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -368,10 +429,30 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                     FadeTransition(
                       opacity: _buttonAnimation,
                       child: TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Verification code resent')),
-                          );
+                        onPressed: () async {
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          
+                          try {
+                            await authProvider.sendVerificationCode(widget.email);
+                            
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Verification code resent!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.toString().replaceAll('Exception: ', '')),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: const Text(
                           'Resend code',

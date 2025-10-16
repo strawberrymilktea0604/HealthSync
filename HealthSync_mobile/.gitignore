@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Google Services (contains sensitive OAuth credentials)
+# IMPORTANT: Keep the template, but don't commit the real file
+android/app/google-services.json
