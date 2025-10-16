@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import 'sign_up_screen.dart';
 import 'account_recovery_screen.dart';
 import 'home_screen.dart';
+import 'create_password_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -438,12 +439,29 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                   await authProvider.signInWithGoogle();
                                   
                                   if (context.mounted) {
-                                    Navigator.of(context).pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (context) => const HomeScreen(),
-                                      ),
-                                      (route) => false,
-                                    );
+                                    final user = authProvider.user;
+                                    
+                                    // Check if user needs to set password (first-time Google login)
+                                    if (user != null && user.requiresPassword) {
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) => CreatePasswordScreen(
+                                            userId: user.userId.toString(),
+                                            email: user.email,
+                                            fullName: user.fullName,
+                                          ),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    } else {
+                                      // User already has password or returning Google user
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) => const HomeScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    }
                                   }
                                 } catch (e) {
                                   if (context.mounted) {

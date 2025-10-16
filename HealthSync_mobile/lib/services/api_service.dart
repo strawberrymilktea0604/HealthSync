@@ -98,4 +98,24 @@ class ApiService {
       throw Exception('Failed to get Android Client ID');
     }
   }
+
+  // Set password for Google OAuth users
+  Future<void> setPassword({
+    required int userId,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/set-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['Error'] ?? 'Failed to set password');
+    }
+  }
 }

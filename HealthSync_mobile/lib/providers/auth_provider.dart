@@ -161,6 +161,40 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Set password for Google OAuth users
+  Future<void> setPassword({
+    required int userId,
+    required String password,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.setPassword(userId: userId, password: password);
+      
+      // Update user's requiresPassword flag
+      if (_user != null) {
+        _user = User(
+          userId: _user!.userId,
+          email: _user!.email,
+          fullName: _user!.fullName,
+          role: _user!.role,
+          token: _user!.token,
+          expiresAt: _user!.expiresAt,
+          requiresPassword: false,
+        );
+        await _saveUser(_user!);
+      }
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

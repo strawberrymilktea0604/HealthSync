@@ -17,6 +17,7 @@ export default function GoogleCallback() {
       const fullName = searchParams.get("fullName");
       const role = searchParams.get("role");
       const expiresAt = searchParams.get("expiresAt");
+      const requiresPassword = searchParams.get("requiresPassword");
 
       if (!token || !userId || !email || !fullName || !role || !expiresAt) {
         toast({
@@ -41,6 +42,16 @@ export default function GoogleCallback() {
 
         // Update auth context with user data
         setUser(userData);
+
+        // Check if user needs to create password (first-time Google login)
+        if (requiresPassword === "true") {
+          toast({
+            title: "Tạo mật khẩu",
+            description: "Vui lòng tạo mật khẩu cho tài khoản của bạn",
+          });
+          navigate("/create-password-google");
+          return;
+        }
 
         // Successfully logged in via Google - navigate to dashboard
         toast({

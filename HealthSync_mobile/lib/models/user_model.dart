@@ -5,6 +5,7 @@ class User {
   final String role;
   final String token;
   final DateTime expiresAt;
+  final bool requiresPassword; // True if user needs to set password (first-time Google login)
 
   User({
     required this.userId,
@@ -13,6 +14,7 @@ class User {
     required this.role,
     required this.token,
     required this.expiresAt,
+    this.requiresPassword = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class User {
       role: json['role'] ?? json['Role'],
       token: json['token'] ?? json['Token'],
       expiresAt: DateTime.parse(json['expiresAt'] ?? json['ExpiresAt']),
+      requiresPassword: json['requiresPassword'] ?? json['RequiresPassword'] ?? false,
     );
   }
 
@@ -34,6 +37,7 @@ class User {
       'role': role,
       'token': token,
       'expiresAt': expiresAt.toIso8601String(),
+      'requiresPassword': requiresPassword,
     };
   }
 }

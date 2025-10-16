@@ -96,6 +96,10 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
 
         // Generate JWT token
         var token = _authService.GenerateJwtToken(user);
+        
+        // Check if user needs to set password (first-time Google login)
+        var requiresPassword = string.IsNullOrEmpty(user.PasswordHash);
+        
         var response = new AuthResponse
         {
             UserId = user.UserId,
@@ -103,7 +107,8 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
             FullName = user.Profile?.FullName ?? googleUser.Name ?? user.Email,
             Role = user.Role,
             Token = token,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            RequiresPassword = requiresPassword
         };
 
         return response;

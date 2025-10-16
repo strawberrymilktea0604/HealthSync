@@ -21,6 +21,7 @@ public class AuthResponse
     public string Role { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
+    public bool RequiresPassword { get; set; } = false; // True if user needs to set password (first-time Google login)
 }
 
 public class SendVerificationCodeRequest
