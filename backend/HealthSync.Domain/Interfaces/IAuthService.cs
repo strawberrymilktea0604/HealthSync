@@ -13,6 +13,8 @@ public interface IApplicationDbContext
 {
     IQueryable<ApplicationUser> ApplicationUsers { get; }
     IQueryable<UserProfile> UserProfiles { get; }
+    IQueryable<Goal> Goals { get; }
+    IQueryable<ProgressRecord> ProgressRecords { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     void Add<T>(T entity) where T : class;
     void Update<T>(T entity) where T : class;

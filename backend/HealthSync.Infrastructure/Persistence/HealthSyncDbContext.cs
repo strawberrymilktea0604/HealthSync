@@ -24,6 +24,8 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
 
     IQueryable<ApplicationUser> IApplicationDbContext.ApplicationUsers => ApplicationUsers;
     IQueryable<UserProfile> IApplicationDbContext.UserProfiles => UserProfiles;
+    IQueryable<Goal> IApplicationDbContext.Goals => Goals;
+    IQueryable<ProgressRecord> IApplicationDbContext.ProgressRecords => ProgressRecords;
 
     void IApplicationDbContext.Add<T>(T entity)
     {
