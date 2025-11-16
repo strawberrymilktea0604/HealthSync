@@ -1,1 +1,1 @@
-# HealthSyncWebAPI
+# HealthSync
