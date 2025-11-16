@@ -37,8 +37,8 @@ public class NutritionController : ControllerBase
         [FromQuery] DateTime? endDate)
     {
         // Get UserId from JWT token
-        var userIdClaim = User.FindFirst("userId")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();
         }
@@ -58,8 +58,8 @@ public class NutritionController : ControllerBase
     public async Task<IActionResult> CreateNutritionLog([FromBody] CreateNutritionLogDto dto)
     {
         // Get UserId from JWT token
-        var userIdClaim = User.FindFirst("userId")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();
         }

@@ -21,8 +21,8 @@ export default function GoogleCallback() {
 
       if (!token || !userId || !email || !fullName || !role || !expiresAt) {
         toast({
-          title: "Google Login Failed",
-          description: "Invalid callback parameters",
+          title: "Đăng nhập Google thất bại",
+          description: "Tham số callback không hợp lệ",
           variant: "destructive",
         });
         navigate("/login");
@@ -52,17 +52,33 @@ export default function GoogleCallback() {
           navigate("/create-password-google");
           return;
         }
+        
+        // Check if requiresPassword is missing (error case)
+        if (!requiresPassword) {
+          toast({
+            title: "Đăng nhập Google thất bại",
+            description: "Thiếu thông tin xác thực",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
 
-        // Successfully logged in via Google - navigate to dashboard
+        // Successfully logged in via Google - navigate based on role
         toast({
           title: "Đăng nhập thành công!",
           description: `Chào mừng ${fullName}`,
         });
-        navigate("/dashboard");
+        
+        if (role === "Admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } catch (error) {
         toast({
-          title: "Google Login Failed",
-          description: "Failed to process login",
+          title: "Đăng nhập Google thất bại",
+          description: "Không thể xử lý đăng nhập",
           variant: "destructive",
         });
         navigate("/login");

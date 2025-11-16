@@ -32,6 +32,15 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
             throw new UnauthorizedAccessException("Invalid Google ID token");
         }
 
+        // Check if email belongs to an Admin account - BLOCK Google login for Admins
+        var existingAdminUser = await _context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Email == googleUser.Email && u.Role == "Admin", cancellationToken);
+        
+        if (existingAdminUser != null)
+        {
+            throw new UnauthorizedAccessException("Tài khoản Admin không được phép đăng nhập qua Google. Vui lòng sử dụng email và mật khẩu.");
+        }
+
         // Find user by email (works for both Google OAuth users and regular email users)
         var user = await _context.ApplicationUsers
             .Include(u => u.Profile)

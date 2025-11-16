@@ -19,6 +19,33 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
+    [HttpPost("register-admin")]
+    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminRequest request)
+    {
+        try
+        {
+            var command = new RegisterAdminCommand
+            {
+                Email = request.Email,
+                Password = request.Password,
+                VerificationCode = request.VerificationCode,
+                FullName = request.FullName
+            };
+
+            var authResponse = await _mediator.Send(command);
+            return Ok(authResponse);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error registering admin");
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {

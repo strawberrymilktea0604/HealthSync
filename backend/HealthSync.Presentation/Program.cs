@@ -27,7 +27,46 @@ builder.Services.AddCors(options =>
 
 // Cấu hình API Explorer và Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "HealthSync API",
+        Version = "v1",
+        Description = "API for HealthSync - Health & Fitness Tracking System",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "HealthSync Team",
+            Email = "support@healthsync.com"
+        }
+    });
+
+    // Cấu hình JWT Bearer Authentication cho Swagger
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Nhập JWT token vào ô bên dưới.\n\nVí dụ: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n\nKhông cần thêm từ 'Bearer' phía trước."
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

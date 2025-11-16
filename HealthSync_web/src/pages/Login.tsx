@@ -20,17 +20,27 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await login(email, password);
+      const userData = await login(email, password);
       
-      if (response?.role === "Admin") {
-        navigate("/admin/dashboard");
+      console.log("Login userData:", userData);
+      console.log("User role:", userData.role);
+      
+      toast({
+        title: "Đăng nhập thành công!",
+        description: `Chào mừng ${userData.fullName}`,
+      });
+      
+      if (userData.role === "Admin") {
+        console.log("Navigating to admin dashboard");
+        navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/dashboard");
+        console.log("Navigating to customer dashboard");
+        navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "Đăng nhập thất bại",
+        description: error instanceof Error ? error.message : "Đã xảy ra lỗi",
         variant: "destructive",
       });
     }

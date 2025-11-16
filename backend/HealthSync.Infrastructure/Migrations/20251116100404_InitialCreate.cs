@@ -250,6 +250,28 @@ namespace HealthSync.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Exercises",
+                columns: new[] { "ExerciseId", "Description", "Difficulty", "Equipment", "MuscleGroup", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Classic bodyweight chest exercise", "Beginner", "None", "Chest", "Push-ups" },
+                    { 2, "Compound chest exercise with barbell", "Intermediate", "Barbell", "Chest", "Bench Press" },
+                    { 3, "Isolation exercise for chest", "Intermediate", "Dumbbells", "Chest", "Dumbbell Fly" },
+                    { 4, "Bodyweight back exercise", "Intermediate", "Pull-up Bar", "Back", "Pull-ups" },
+                    { 5, "Compound full-body exercise", "Advanced", "Barbell", "Back", "Deadlift" },
+                    { 6, "Compound back exercise", "Intermediate", "Barbell", "Back", "Bent-over Row" },
+                    { 7, "Fundamental leg exercise", "Beginner", "None", "Legs", "Squats" },
+                    { 8, "Unilateral leg exercise", "Beginner", "None", "Legs", "Lunges" },
+                    { 9, "Machine-based leg exercise", "Intermediate", "Machine", "Legs", "Leg Press" },
+                    { 10, "Overhead pressing movement", "Intermediate", "Dumbbells", "Shoulders", "Shoulder Press" },
+                    { 11, "Isolation shoulder exercise", "Beginner", "Dumbbells", "Shoulders", "Lateral Raise" },
+                    { 12, "Isolation bicep exercise", "Beginner", "Dumbbells", "Arms", "Bicep Curls" },
+                    { 13, "Bodyweight tricep exercise", "Intermediate", "Parallel Bars", "Arms", "Tricep Dips" },
+                    { 14, "Isometric core exercise", "Beginner", "None", "Core", "Plank" },
+                    { 15, "Basic abdominal exercise", "Beginner", "None", "Core", "Crunches" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "FoodItems",
                 columns: new[] { "FoodItemId", "CaloriesKcal", "CarbsG", "FatG", "Name", "ProteinG", "ServingSize", "ServingUnit" },
                 values: new object[,]
@@ -258,7 +280,12 @@ namespace HealthSync.Infrastructure.Migrations
                     { 2, 111m, 23m, 0.9m, "Brown Rice", 2.6m, 100m, "g" },
                     { 3, 105m, 27m, 0.4m, "Banana", 1.3m, 118m, "g" },
                     { 4, 100m, 6m, 0m, "Greek Yogurt", 17m, 170m, "g" },
-                    { 5, 7m, 1.1m, 0.1m, "Spinach", 0.9m, 30m, "g" }
+                    { 5, 7m, 1.1m, 0.1m, "Spinach", 0.9m, 30m, "g" },
+                    { 6, 208m, 0m, 13m, "Salmon", 20m, 100m, "g" },
+                    { 7, 112m, 26m, 0.1m, "Sweet Potato", 2.1m, 130m, "g" },
+                    { 8, 72m, 0.4m, 4.8m, "Eggs", 6.3m, 50m, "g" },
+                    { 9, 150m, 27m, 2.8m, "Oatmeal", 5.3m, 40m, "g" },
+                    { 10, 31m, 6m, 0.3m, "Broccoli", 2.5m, 91m, "g" }
                 });
 
             migrationBuilder.CreateIndex(

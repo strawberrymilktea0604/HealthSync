@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import ContentLibrary from "./pages/admin/ContentLibrary";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -152,44 +153,52 @@ function AppContent() {
           </motion.div>
         } />
         <Route path="/dashboard" element={
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Dashboard />
-          </motion.div>
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Dashboard />
+            </motion.div>
+          </ProtectedRoute>
         } />
         <Route path="/admin/dashboard" element={
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            transition={{ duration: 0.6 }}
-          >
-            <AdminDashboard />
-          </motion.div>
+          <ProtectedRoute requireAdmin={true}>
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.6 }}
+            >
+              <AdminDashboard />
+            </motion.div>
+          </ProtectedRoute>
         } />
         <Route path="/admin/users" element={
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            transition={{ duration: 0.6 }}
-          >
-            <UserManagement />
-          </motion.div>
+          <ProtectedRoute requireAdmin={true}>
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.6 }}
+            >
+              <UserManagement />
+            </motion.div>
+          </ProtectedRoute>
         } />
         <Route path="/admin/content" element={
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            transition={{ duration: 0.6 }}
-          >
-            <ContentLibrary />
-          </motion.div>
+          <ProtectedRoute requireAdmin={true}>
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.6 }}
+            >
+              <ContentLibrary />
+            </motion.div>
+          </ProtectedRoute>
         } />
         <Route path="*" element={
           <motion.div

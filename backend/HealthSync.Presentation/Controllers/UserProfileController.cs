@@ -55,8 +55,9 @@ public class UserProfileController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto dto)
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
     {
+        // SECURITY: UserId ALWAYS comes from JWT token, NOT from request body
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
         {
@@ -74,7 +75,7 @@ public class UserProfileController : ControllerBase
             return NotFound("Profile not found");
         }
 
-        // Update properties
+        // Update properties (UserId is NOT changeable)
         profile.FullName = dto.FullName;
         profile.Dob = dto.Dob;
         profile.Gender = dto.Gender;

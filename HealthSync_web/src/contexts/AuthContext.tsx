@@ -11,7 +11,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
@@ -84,17 +84,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
+      console.log("Backend response data:", data);
+      
       const userData: User = {
-        userId: data.userId,
-        email: data.email,
-        fullName: data.fullName,
-        role: data.role,
-        token: data.token,
-        expiresAt: new Date(data.expiresAt),
+        userId: data.UserId || data.userId,
+        email: data.Email || data.email,
+        fullName: data.FullName || data.fullName,
+        role: data.Role || data.role,
+        token: data.Token || data.token,
+        expiresAt: new Date(data.ExpiresAt || data.expiresAt),
       };
 
+      console.log("Mapped userData:", userData);
+      
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthSync.Infrastructure.Migrations
 {
     [DbContext(typeof(HealthSyncDbContext))]
-    [Migration("20251116072750_InitialCreate")]
+    [Migration("20251116100404_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -95,6 +95,143 @@ namespace HealthSync.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Exercises");
+
+                    b.HasData(
+                        new
+                        {
+                            ExerciseId = 1,
+                            Description = "Classic bodyweight chest exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "None",
+                            MuscleGroup = "Chest",
+                            Name = "Push-ups"
+                        },
+                        new
+                        {
+                            ExerciseId = 2,
+                            Description = "Compound chest exercise with barbell",
+                            Difficulty = "Intermediate",
+                            Equipment = "Barbell",
+                            MuscleGroup = "Chest",
+                            Name = "Bench Press"
+                        },
+                        new
+                        {
+                            ExerciseId = 3,
+                            Description = "Isolation exercise for chest",
+                            Difficulty = "Intermediate",
+                            Equipment = "Dumbbells",
+                            MuscleGroup = "Chest",
+                            Name = "Dumbbell Fly"
+                        },
+                        new
+                        {
+                            ExerciseId = 4,
+                            Description = "Bodyweight back exercise",
+                            Difficulty = "Intermediate",
+                            Equipment = "Pull-up Bar",
+                            MuscleGroup = "Back",
+                            Name = "Pull-ups"
+                        },
+                        new
+                        {
+                            ExerciseId = 5,
+                            Description = "Compound full-body exercise",
+                            Difficulty = "Advanced",
+                            Equipment = "Barbell",
+                            MuscleGroup = "Back",
+                            Name = "Deadlift"
+                        },
+                        new
+                        {
+                            ExerciseId = 6,
+                            Description = "Compound back exercise",
+                            Difficulty = "Intermediate",
+                            Equipment = "Barbell",
+                            MuscleGroup = "Back",
+                            Name = "Bent-over Row"
+                        },
+                        new
+                        {
+                            ExerciseId = 7,
+                            Description = "Fundamental leg exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "None",
+                            MuscleGroup = "Legs",
+                            Name = "Squats"
+                        },
+                        new
+                        {
+                            ExerciseId = 8,
+                            Description = "Unilateral leg exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "None",
+                            MuscleGroup = "Legs",
+                            Name = "Lunges"
+                        },
+                        new
+                        {
+                            ExerciseId = 9,
+                            Description = "Machine-based leg exercise",
+                            Difficulty = "Intermediate",
+                            Equipment = "Machine",
+                            MuscleGroup = "Legs",
+                            Name = "Leg Press"
+                        },
+                        new
+                        {
+                            ExerciseId = 10,
+                            Description = "Overhead pressing movement",
+                            Difficulty = "Intermediate",
+                            Equipment = "Dumbbells",
+                            MuscleGroup = "Shoulders",
+                            Name = "Shoulder Press"
+                        },
+                        new
+                        {
+                            ExerciseId = 11,
+                            Description = "Isolation shoulder exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "Dumbbells",
+                            MuscleGroup = "Shoulders",
+                            Name = "Lateral Raise"
+                        },
+                        new
+                        {
+                            ExerciseId = 12,
+                            Description = "Isolation bicep exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "Dumbbells",
+                            MuscleGroup = "Arms",
+                            Name = "Bicep Curls"
+                        },
+                        new
+                        {
+                            ExerciseId = 13,
+                            Description = "Bodyweight tricep exercise",
+                            Difficulty = "Intermediate",
+                            Equipment = "Parallel Bars",
+                            MuscleGroup = "Arms",
+                            Name = "Tricep Dips"
+                        },
+                        new
+                        {
+                            ExerciseId = 14,
+                            Description = "Isometric core exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "None",
+                            MuscleGroup = "Core",
+                            Name = "Plank"
+                        },
+                        new
+                        {
+                            ExerciseId = 15,
+                            Description = "Basic abdominal exercise",
+                            Difficulty = "Beginner",
+                            Equipment = "None",
+                            MuscleGroup = "Core",
+                            Name = "Crunches"
+                        });
                 });
 
             modelBuilder.Entity("HealthSync.Domain.Entities.ExerciseSession", b =>
@@ -282,6 +419,61 @@ namespace HealthSync.Infrastructure.Migrations
                             Name = "Spinach",
                             ProteinG = 0.9m,
                             ServingSize = 30m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 6,
+                            CaloriesKcal = 208m,
+                            CarbsG = 0m,
+                            FatG = 13m,
+                            Name = "Salmon",
+                            ProteinG = 20m,
+                            ServingSize = 100m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 7,
+                            CaloriesKcal = 112m,
+                            CarbsG = 26m,
+                            FatG = 0.1m,
+                            Name = "Sweet Potato",
+                            ProteinG = 2.1m,
+                            ServingSize = 130m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 8,
+                            CaloriesKcal = 72m,
+                            CarbsG = 0.4m,
+                            FatG = 4.8m,
+                            Name = "Eggs",
+                            ProteinG = 6.3m,
+                            ServingSize = 50m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 9,
+                            CaloriesKcal = 150m,
+                            CarbsG = 27m,
+                            FatG = 2.8m,
+                            Name = "Oatmeal",
+                            ProteinG = 5.3m,
+                            ServingSize = 40m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 10,
+                            CaloriesKcal = 31m,
+                            CarbsG = 6m,
+                            FatG = 0.3m,
+                            Name = "Broccoli",
+                            ProteinG = 2.5m,
+                            ServingSize = 91m,
                             ServingUnit = "g"
                         });
                 });
