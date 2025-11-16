@@ -224,6 +224,63 @@ namespace HealthSync.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("FoodItems");
+
+                    b.HasData(
+                        new
+                        {
+                            FoodItemId = 1,
+                            CaloriesKcal = 165m,
+                            CarbsG = 0m,
+                            FatG = 3.6m,
+                            Name = "Chicken Breast",
+                            ProteinG = 31m,
+                            ServingSize = 100m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 2,
+                            CaloriesKcal = 111m,
+                            CarbsG = 23m,
+                            FatG = 0.9m,
+                            Name = "Brown Rice",
+                            ProteinG = 2.6m,
+                            ServingSize = 100m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 3,
+                            CaloriesKcal = 105m,
+                            CarbsG = 27m,
+                            FatG = 0.4m,
+                            Name = "Banana",
+                            ProteinG = 1.3m,
+                            ServingSize = 118m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 4,
+                            CaloriesKcal = 100m,
+                            CarbsG = 6m,
+                            FatG = 0m,
+                            Name = "Greek Yogurt",
+                            ProteinG = 17m,
+                            ServingSize = 170m,
+                            ServingUnit = "g"
+                        },
+                        new
+                        {
+                            FoodItemId = 5,
+                            CaloriesKcal = 7m,
+                            CarbsG = 1.1m,
+                            FatG = 0.1m,
+                            Name = "Spinach",
+                            ProteinG = 0.9m,
+                            ServingSize = 30m,
+                            ServingUnit = "g"
+                        });
                 });
 
             modelBuilder.Entity("HealthSync.Domain.Entities.Goal", b =>

@@ -15,6 +15,12 @@ public interface IApplicationDbContext
     IQueryable<UserProfile> UserProfiles { get; }
     IQueryable<Goal> Goals { get; }
     IQueryable<ProgressRecord> ProgressRecords { get; }
+    IQueryable<WorkoutLog> WorkoutLogs { get; }
+    IQueryable<ExerciseSession> ExerciseSessions { get; }
+    IQueryable<Exercise> Exercises { get; }
+    IQueryable<NutritionLog> NutritionLogs { get; }
+    IQueryable<FoodEntry> FoodEntries { get; }
+    IQueryable<FoodItem> FoodItems { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     void Add<T>(T entity) where T : class;
     void Update<T>(T entity) where T : class;

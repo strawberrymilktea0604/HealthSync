@@ -1,3 +1,4 @@
+using HealthSync.Application;
 using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
 

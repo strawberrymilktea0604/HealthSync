@@ -26,6 +26,12 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
     IQueryable<UserProfile> IApplicationDbContext.UserProfiles => UserProfiles;
     IQueryable<Goal> IApplicationDbContext.Goals => Goals;
     IQueryable<ProgressRecord> IApplicationDbContext.ProgressRecords => ProgressRecords;
+    IQueryable<WorkoutLog> IApplicationDbContext.WorkoutLogs => WorkoutLogs;
+    IQueryable<ExerciseSession> IApplicationDbContext.ExerciseSessions => ExerciseSessions;
+    IQueryable<Exercise> IApplicationDbContext.Exercises => Exercises;
+    IQueryable<NutritionLog> IApplicationDbContext.NutritionLogs => NutritionLogs;
+    IQueryable<FoodEntry> IApplicationDbContext.FoodEntries => FoodEntries;
+    IQueryable<FoodItem> IApplicationDbContext.FoodItems => FoodItems;
 
     void IApplicationDbContext.Add<T>(T entity)
     {
@@ -174,5 +180,14 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.WeightKg).HasPrecision(5, 2);
             entity.Property(e => e.WaistCm).HasPrecision(5, 2);
         });
+
+        // Seed data for FoodItems
+        modelBuilder.Entity<FoodItem>().HasData(
+            new FoodItem { FoodItemId = 1, Name = "Chicken Breast", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 165, ProteinG = 31, CarbsG = 0, FatG = 3.6m },
+            new FoodItem { FoodItemId = 2, Name = "Brown Rice", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 111, ProteinG = 2.6m, CarbsG = 23, FatG = 0.9m },
+            new FoodItem { FoodItemId = 3, Name = "Banana", ServingSize = 118, ServingUnit = "g", CaloriesKcal = 105, ProteinG = 1.3m, CarbsG = 27, FatG = 0.4m },
+            new FoodItem { FoodItemId = 4, Name = "Greek Yogurt", ServingSize = 170, ServingUnit = "g", CaloriesKcal = 100, ProteinG = 17, CarbsG = 6, FatG = 0 },
+            new FoodItem { FoodItemId = 5, Name = "Spinach", ServingSize = 30, ServingUnit = "g", CaloriesKcal = 7, ProteinG = 0.9m, CarbsG = 1.1m, FatG = 0.1m }
+        );
     }
 }

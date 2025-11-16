@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace HealthSync.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -245,6 +247,18 @@ namespace HealthSync.Infrastructure.Migrations
                         principalTable: "WorkoutLogs",
                         principalColumn: "WorkoutLogId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "FoodItems",
+                columns: new[] { "FoodItemId", "CaloriesKcal", "CarbsG", "FatG", "Name", "ProteinG", "ServingSize", "ServingUnit" },
+                values: new object[,]
+                {
+                    { 1, 165m, 0m, 3.6m, "Chicken Breast", 31m, 100m, "g" },
+                    { 2, 111m, 23m, 0.9m, "Brown Rice", 2.6m, 100m, "g" },
+                    { 3, 105m, 27m, 0.4m, "Banana", 1.3m, 118m, "g" },
+                    { 4, 100m, 6m, 0m, "Greek Yogurt", 17m, 170m, "g" },
+                    { 5, 7m, 1.1m, 0.1m, "Spinach", 0.9m, 30m, "g" }
                 });
 
             migrationBuilder.CreateIndex(

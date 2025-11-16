@@ -19,6 +19,9 @@ import CreatePasswordForGoogle from "./pages/CreatePasswordForGoogle";
 import GoogleCallback from "./pages/GoogleCallback";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import ContentLibrary from "./pages/admin/ContentLibrary";
 
 const queryClient = new QueryClient();
 
@@ -156,6 +159,36 @@ function AppContent() {
             transition={{ duration: 0.6 }}
           >
             <Dashboard />
+          </motion.div>
+        } />
+        <Route path="/admin/dashboard" element={
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ duration: 0.6 }}
+          >
+            <AdminDashboard />
+          </motion.div>
+        } />
+        <Route path="/admin/users" element={
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ duration: 0.6 }}
+          >
+            <UserManagement />
+          </motion.div>
+        } />
+        <Route path="/admin/content" element={
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ duration: 0.6 }}
+          >
+            <ContentLibrary />
           </motion.div>
         } />
         <Route path="*" element={
