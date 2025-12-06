@@ -6,6 +6,8 @@ class User {
   final String token;
   final DateTime expiresAt;
   final bool requiresPassword; // True if user needs to set password (first-time Google login)
+  final bool isProfileComplete; // True if user profile is fully filled
+  final String? avatarUrl;
 
   User({
     required this.userId,
@@ -15,6 +17,8 @@ class User {
     required this.token,
     required this.expiresAt,
     this.requiresPassword = false,
+    this.isProfileComplete = false,
+    this.avatarUrl,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class User {
       token: json['token'] ?? json['Token'],
       expiresAt: DateTime.parse(json['expiresAt'] ?? json['ExpiresAt']),
       requiresPassword: json['requiresPassword'] ?? json['RequiresPassword'] ?? false,
+      isProfileComplete: json['isProfileComplete'] ?? json['IsProfileComplete'] ?? false,
+      avatarUrl: json['avatarUrl'] ?? json['AvatarUrl'],
     );
   }
 
@@ -38,6 +44,8 @@ class User {
       'token': token,
       'expiresAt': expiresAt.toIso8601String(),
       'requiresPassword': requiresPassword,
+      'isProfileComplete': isProfileComplete,
+      'avatarUrl': avatarUrl,
     };
   }
 }

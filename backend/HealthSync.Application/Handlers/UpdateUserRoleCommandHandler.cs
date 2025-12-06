@@ -1,5 +1,6 @@
 using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
+using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
     {
         var user = await _context.ApplicationUsers
             .Include(u => u.Profile)
+            .Include(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.UserId == request.UserId, cancellationToken);
 
         if (user == null)
@@ -26,13 +29,23 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
             throw new Exception($"User with ID {request.UserId} not found");
         }
 
-        if (request.Role != "Admin" && request.Role != "Customer")
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role, cancellationToken);
+        if (role == null)
         {
-            throw new Exception("Invalid role. Must be 'Admin' or 'Customer'");
+            throw new Exception($"Role '{request.Role}' not found");
         }
 
-        user.Role = request.Role;
-        _context.Update(user);
+        // Remove existing UserRole
+        var existingUserRole = user.UserRoles.FirstOrDefault();
+        if (existingUserRole != null)
+        {
+            _context.Remove(existingUserRole);
+        }
+
+        // Add new UserRole
+        var newUserRole = new UserRole { UserId = user.UserId, RoleId = role.Id };
+        _context.Add(newUserRole);
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return new AdminUserDto
@@ -40,7 +53,7 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
             UserId = user.UserId,
             Email = user.Email,
             FullName = user.Profile?.FullName ?? "",
-            Role = user.Role,
+            Role = role.RoleName,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             AvatarUrl = user.Profile?.AvatarUrl

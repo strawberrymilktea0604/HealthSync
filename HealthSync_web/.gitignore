@@ -14,18 +14,32 @@ dist-ssr
 
 # Environment Files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
 
 # Build Artifacts
 build/
+dist-ssr/
 
 # Temporary Files
 *.tmp
 *.temp
 *.bak
+*.swp
+*.swo
 
 # Generated Files
 coverage/
 .next/
+out/
+
+# Docker
+Dockerfile
+.dockerignore
+nginx.conf
 
 # Editor directories and files
 .vscode/*

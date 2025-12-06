@@ -120,7 +120,7 @@ export default function Login() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-3 md:py-4 text-lg md:text-xl lg:text-2xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Logging in..." : "Login"}
                 </motion.button>
@@ -130,21 +130,21 @@ export default function Login() {
             <div className="mb-8 md:mb-12">
               <button 
                 onClick={() => window.location.href = 'http://localhost:5274/api/auth/google/web'}
-                className="w-full bg-white hover:bg-gray-50 text-black rounded-full border border-black py-4 md:py-6 lg:py-8 text-xl md:text-2xl lg:text-3xl xl:text-4xl font-normal flex items-center justify-center gap-3 md:gap-4 transition-colors"
+                className="w-full bg-white hover:bg-gray-50 text-black rounded-full border border-black py-3 md:py-4 text-lg md:text-xl lg:text-2xl font-normal flex items-center justify-center gap-2 md:gap-3 transition-colors"
               >
                 <img
                   src="https://api.builder.io/api/v1/image/assets/TEMP/0b7815aadcf6f5168e58fd8b52e66a47ca2ea51a?width=140"
                   alt="Google"
-                  className="w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16"
+                  className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8"
                 />
                 Sign in with Google
               </button>
             </div>
 
             <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
-              <span className="text-xl md:text-2xl lg:text-3xl">Don't have an account?</span>
+              <span className="text-lg md:text-xl lg:text-2xl">Don't have an account?</span>
               <Link to="/register">
-                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal">
+                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-3 md:py-4 text-lg md:text-xl lg:text-2xl h-auto font-normal">
                   Register
                 </Button>
               </Link>

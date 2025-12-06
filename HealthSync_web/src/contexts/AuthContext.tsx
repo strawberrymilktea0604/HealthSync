@@ -7,6 +7,7 @@ interface User {
   role: string;
   token: string;
   expiresAt: Date;
+  isProfileComplete: boolean;
 }
 
 interface AuthContextType {
@@ -32,6 +33,7 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/* eslint-disable react-refresh/only-export-components */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -60,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } else {
           localStorage.removeItem('user');
         }
-      } catch (e) {
+      } catch {
         localStorage.removeItem('user');
       }
     }
@@ -93,6 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: data.Role || data.role,
         token: data.Token || data.token,
         expiresAt: new Date(data.ExpiresAt || data.expiresAt),
+        isProfileComplete: data.IsProfileComplete || data.isProfileComplete || false,
       };
 
       console.log("Mapped userData:", userData);

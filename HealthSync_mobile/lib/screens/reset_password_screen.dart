@@ -121,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       spreadRadius: 5,
                       offset: const Offset(0, -10),
@@ -168,7 +168,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -231,7 +231,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
+                                fillColor: Colors.white.withValues(alpha: 0.5),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -292,7 +292,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                               obscureText: !_isConfirmPasswordVisible,
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
+                                fillColor: Colors.white.withValues(alpha: 0.5),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,

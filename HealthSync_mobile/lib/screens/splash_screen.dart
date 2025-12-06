@@ -4,6 +4,7 @@ import 'dart:async';
 import '../providers/auth_provider.dart';
 import 'welcome_screen.dart';
 import 'home_screen.dart';
+import 'complete_profile_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -53,11 +54,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         
         // Kiểm tra xem user đã đăng nhập chưa
         if (authProvider.isAuthenticated) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            ),
-          );
+          // Kiểm tra profile đã hoàn thiện chưa
+          if (authProvider.user!.isProfileComplete || authProvider.user!.role == 'Admin') {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              ),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const CompleteProfileScreen(),
+              ),
+            );
+          }
         } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -78,16 +88,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D7B6), // Màu nền mới
+      backgroundColor: const Color(0xFFD9D7B6),
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ScaleTransition(
             scale: _scaleAnimation,
-            child: Image.asset(
-              'assets/images/logo.png',
-              width: 180, // Tăng từ 120 lên 180
-              height: 180, // Tăng từ 120 lên 180
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'healthsync',
+                  style: TextStyle(
+                    fontFamily: 'Eras Bold ITC',
+                    fontSize: 30,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

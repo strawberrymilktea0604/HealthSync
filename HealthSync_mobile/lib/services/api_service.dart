@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class ApiService {
@@ -99,6 +100,45 @@ class ApiService {
     }
   }
 
+  // Update user profile
+  Future<void> updateProfile({
+    required String fullName,
+    required DateTime dob,
+    required String gender,
+    required double heightCm,
+    required double weightKg,
+    required String activityLevel,
+  }) async {
+    // Get token from shared preferences
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    if (userJson == null) throw Exception('User not authenticated');
+
+    final userData = jsonDecode(userJson);
+    final token = userData['token'];
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/user/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'fullName': fullName,
+        'dob': dob.toIso8601String(),
+        'gender': gender,
+        'heightCm': heightCm,
+        'weightKg': weightKg,
+        'activityLevel': activityLevel,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['Error'] ?? 'Failed to update profile');
+    }
+  }
+
   // Set password for Google OAuth users
   Future<void> setPassword({
     required int userId,
@@ -116,6 +156,93 @@ class ApiService {
     if (response.statusCode != 200) {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Failed to set password');
+    }
+  }
+
+  // Generic GET method
+  Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParameters}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    String? token;
+    
+    if (userJson != null) {
+      final userData = jsonDecode(userJson);
+      token = userData['token'];
+    }
+
+    final uri = queryParameters != null
+        ? Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParameters.map((key, value) => MapEntry(key, value.toString())))
+        : Uri.parse('$baseUrl$endpoint');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['Error'] ?? 'Request failed');
+    }
+  }
+
+  // Generic POST method
+  Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    String? token;
+    
+    if (userJson != null) {
+      final userData = jsonDecode(userJson);
+      token = userData['token'];
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['Error'] ?? 'Request failed');
+    }
+  }
+
+  // Generic DELETE method
+  Future<void> delete(String endpoint) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    String? token;
+    
+    if (userJson != null) {
+      final userData = jsonDecode(userJson);
+      token = userData['token'];
+    }
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['Error'] ?? 'Delete request failed');
     }
   }
 }

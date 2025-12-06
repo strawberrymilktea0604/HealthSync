@@ -1,4 +1,5 @@
 using HealthSync.Application.DTOs;
+using HealthSync.Application.Extensions;
 using HealthSync.Application.Queries;
 using HealthSync.Domain.Interfaces;
 using MediatR;
@@ -19,6 +20,8 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, AdminUs
     {
         var user = await _context.ApplicationUsers
             .Include(u => u.Profile)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.UserId == request.UserId, cancellationToken);
 
         if (user == null)
@@ -31,7 +34,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, AdminUs
             UserId = user.UserId,
             Email = user.Email,
             FullName = user.Profile?.FullName ?? "",
-            Role = user.Role,
+            Role = user.GetRoleName(),
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             AvatarUrl = user.Profile?.AvatarUrl

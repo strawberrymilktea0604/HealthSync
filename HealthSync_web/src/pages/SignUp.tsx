@@ -90,10 +90,11 @@ export default function SignUp() {
 
       toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
       nav("/login", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
       const msg =
-        err?.response?.data?.message ||
-        err?.message ||
+        errorObj?.response?.data?.message ||
+        errorObj?.message ||
         "Đăng ký thất bại. Vui lòng thử lại.";
 
       setApiError(msg);

@@ -14,8 +14,8 @@ type LoginResponse = {
 
 class ApiError extends Error {
   status: number;
-  data?: any;
-  constructor(message: string, status = 0, data?: any) {
+  data?: unknown;
+  constructor(message: string, status = 0, data?: unknown) {
     super(message);
     this.status = status;
     this.data = data;
@@ -47,15 +47,16 @@ async function requestJson<T>(url: string, opts: RequestInit = {}): Promise<T> {
 
   const res = await fetch(url, init);
   const text = await res.text();
-  let data: any = undefined;
+  let data: unknown = undefined;
   try {
     data = text ? JSON.parse(text) : undefined;
-  } catch (e) {
+  } catch {
     data = text;
   }
 
   if (!res.ok) {
-    throw new ApiError(data?.message || res.statusText || "Request failed", res.status, data);
+    const errorMessage = (data && typeof data === 'object' && 'message' in data ? (data as { message?: string }).message : undefined) || res.statusText || "Request failed";
+    throw new ApiError(errorMessage, res.status, data);
   }
 
   return data as T;

@@ -21,9 +21,9 @@ namespace HealthSync.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -64,6 +64,37 @@ namespace HealthSync.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FoodItems", x => x.FoodItemId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Permissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PermissionCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Permissions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,6 +190,56 @@ namespace HealthSync.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "ApplicationUsers",
                         principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RolePermissions",
+                columns: table => new
+                {
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    PermissionId = table.Column<int>(type: "int", nullable: false),
+                    GrantedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RolePermissions", x => new { x.RoleId, x.PermissionId });
+                    table.ForeignKey(
+                        name: "FK_RolePermissions_Permissions_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permissions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RolePermissions_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRoles",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_UserRoles_ApplicationUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "ApplicationUsers",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserRoles_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -288,6 +369,96 @@ namespace HealthSync.Infrastructure.Migrations
                     { 10, 31m, 6m, 0.3m, "Broccoli", 2.5m, 91m, "g" }
                 });
 
+            migrationBuilder.InsertData(
+                table: "Permissions",
+                columns: new[] { "Id", "Category", "CreatedAt", "Description", "PermissionCode" },
+                values: new object[,]
+                {
+                    { 101, "User", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(508), "Xem danh sách người dùng", "USER_READ" },
+                    { 102, "User", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(511), "Khóa tài khoản người dùng", "USER_BAN" },
+                    { 103, "User", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512), "Cập nhật vai trò người dùng", "USER_UPDATE_ROLE" },
+                    { 104, "User", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512), "Xóa người dùng", "USER_DELETE" },
+                    { 201, "Exercise", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(513), "Xem thư viện bài tập", "EXERCISE_READ" },
+                    { 202, "Exercise", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(514), "Thêm bài tập mới", "EXERCISE_CREATE" },
+                    { 203, "Exercise", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(515), "Cập nhật bài tập", "EXERCISE_UPDATE" },
+                    { 204, "Exercise", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(516), "Xóa bài tập", "EXERCISE_DELETE" },
+                    { 301, "Food", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(517), "Xem thư viện thực phẩm", "FOOD_READ" },
+                    { 302, "Food", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(518), "Thêm thực phẩm mới", "FOOD_CREATE" },
+                    { 303, "Food", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519), "Cập nhật thực phẩm", "FOOD_UPDATE" },
+                    { 304, "Food", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519), "Xóa thực phẩm", "FOOD_DELETE" },
+                    { 401, "WorkoutLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(520), "Xem nhật ký tập luyện", "WORKOUT_LOG_READ" },
+                    { 402, "WorkoutLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(522), "Tạo nhật ký tập luyện", "WORKOUT_LOG_CREATE" },
+                    { 403, "WorkoutLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(523), "Cập nhật nhật ký tập luyện", "WORKOUT_LOG_UPDATE" },
+                    { 404, "WorkoutLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(524), "Xóa nhật ký tập luyện", "WORKOUT_LOG_DELETE" },
+                    { 501, "NutritionLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(525), "Xem nhật ký dinh dưỡng", "NUTRITION_LOG_READ" },
+                    { 502, "NutritionLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(526), "Tạo nhật ký dinh dưỡng", "NUTRITION_LOG_CREATE" },
+                    { 503, "NutritionLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(527), "Cập nhật nhật ký dinh dưỡng", "NUTRITION_LOG_UPDATE" },
+                    { 504, "NutritionLog", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528), "Xóa nhật ký dinh dưỡng", "NUTRITION_LOG_DELETE" },
+                    { 601, "Goal", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528), "Xem mục tiêu", "GOAL_READ" },
+                    { 602, "Goal", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(529), "Tạo mục tiêu", "GOAL_CREATE" },
+                    { 603, "Goal", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(530), "Cập nhật mục tiêu", "GOAL_UPDATE" },
+                    { 604, "Goal", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(531), "Xóa mục tiêu", "GOAL_DELETE" },
+                    { 701, "Dashboard", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532), "Xem dashboard cá nhân", "DASHBOARD_VIEW" },
+                    { 702, "Dashboard", new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532), "Xem dashboard admin", "DASHBOARD_ADMIN" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "CreatedAt", "Description", "RoleName" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(475), "Quản trị viên hệ thống, có toàn quyền", "Admin" },
+                    { 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(486), "Người dùng cuối sử dụng app", "Customer" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "RolePermissions",
+                columns: new[] { "PermissionId", "RoleId", "GrantedAt" },
+                values: new object[,]
+                {
+                    { 101, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(570) },
+                    { 102, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(571) },
+                    { 103, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572) },
+                    { 104, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572) },
+                    { 201, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(573) },
+                    { 202, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574) },
+                    { 203, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574) },
+                    { 204, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(575) },
+                    { 301, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576) },
+                    { 302, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576) },
+                    { 303, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(577) },
+                    { 304, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578) },
+                    { 401, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578) },
+                    { 402, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579) },
+                    { 403, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579) },
+                    { 404, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580) },
+                    { 501, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580) },
+                    { 502, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(581) },
+                    { 503, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582) },
+                    { 504, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582) },
+                    { 601, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(584) },
+                    { 602, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585) },
+                    { 603, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585) },
+                    { 604, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(586) },
+                    { 701, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(620) },
+                    { 702, 1, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621) },
+                    { 201, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621) },
+                    { 301, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(622) },
+                    { 401, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623) },
+                    { 402, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623) },
+                    { 403, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624) },
+                    { 404, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624) },
+                    { 501, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(625) },
+                    { 502, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626) },
+                    { 503, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626) },
+                    { 504, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(627) },
+                    { 601, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628) },
+                    { 602, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628) },
+                    { 603, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629) },
+                    { 604, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629) },
+                    { 701, 2, new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(630) }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_ApplicationUsers_Email",
                 table: "ApplicationUsers",
@@ -337,9 +508,31 @@ namespace HealthSync.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Permissions_PermissionCode",
+                table: "Permissions",
+                column: "PermissionCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProgressRecords_GoalId",
                 table: "ProgressRecords",
                 column: "GoalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RolePermissions_PermissionId",
+                table: "RolePermissions",
+                column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Roles_RoleName",
+                table: "Roles",
+                column: "RoleName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRoles_RoleId",
+                table: "UserRoles",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkoutLogs_UserId",
@@ -360,7 +553,13 @@ namespace HealthSync.Infrastructure.Migrations
                 name: "ProgressRecords");
 
             migrationBuilder.DropTable(
+                name: "RolePermissions");
+
+            migrationBuilder.DropTable(
                 name: "UserProfiles");
+
+            migrationBuilder.DropTable(
+                name: "UserRoles");
 
             migrationBuilder.DropTable(
                 name: "Exercises");
@@ -376,6 +575,12 @@ namespace HealthSync.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Goals");
+
+            migrationBuilder.DropTable(
+                name: "Permissions");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "ApplicationUsers");

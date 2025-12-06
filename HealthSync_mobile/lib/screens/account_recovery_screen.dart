@@ -117,7 +117,7 @@ class _AccountRecoveryScreenState extends State<AccountRecoveryScreen> with Sing
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       spreadRadius: 5,
                       offset: const Offset(0, -10),
@@ -164,7 +164,7 @@ class _AccountRecoveryScreenState extends State<AccountRecoveryScreen> with Sing
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -225,7 +225,7 @@ class _AccountRecoveryScreenState extends State<AccountRecoveryScreen> with Sing
                               controller: _emailController,
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
+                                fillColor: Colors.white.withValues(alpha: 0.5),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,

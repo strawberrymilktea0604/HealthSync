@@ -18,10 +18,13 @@ public class AuthResponse
     public int UserId { get; set; }
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty; // Primary role for backward compatibility
+    public List<string> Roles { get; set; } = new(); // All roles assigned to user
+    public List<string> Permissions { get; set; } = new(); // All permissions user has
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
     public bool RequiresPassword { get; set; } = false; // True if user needs to set password (first-time Google login)
+    public bool IsProfileComplete { get; set; } = false; // True if user profile is fully filled
 }
 
 public class SendVerificationCodeRequest

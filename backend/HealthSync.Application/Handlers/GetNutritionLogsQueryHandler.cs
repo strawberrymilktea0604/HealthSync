@@ -44,7 +44,7 @@ public class GetNutritionLogsQueryHandler : IRequestHandler<GetNutritionLogsQuer
                 {
                     FoodEntryId = fe.FoodEntryId,
                     FoodItemId = fe.FoodItemId,
-                    FoodName = fe.FoodItem.Name,
+                    FoodItemName = fe.FoodItem.Name,
                     Quantity = fe.Quantity,
                     MealType = fe.MealType,
                     CaloriesKcal = fe.CaloriesKcal ?? 0,

@@ -2,16 +2,28 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Permission } from "@/types/rbac";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  requiredPermission?: Permission;
+  requiredPermissions?: Permission[];
+  requireAllPermissions?: boolean; // true = need all, false = need any
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({ 
+  children, 
+  requireAdmin = false,
+  requiredPermission,
+  requiredPermissions = [],
+  requireAllPermissions = true,
+}: ProtectedRouteProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { hasPermission, hasAllPermissions, hasAnyPermission, isAdmin } = usePermissions();
 
   useEffect(() => {
     // If not logged in, redirect to login
@@ -26,7 +38,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     }
 
     // If page requires admin but user is not admin
-    if (requireAdmin && user.role !== "Admin") {
+    if (requireAdmin && !isAdmin()) {
       toast({
         title: "Không có quyền truy cập",
         description: "Bạn không có quyền truy cập trang này",
@@ -36,27 +48,63 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       return;
     }
 
-    // If user is admin but trying to access customer dashboard
-    if (!requireAdmin && user.role === "Admin") {
-      console.log("Admin detected on customer page, redirecting to admin dashboard");
-      navigate("/admin/dashboard", { replace: true });
+    // Check specific permission if provided
+    if (requiredPermission && !hasPermission(requiredPermission)) {
+      toast({
+        title: "Không có quyền truy cập",
+        description: "Bạn không có quyền truy cập trang này",
+        variant: "destructive",
+      });
+      navigate("/dashboard");
       return;
     }
-  }, [user, requireAdmin, navigate, toast]);
+
+    // Check multiple permissions if provided
+    if (requiredPermissions.length > 0) {
+      const hasAccess = requireAllPermissions
+        ? hasAllPermissions(requiredPermissions)
+        : hasAnyPermission(requiredPermissions);
+
+      if (!hasAccess) {
+        toast({
+          title: "Không có quyền truy cập",
+          description: "Bạn không có quyền truy cập trang này",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
+    }
+
+    // If user profile is not complete and not admin, redirect to complete profile
+    if (!requireAdmin && !isAdmin() && !user.isProfileComplete) {
+      navigate("/complete-profile");
+      return;
+    }
+  }, [user, requireAdmin, requiredPermission, requiredPermissions, requireAllPermissions, navigate, toast, hasPermission, hasAllPermissions, hasAnyPermission, isAdmin]);
 
   // If no user, show nothing (will redirect)
   if (!user) {
     return null;
   }
 
-  // If admin trying to access customer page, show nothing (will redirect)
-  if (!requireAdmin && user.role === "Admin") {
+  // Check all permission requirements before rendering
+  if (requireAdmin && !isAdmin()) {
     return null;
   }
 
-  // If non-admin trying to access admin page, show nothing (will redirect)
-  if (requireAdmin && user.role !== "Admin") {
+  if (requiredPermission && !hasPermission(requiredPermission)) {
     return null;
+  }
+
+  if (requiredPermissions.length > 0) {
+    const hasAccess = requireAllPermissions
+      ? hasAllPermissions(requiredPermissions)
+      : hasAnyPermission(requiredPermissions);
+    
+    if (!hasAccess) {
+      return null;
+    }
   }
 
   return <>{children}</>;

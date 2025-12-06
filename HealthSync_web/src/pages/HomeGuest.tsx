@@ -1,196 +1,197 @@
 import React from "react";
-import { Link } from "react-router-dom";
-
-const Img = ({
-  w = 600,
-  h = 400,
-  alt = "placeholder",
-  className = "",
-}: {
-  w?: number;
-  h?: number;
-  alt?: string;
-  className?: string;
-}) => (
-  <img
-    src={`https://placehold.co/${w}x${h}`}
-    alt={alt}
-    className={className}
-    loading="lazy"
-  />
-);
+import { Button } from "primereact/button";
+import { Avatar } from "primereact/avatar";
 
 export default function HomeGuest() {
   return (
-    <div className="min-h-svh w-full grid grid-rows-[auto,1fr,auto] bg-theme text-ink">
+    <div className="min-h-screen surface-ground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-paper border-b border-theme">
-        <div className="mx-auto w-full max-w-[900px] px-4 py-3 flex items-center gap-4">
+      <header className="surface-card border-bottom-1 surface-border sticky top-0 z-5 px-4 py-3">
+        <div className="flex align-items-center justify-content-between max-w-7xl mx-auto">
           {/* Brand */}
-          <div className="font-extrabold inline-flex items-baseline gap-1 text-[20px]">
-            <span className="text-ink">health</span>
-            <span className="text-accent">sync</span>
+          <div className="flex align-items-center gap-2">
+            <h1 className="text-3xl font-bold m-0">
+              <span className="text-900">health</span>
+              <span className="text-primary">sync</span>
+            </h1>
           </div>
 
-          {/* Search */}
-          <div className="flex items-center flex-1 bg-paper border border-theme rounded-full overflow-hidden max-w-[360px] ml-4">
-            <input
-              type="text"
-              placeholder="What are you looking for?"
-              className="w-full px-3 py-2 text-[14px] placeholder:text-muted outline-none"
+          {/* Auth Buttons */}
+          <div className="flex align-items-center gap-2 ml-auto">
+            <Button 
+              label="Sign up" 
+              outlined 
+              className="px-4 py-2"
+              onClick={() => window.location.href = '/signup'}
             />
-            <button className="px-3" aria-label="Search">
-              🔍
-            </button>
-          </div>
-
-          {/* Nav */}
-          <nav className="hidden md:flex items-center gap-3 ml-6 text-[14px]">
-            <select className="rounded-md border border-theme bg-paper px-2 py-1" title="Explore options">
-              <option>Explore…</option>
-            </select>
-            <select className="rounded-md border border-theme bg-paper px-2 py-1" title="Find talent options">
-              <option>Find talent</option>
-            </select>
-            <select className="rounded-md border border-theme bg-paper px-2 py-1" title="Get hired options">
-              <option>Get hired</option>
-            </select>
-            <a
-              href="#blog"
-              className="px-3 py-1 rounded-md bg-ink text-paper no-underline"
-            >
-              Blog
-            </a>
-          </nav>
-
-          {/* Auth */}
-          <div className="flex gap-2 ml-auto">
-            <Link
-              to="/signup"
-              className="px-4 py-2 rounded-lg border border-ink bg-paper text-center"
-            >
-              Sign up
-            </Link>
-            <Link
-              to="/login"
-              className="px-4 py-2 rounded-lg bg-ink text-paper text-center"
-            >
-              Login
-            </Link>
+            <Button 
+              label="Login" 
+              className="px-4 py-2"
+              onClick={() => window.location.href = '/login'}
+            />
           </div>
         </div>
       </header>
 
-      {/* Main */}
-      <main className="mx-auto w-full max-w-[900px] px-4 pt-6 pb-16">
-        {/* Hero Section */}
-        <section className="py-8">
-          <h1 className="text-3xl font-bold">Dynamic Fitness Coaching Website</h1>
-        </section>
+      {/* Hero Section */}
+      <section className="surface-section py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-5">
+            <p className="text-xl mb-2">Welcome to</p>
+            <h1 className="text-6xl font-bold m-0">
+              <span className="text-900">health</span>
+              <span className="text-primary">sync</span>
+            </h1>
+          </div>
 
-        {/* Hero / Gallery card */}
-        <section className="rounded-2xl bg-gray-50 border border-gray-300 shadow-md p-5 grid gap-5 md:grid-cols-[1.2fr,0.8fr]">
-          <div>
-            <span className="inline-block text-[12px] mb-3 px-3 py-1 rounded-full bg-green-100 text-green-600">
-              Dynamic Fitness Coaching Website
-            </span>
+          <h2 className="text-4xl font-bold text-center mb-5">
+            Dynamic Fitness Coaching Website
+          </h2>
 
-            {/* Author line */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-8 w-8 rounded-full bg-gray-300" />
-              <div className="flex flex-col text-[12px]">
-                <span className="font-bold">Coach Natalia</span>
-                <span className="text-gray-500">Available for work</span>
+          {/* Featured Card */}
+          <div className="surface-card border-round-3xl shadow-3 p-5">
+            <div className="grid">
+              <div className="col-12 lg:col-8">
+                {/* Profile Header */}
+                <div className="flex align-items-center gap-3 mb-4">
+                  <Avatar 
+                    image="https://placehold.co/80x80" 
+                    size="large" 
+                    shape="circle" 
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold m-0 mb-2">Coach Natalia</h3>
+                    <p className="text-600 m-0">Available for work</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button icon="pi pi-heart" rounded text />
+                    <Button icon="pi pi-bookmark" rounded text />
+                  </div>
+                </div>
+
+                {/* Main Image */}
+                <div className="border-round-2xl overflow-hidden">
+                  <img 
+                    src="https://placehold.co/800x500" 
+                    alt="Fitness coaching" 
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-4">
+                  <Button icon="pi pi-heart" rounded outlined />
+                  <Button icon="pi pi-comment" rounded outlined />
+                  <Button icon="pi pi-share-alt" rounded outlined />
+                  <Button icon="pi pi-ellipsis-v" rounded outlined className="ml-auto" />
+                </div>
               </div>
-              <span className="ml-auto h-1 w-1 rounded-full bg-gray-500" />
-              <div className="flex gap-2">
-                <button className="px-2 py-1 rounded-md bg-gray-100">♡</button>
-                <button className="px-2 py-1 rounded-md bg-gray-100">💾</button>
-                <button className="px-2 py-1 rounded-md bg-gray-100">↗</button>
+
+              <div className="col-12 lg:col-4">
+                <div className="flex flex-column gap-3">
+                  <div className="border-round-2xl overflow-hidden">
+                    <img 
+                      src="https://placehold.co/400x300" 
+                      alt="Image 1" 
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="border-round-2xl overflow-hidden">
+                    <img 
+                      src="https://placehold.co/400x300" 
+                      alt="Image 2" 
+                      className="w-full"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Big image */}
-            <div className="rounded-xl border border-gray-300 p-2 bg-white">
-              <div className="overflow-hidden rounded-lg">
-                <Img w={770} h={470} alt="Hero Mock" className="w-full h-auto" />
+          {/* Call to Action */}
+          <div className="surface-100 border-round-3xl p-4 text-center mt-5">
+            <p className="text-lg m-0">
+              Wanna create something great? <strong>Feel free to contact me</strong>
+            </p>
+          </div>
+
+          {/* Overview Section */}
+          <div className="surface-card border-round-3xl shadow-2 p-5 mt-5">
+            <h3 className="text-3xl font-bold mb-3">Overview</h3>
+            <p className="text-600 line-height-3 mb-4">
+              Excited to share this clean and modern wireframe for a fitness coaching website! 
+              This design focuses on user engagement and a clear information hierarchy, guiding 
+              potential clients through the coach's offerings seamlessly. The layout emphasizes 
+              the coach's expertise, showcases services, and encourages action with strategically 
+              placed CTAs.
+            </p>
+
+            <div className="border-round-2xl overflow-hidden mb-4">
+              <img 
+                src="https://placehold.co/1200x400" 
+                alt="Overview banner" 
+                className="w-full"
+              />
+            </div>
+
+            {/* Coach Profile Card */}
+            <div className="flex align-items-center gap-3 surface-100 border-round-2xl p-3 inline-flex">
+              <Avatar 
+                image="https://placehold.co/80x80" 
+                size="xlarge" 
+                shape="square"
+              />
+              <div>
+                <h4 className="text-xl font-bold m-0 mb-2">Coach Natalia</h4>
+                <Button label="Get in touch" outlined />
               </div>
             </div>
-          </div>
-
-          {/* Right thumbs */}
-          <aside className="grid gap-4">
-            <div className="rounded-xl border border-gray-300 p-2 bg-white">
-              <Img w={520} h={320} alt="Thumbnail 1" className="w-full h-auto rounded-lg" />
-            </div>
-            <div className="rounded-xl border border-gray-300 p-2 bg-white">
-              <Img w={520} h={320} alt="Thumbnail 2" className="w-full h-auto rounded-lg" />
-            </div>
-          </aside>
-        </section>
-
-        {/* CTA line */}
-        <section className="mt-5">
-          <p className="text-center text-[14px] bg-yellow-50 border border-dashed border-yellow-300 rounded-xl px-4 py-3">
-            Wanna create something great? <strong>Feel free to contact me</strong>
-          </p>
-        </section>
-
-        {/* Overview */}
-        <section className="mt-4 rounded-2xl bg-gray-50 border border-gray-300 p-6">
-          <h2 className="text-[20px] font-bold mb-2">Overview</h2>
-          <p className="text-[14px]">
-            Excited to share this clean and modern wireframe for a fitness coaching website! This design focuses on user
-            engagement and a clear information hierarchy, guiding potential clients through the coach’s offerings seamlessly.
-            The layout emphasizes the coach’s expertise, showcases services, and encourages action with strategically placed CTAs.
-          </p>
-
-          <div className="mt-4 rounded-xl overflow-hidden bg-white border border-gray-300">
-            <Img w={1040} h={360} alt="Where do we sweat banner" className="w-full h-auto" />
-          </div>
-
-          {/* Coach card */}
-          <div className="mt-3 inline-flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-300 bg-white">
-            <Img w={72} h={72} alt="Coach avatar" className="h-12 w-12 rounded-full" />
-            <div className="flex items-center gap-3">
-              <div className="font-bold">Coach Natalia</div>
-              <button className="px-3 py-2 rounded-lg border border-black bg-transparent">
-                Get in touch
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full bg-paper border-t border-theme">
-        <div className="mx-auto w-full max-w-[900px] px-4 py-6 grid items-center gap-4 md:grid-cols-[1fr,auto,auto]">
-          <div className="font-extrabold tracking-[.3px] inline-flex items-baseline gap-1.5">
-            <span className="text-black">health</span>
-            <span className="text-green-600">sync</span>
-          </div>
-
-          <ul className="flex flex-wrap gap-4 m-0 p-0 list-none text-[14px]">
-            <li><a className="no-underline text-inherit" href="#inspiration">Inspiration</a></li>
-            <li><a className="no-underline text-inherit" href="#support">Support</a></li>
-            <li><a className="no-underline text-inherit" href="#about">About</a></li>
-            <li><a className="no-underline text-inherit" href="#blog">Blog</a></li>
-            <li><a className="no-underline text-inherit" href="#pit">Pit</a></li>
-          </ul>
-
-          <div className="flex gap-3 text-[18px]">
-            <a aria-label="Twitter/X" href="#tw">𝕏</a>
-            <a aria-label="Instagram" href="#ig">⌾</a>
-            <a aria-label="Facebook" href="#fb">f</a>
-            <a aria-label="Pinterest" href="#pi">𝒑</a>
           </div>
         </div>
+      </section>
 
-        <div className="mx-auto w-full max-w-[900px] px-4 pb-6 flex flex-wrap gap-4 text-[12px] text-gray-500">
-          <span>© healthsync 2025</span>
-          <a className="text-inherit" href="#terms">Terms</a>
-          <a className="text-inherit" href="#cookies">Cookies</a>
-          <a className="text-inherit" href="#privacy">Privacy</a>
+      {/* Footer */}
+      <footer className="surface-card border-top-1 surface-border py-6 mt-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid align-items-center">
+            <div className="col-12 md:col-4">
+              <h2 className="text-3xl font-bold m-0">
+                <span className="text-900">health</span>
+                <span className="text-primary">sync</span>
+              </h2>
+            </div>
+            
+            <div className="col-12 md:col-4">
+              <div className="flex flex-wrap gap-4 justify-content-center">
+                <a href="#inspiration" className="text-600 no-underline">Inspiration</a>
+                <a href="#about" className="text-600 no-underline">About</a>
+                <a href="#support" className="text-600 no-underline">Support</a>
+                <a href="#blog" className="text-600 no-underline">Blog</a>
+                <a href="#pts" className="text-600 no-underline">PTs</a>
+              </div>
+            </div>
+
+            <div className="col-12 md:col-4">
+              <div className="flex gap-3 justify-content-end">
+                <Button icon="pi pi-twitter" rounded text />
+                <Button icon="pi pi-facebook" rounded text />
+                <Button icon="pi pi-instagram" rounded text />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-top-1 surface-border pt-4 mt-4">
+            <div className="flex flex-wrap gap-4 justify-content-between text-sm text-600">
+              <span>© healthsync 2025</span>
+              <div className="flex gap-4">
+                <a href="#terms" className="text-600 no-underline">Term&Conditions</a>
+                <a href="#cookies" className="text-600 no-underline">Cookies</a>
+                <a href="#resources" className="text-600 no-underline">Resources</a>
+                <a href="#tags" className="text-600 no-underline">Tags</a>
+                <a href="#freelancers" className="text-600 no-underline">Freelancers</a>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

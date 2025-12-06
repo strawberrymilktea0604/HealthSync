@@ -5,6 +5,7 @@ import 'sign_up_screen.dart';
 import 'account_recovery_screen.dart';
 import 'home_screen.dart';
 import 'create_password_screen.dart';
+import 'complete_profile_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -72,172 +73,139 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
     return Scaffold(
       backgroundColor: const Color(0xFFD9D7B6),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Header section with Animation
-              FadeTransition(
-                opacity: _headerAnimation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, -0.3),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: _controller,
-                      curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.06,
-                      vertical: screenHeight * 0.03,
-                    ),
-                    child: Column(
-                      children: [
-                        // Welcome back text
-                        const Text(
-                          'Welcome back!',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        
-                        SizedBox(height: screenHeight * 0.015),
-                        
-                        // Logo healthsync
-                        Image.asset(
-                          'assets/images/logo.png',
-                          width: screenWidth * 0.5,
-                          height: screenHeight * 0.06,
-                          fit: BoxFit.contain,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              
-              SizedBox(height: screenHeight * 0.02),
-              
-              // Form container với bo góc - FORM GIỮ NGUYÊN, CHỈ ANIMATE NỘI DUNG BÊN TRONG
-              Container(
-                width: double.infinity,
-                constraints: BoxConstraints(
-                  minHeight: screenHeight * 0.7, // Chiếm ít nhất 70% chiều cao
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.08,
-                  vertical: screenHeight * 0.04,
-                ),
+        child: Stack(
+          children: [
+            // Curved background shape
+            Positioned(
+              top: -50,
+              left: -50,
+              right: -50,
+              child: Container(
+                height: screenHeight * 0.35,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFDFBD4),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
-                  ),
+                  borderRadius: BorderRadius.circular(67),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                      offset: const Offset(0, -10), // Shadow hướng lên trên
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, -16),
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Email field with Animation
-                    FadeTransition(
-                      opacity: _formAnimation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.2),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _controller,
-                            curve: const Interval(0.2, 0.5, curve: Curves.easeOut),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Your email address',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
+              ),
+            ),
+            
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: screenHeight * 0.12),
+                  
+                  // healthsync logo text
+                  FadeTransition(
+                    opacity: _headerAnimation,
+                    child: const Text(
+                      'healthsync',
+                      style: TextStyle(
+                        fontFamily: 'Eras Bold ITC',
+                        fontSize: 30,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  
+                  SizedBox(height: screenHeight * 0.02),
+                  
+                  // Welcome back text
+                  FadeTransition(
+                    opacity: _headerAnimation,
+                    child: const Text(
+                      'Welcome back!',
+                      style: TextStyle(
+                        fontFamily: 'Estedad-VF',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                        height: 1.758,
+                      ),
+                    ),
+                  ),
+                  
+                  SizedBox(height: screenHeight * 0.05),
+                  
+                  // Form fields
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Email field with Animation
+                        FadeTransition(
+                          opacity: _formAnimation,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD9D7B6),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 3,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            TextField(
+                            child: TextField(
                               controller: _emailController,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
+                              decoration: const InputDecoration(
+                                hintText: 'Your email address',
+                                hintStyle: TextStyle(
+                                  fontFamily: 'Estedad-VF',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                  height: 1.758,
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 9,
                                 ),
                               ),
                               keyboardType: TextInputType.emailAddress,
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Password field with Animation
-                    FadeTransition(
-                      opacity: _formAnimation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.2),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _controller,
-                            curve: const Interval(0.25, 0.55, curve: Curves.easeOut),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Enter a password (min. 8 characters)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
+                    
+                        const SizedBox(height: 20),
+                        
+                        // Password field with Animation
+                        FadeTransition(
+                          opacity: _formAnimation,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD9D7B6),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 3,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            TextField(
+                            child: TextField(
                               controller: _passwordController,
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
+                                hintText: 'Enter a password (min. 8 charecters)',
+                                hintStyle: const TextStyle(
+                                  fontFamily: 'Estedad-VF',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                  height: 1.758,
                                 ),
+                                border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
+                                  horizontal: 8,
+                                  vertical: 7,
                                 ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -245,6 +213,7 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                         ? Icons.visibility_off
                                         : Icons.visibility,
                                     color: Colors.black54,
+                                    size: 22.18,
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -254,59 +223,48 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
                     
-                    const SizedBox(height: 12),
-                    
-                    // Forgot password with Animation
-                    FadeTransition(
-                      opacity: _formAnimation,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            // Navigate to account recovery screen
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AccountRecoveryScreen(),
+                        const SizedBox(height: 16),
+                        
+                        // Forgot password with Animation
+                        FadeTransition(
+                          opacity: _formAnimation,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AccountRecoveryScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Forgot password?',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
                               ),
-                            );
-                          },
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 12,
-                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
-                      ),
-                    ),
                     
-                    const SizedBox(height: 20),
-                    
-                    // Login button with Animation
-                    FadeTransition(
-                      opacity: _buttonAnimation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.3),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _controller,
-                            curve: const Interval(0.5, 0.8, curve: Curves.easeOut),
-                          ),
-                        ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
+                        const SizedBox(height: 20),
+                        
+                        // Login button with Animation
+                        FadeTransition(
+                          opacity: _buttonAnimation,
+                          child: Center(
+                            child: SizedBox(
+                              width: 120,
+                              height: 41,
+                              child: ElevatedButton(
                             onPressed: () async {
                               final email = _emailController.text.trim();
                               final password = _passwordController.text;
@@ -327,12 +285,22 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 await authProvider.login(email, password);
                                 
                                 if (context.mounted) {
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
-                                    ),
-                                    (route) => false,
-                                  );
+                                  final user = authProvider.user!;
+                                  if (user.isProfileComplete || user.role == 'Admin') {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) => const CompleteProfileScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
                                 }
                               } catch (e) {
                                 if (context.mounted) {
@@ -345,93 +313,81 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                 }
                               }
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.black,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                                side: const BorderSide(color: Colors.black, width: 2),
-                              ),
-                            ),
-                            child: Consumer<AuthProvider>(
-                              builder: (context, auth, child) {
-                                if (auth.isLoading) {
-                                  return const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                                    ),
-                                  );
-                                }
-                                return const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFDFBD4),
+                                  foregroundColor: Colors.black,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Or continue with - with Animation
-                    FadeTransition(
-                      opacity: _buttonAnimation,
-                      child: const Center(
-                        child: Text(
-                          'Or continue with',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Google sign in button with Animation
-                    FadeTransition(
-                      opacity: _buttonAnimation,
-                      child: ScaleTransition(
-                        scale: Tween<double>(
-                          begin: 0.8,
-                          end: 1.0,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _controller,
-                            curve: const Interval(0.6, 0.9, curve: Curves.easeOutBack),
-                          ),
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                                  padding: const EdgeInsets.all(12),
                                 ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: Image.asset(
-                                'assets/images/google.png',
-                                width: 24,
-                                height: 24,
+                                child: Consumer<AuthProvider>(
+                                  builder: (context, auth, child) {
+                                    if (auth.isLoading) {
+                                      return const SizedBox(
+                                        height: 16,
+                                        width: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                        ),
+                                      );
+                                    }
+                                    return const Text(
+                                      'Login',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
+                            ),
+                          ),
+                        ),
+                    
+                        const SizedBox(height: 140),
+                        
+                        // Or continue with - with Animation
+                        FadeTransition(
+                          opacity: _buttonAnimation,
+                          child: const Center(
+                            child: Text(
+                              'Or continue with',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Google sign in button with Animation
+                        FadeTransition(
+                          opacity: _buttonAnimation,
+                          child: Center(
+                            child: Container(
+                              width: 67,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: IconButton(
+                                icon: Image.asset(
+                                  'assets/images/google.png',
+                                  width: 30,
+                                  height: 30,
+                                ),
                               onPressed: () async {
                                 final authProvider = Provider.of<AuthProvider>(context, listen: false);
                                 
@@ -515,70 +471,74 @@ class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderSt
                                     }
                                   }
                                 }
-                              },
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Register link with Animation
-                    FadeTransition(
-                      opacity: _buttonAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Don't have an account?  ",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to sign up screen
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignUpScreen(),
-                                ),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(0, 0),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black, width: 1.5),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: const Text(
-                                'Register',
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Register link with Animation
+                        FadeTransition(
+                          opacity: _buttonAnimation,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Don't have an account?",
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontFamily: 'Estedad-VF',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
                                   color: Colors.black,
-                                  fontWeight: FontWeight.w600,
+                                  height: 1.758,
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 105,
+                                height: 36,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SignUpScreen(),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFDFBD4),
+                                    foregroundColor: Colors.black,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50),
+                                      side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                  ),
+                                  child: const Text(
+                                    'Register',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

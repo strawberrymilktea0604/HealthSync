@@ -18,6 +18,7 @@ export default function GoogleCallback() {
       const role = searchParams.get("role");
       const expiresAt = searchParams.get("expiresAt");
       const requiresPassword = searchParams.get("requiresPassword");
+      const isProfileComplete = searchParams.get("isProfileComplete");
 
       if (!token || !userId || !email || !fullName || !role || !expiresAt) {
         toast({
@@ -38,6 +39,7 @@ export default function GoogleCallback() {
           role,
           token,
           expiresAt: new Date(expiresAt),
+          isProfileComplete: isProfileComplete === "true",
         };
 
         // Update auth context with user data
@@ -64,7 +66,7 @@ export default function GoogleCallback() {
           return;
         }
 
-        // Successfully logged in via Google - navigate based on role
+        // Successfully logged in via Google - navigate based on role and profile completion
         toast({
           title: "Đăng nhập thành công!",
           description: `Chào mừng ${fullName}`,
@@ -72,10 +74,12 @@ export default function GoogleCallback() {
         
         if (role === "Admin") {
           navigate("/admin/dashboard");
+        } else if (!userData.isProfileComplete) {
+          navigate("/complete-profile");
         } else {
           navigate("/dashboard");
         }
-      } catch (error) {
+      } catch {
         toast({
           title: "Đăng nhập Google thất bại",
           description: "Không thể xử lý đăng nhập",

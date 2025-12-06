@@ -21,6 +21,11 @@ public interface IApplicationDbContext
     IQueryable<NutritionLog> NutritionLogs { get; }
     IQueryable<FoodEntry> FoodEntries { get; }
     IQueryable<FoodItem> FoodItems { get; }
+    IQueryable<Role> Roles { get; }
+    IQueryable<Permission> Permissions { get; }
+    IQueryable<RolePermission> RolePermissions { get; }
+    IQueryable<UserRole> UserRoles { get; }
+    IQueryable<ChatMessage> ChatMessages { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     void Add<T>(T entity) where T : class;
     void Update<T>(T entity) where T : class;

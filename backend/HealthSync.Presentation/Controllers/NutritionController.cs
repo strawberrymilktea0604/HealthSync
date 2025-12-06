@@ -31,6 +31,25 @@ public class NutritionController : ControllerBase
         return Ok(foodItems);
     }
 
+    [HttpGet("nutrition-log")]
+    public async Task<IActionResult> GetNutritionLogByDate([FromQuery] DateTime date)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetNutritionLogByDateQuery
+        {
+            UserId = userId,
+            Date = date
+        };
+
+        var nutritionLog = await _mediator.Send(query);
+        return Ok(nutritionLog);
+    }
+
     [HttpGet("nutrition-logs")]
     public async Task<IActionResult> GetNutritionLogs(
         [FromQuery] DateTime? startDate,
@@ -52,6 +71,52 @@ public class NutritionController : ControllerBase
 
         var nutritionLogs = await _mediator.Send(query);
         return Ok(nutritionLogs);
+    }
+
+    [HttpPost("food-entry")]
+    public async Task<IActionResult> AddFoodEntry([FromBody] AddFoodEntryDto dto)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new AddFoodEntryCommand
+        {
+            UserId = userId,
+            LogDate = DateTime.UtcNow,
+            FoodItemId = dto.FoodItemId,
+            Quantity = dto.Quantity,
+            MealType = dto.MealType
+        };
+
+        var foodEntryId = await _mediator.Send(command);
+        return Ok(new { FoodEntryId = foodEntryId });
+    }
+
+    [HttpDelete("food-entry/{id}")]
+    public async Task<IActionResult> DeleteFoodEntry(int id)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new DeleteFoodEntryCommand
+        {
+            FoodEntryId = id,
+            UserId = userId
+        };
+
+        var result = await _mediator.Send(command);
+        if (!result)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
     }
 
     [HttpPost("nutrition-logs")]

@@ -3,11 +3,36 @@ using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
 using HealthSync.Infrastructure;
+using HealthSync.Infrastructure.Persistence;
 using HealthSync.Presentation.Middleware;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load .env file - check multiple locations
+var rootEnvPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", ".env");
+var projectEnvPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+
+if (File.Exists(rootEnvPath))
+{
+    DotNetEnv.Env.Load(rootEnvPath);
+    Console.WriteLine($"✅ Loaded .env from: {rootEnvPath}");
+}
+else if (File.Exists(projectEnvPath))
+{
+    DotNetEnv.Env.Load(projectEnvPath);
+    Console.WriteLine($"✅ Loaded .env from: {projectEnvPath}");
+}
+else
+{
+    Console.WriteLine("⚠️ No .env file found, using appsettings or Docker environment variables");
+}
+
+// Add environment variables to configuration
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
@@ -118,6 +143,27 @@ app.MapGet("/health", () => "HealthSync API is running!")
     .WithOpenApi();
 
 app.MapControllers();
+
+// Migration tự động khi khởi chạy Docker
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<HealthSyncDbContext>();
+        // Lệnh này sẽ tự động check, nếu chưa có DB thì tạo, chưa có bảng thì thêm
+        // Nếu có rồi thì thôi, không báo lỗi Crash app như lệnh CreateDatabase
+        context.Database.Migrate(); 
+    }
+    catch (Exception ex)
+    {
+        // Log lỗi ra nhưng KHÔNG làm crash app
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+        
+        // Mẹo: Nếu lỗi "Already exists" thì coi như thành công, cho chạy tiếp
+    }
+}
 
 app.Run();
 

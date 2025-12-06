@@ -1,5 +1,6 @@
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
+using HealthSync.Application.Extensions;
 using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
     {
         var query = _context.ApplicationUsers
             .Include(u => u.Profile)
+            .Include(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -32,7 +35,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
 
         if (!string.IsNullOrWhiteSpace(request.Role) && request.Role != "All Roles")
         {
-            query = query.Where(u => u.Role == request.Role);
+            query = query.Where(u => u.GetRoleName() == request.Role);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -46,7 +49,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
                 UserId = u.UserId,
                 Email = u.Email,
                 FullName = u.Profile != null ? u.Profile.FullName : "",
-                Role = u.Role,
+                Role = u.GetRoleName(),
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt
             })

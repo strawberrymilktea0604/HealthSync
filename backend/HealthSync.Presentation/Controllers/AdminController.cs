@@ -1,6 +1,8 @@
 using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
+using HealthSync.Domain.Constants;
+using HealthSync.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +11,7 @@ namespace HealthSync.Presentation.Controllers;
 
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "Admin")]
+[Authorize]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -22,6 +24,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("users")]
+    [RequirePermission(PermissionCodes.USER_READ)]
     public async Task<IActionResult> GetAllUsers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
@@ -49,6 +52,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("users/{userId}")]
+    [RequirePermission(PermissionCodes.USER_READ)]
     public async Task<IActionResult> GetUserById(int userId)
     {
         try
@@ -65,6 +69,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPut("users/{userId}/role")]
+    [RequirePermission(PermissionCodes.USER_UPDATE_ROLE)]
     public async Task<IActionResult> UpdateUserRole(int userId, [FromBody] UpdateUserRoleRequest request)
     {
         try
@@ -86,6 +91,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpDelete("users/{userId}")]
+    [RequirePermission(PermissionCodes.USER_DELETE)]
     public async Task<IActionResult> DeleteUser(int userId)
     {
         try

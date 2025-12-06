@@ -1,15 +1,17 @@
-import { SelectHTMLAttributes } from "react";
+import { SelectHTMLAttributes, ReactNode } from "react";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: { value: string; label: string }[];
+  options?: { value: string; label: string }[];
+  children?: ReactNode;
 }
 
 export default function Select({
   label,
   error,
   options,
+  children,
   className = "",
   ...props
 }: SelectProps) {
@@ -26,11 +28,12 @@ export default function Select({
         } ${className}`}
         {...props}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {children ||
+          options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
       </select>
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>

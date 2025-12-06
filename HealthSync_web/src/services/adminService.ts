@@ -1,7 +1,7 @@
 import api from './api';
 
 // Helper to map PascalCase to camelCase
-const mapUserData = (data: any): AdminUserListDto => ({
+const mapUserData = (data: Record<string, unknown>): AdminUserListDto => ({
   userId: data.UserId || data.userId,
   email: data.Email || data.email,
   fullName: data.FullName || data.fullName,
@@ -10,7 +10,7 @@ const mapUserData = (data: any): AdminUserListDto => ({
   createdAt: data.CreatedAt || data.createdAt,
 });
 
-const mapUserDetailData = (data: any): AdminUserDto => ({
+const mapUserDetailData = (data: Record<string, unknown>): AdminUserDto => ({
   userId: data.UserId || data.userId,
   email: data.Email || data.email,
   fullName: data.FullName || data.fullName,
@@ -70,7 +70,7 @@ export const adminService = {
       params.append('role', role);
     }
 
-    const response = await api.get<any>(`/admin/users?${params.toString()}`);
+    const response = await api.get<Record<string, unknown>>(`/admin/users?${params.toString()}`);
     const data = response.data;
     
     return {
@@ -82,17 +82,17 @@ export const adminService = {
   },
 
   getUserById: async (userId: number): Promise<AdminUserDto> => {
-    const response = await api.get<any>(`/admin/users/${userId}`);
+    const response = await api.get<Record<string, unknown>>(`/admin/users/${userId}`);
     return mapUserDetailData(response.data);
   },
 
   updateUserRole: async (userId: number, role: string): Promise<AdminUserDto> => {
-    const response = await api.put<any>(`/admin/users/${userId}/role`, { role });
+    const response = await api.put<Record<string, unknown>>(`/admin/users/${userId}/role`, { role });
     return mapUserDetailData(response.data);
   },
 
   deleteUser: async (userId: number): Promise<{ success: boolean; message: string }> => {
-    const response = await api.delete<any>(`/admin/users/${userId}`);
+    const response = await api.delete<Record<string, unknown>>(`/admin/users/${userId}`);
     const data = response.data;
     return {
       success: data.Success !== undefined ? data.Success : data.success,

@@ -152,6 +152,52 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Update user profile
+  Future<void> updateProfile({
+    required String fullName,
+    required DateTime dob,
+    required String gender,
+    required double heightCm,
+    required double weightKg,
+    required String activityLevel,
+  }) async {
+    if (_user == null) throw Exception('User not authenticated');
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.updateProfile(
+        fullName: fullName,
+        dob: dob,
+        gender: gender,
+        heightCm: heightCm,
+        weightKg: weightKg,
+        activityLevel: activityLevel,
+      );
+
+      // Update user data
+      _user = User(
+        userId: _user!.userId,
+        email: _user!.email,
+        fullName: fullName,
+        role: _user!.role,
+        token: _user!.token,
+        expiresAt: _user!.expiresAt,
+        requiresPassword: _user!.requiresPassword,
+        isProfileComplete: true,
+      );
+      await _saveUser(_user!);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -198,5 +244,23 @@ class AuthProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  // Update user avatar URL
+  void updateUserAvatar(String avatarUrl) {
+    if (_user != null) {
+      _user = User(
+        userId: _user!.userId,
+        email: _user!.email,
+        fullName: _user!.fullName,
+        role: _user!.role,
+        token: _user!.token,
+        expiresAt: _user!.expiresAt,
+        requiresPassword: _user!.requiresPassword,
+        isProfileComplete: _user!.isProfileComplete,
+        avatarUrl: avatarUrl,
+      );
+      _saveUser(_user!);
+    }
   }
 }

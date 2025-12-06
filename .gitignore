@@ -9,6 +9,37 @@ obj/
 *.log
 packages/
 TestResults/
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc
+nupkg/
+
+# User-specific files
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options directory
+.vs/
+.vscode/
 
 # Flutter
 .dart_tool/
@@ -24,7 +55,7 @@ android/local.properties
 flutter/ephemeral/
 flutter/generated_plugins/
 
-# Node.js
+# Node.js & React
 node_modules/
 dist/
 .env
@@ -35,16 +66,64 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
 # IDE
 .vscode/settings.json
 .idea/
+*.swp
+*.swo
+*~
 
 # OS
 Thumbs.db
 .DS_Store
+*.log
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Sensitive files - IMPORTANT!
+.env
+*.env
+!.env.example
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Production.json
+secrets.json
+*.pfx
+*.key
+*.pem
+
+# User Secrets
+**/secrets/
+**/appsettings.Development.json
+
+# MinIO / Object Storage
+minio-data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+*.cover
+.coverage
+.pytest_cache/
+
+# Backup files
+*.bak
+*.backup
+*.old

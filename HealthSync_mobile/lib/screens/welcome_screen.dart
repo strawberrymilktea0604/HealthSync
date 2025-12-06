@@ -120,7 +120,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 40,
                               spreadRadius: 5,
                               offset: const Offset(0, 20),
@@ -200,102 +200,88 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                 ),
                 
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 
                 // Nút Sign in + Animation
                 FadeTransition(
                   opacity: _buttonAnimation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.5),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: _controller,
-                        curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-                      ),
-                    ),
+                  child: Center(
                     child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
+                      width: 174,
+                      height: 41,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Navigate to sign in screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignInScreen(),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignInScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF605F56),
+                          foregroundColor: const Color(0xFFD9D7B6),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
+                          ),
+                          padding: const EdgeInsets.all(12),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                        side: const BorderSide(color: Colors.black, width: 2),
-                      ),
-                    ),
-                    child: const Text(
-                      'Sign in',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-                
-            const SizedBox(height: 16),
-                
-            // Nút Sign up + Animation
-            FadeTransition(
-              opacity: _buttonAnimation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.5),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _controller,
-                    curve: const Interval(0.7, 1.0, curve: Curves.easeOut),
-                  ),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Navigate to sign up screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignUpScreen(),
+                        child: const Text(
+                          'Sign in',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      foregroundColor: const Color(0xFFD9D7B6),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: const Text(
-                      'Sign up',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
+                
+                const SizedBox(height: 16),
+                
+                // Nút Sign up + Animation
+                FadeTransition(
+                  opacity: _buttonAnimation,
+                  child: Center(
+                    child: SizedBox(
+                      width: 174,
+                      height: 41,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD9D7B6),
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
+                          ),
+                          padding: const EdgeInsets.all(12),
+                        ),
+                        child: const Text(
+                          'Sign up',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 
             const SizedBox(height: 40),
           ],

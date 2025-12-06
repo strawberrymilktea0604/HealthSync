@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "reU4nPo2bBSOkI65JjCbfyRrWByO/YhkL6dTe+opPLs=",
-  "Source": "HealthSync.Presentation",
-  "BasePath": "_content/HealthSync.Presentation",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"KDwu46PJLsa6Ize+KYOsEbWsOEkRHnQANRKT+OVE6Qg=","Source":"HealthSync.Presentation","BasePath":"_content/HealthSync.Presentation","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

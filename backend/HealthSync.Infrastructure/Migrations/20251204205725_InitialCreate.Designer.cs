@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthSync.Infrastructure.Migrations
 {
     [DbContext(typeof(HealthSyncDbContext))]
-    [Migration("20251116100404_InitialCreate")]
+    [Migration("20251204205725_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -44,15 +44,13 @@ namespace HealthSync.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("UserId");
 
@@ -557,6 +555,247 @@ namespace HealthSync.Infrastructure.Migrations
                     b.ToTable("NutritionLogs");
                 });
 
+            modelBuilder.Entity("HealthSync.Domain.Entities.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PermissionCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionCode")
+                        .IsUnique();
+
+                    b.ToTable("Permissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 101,
+                            Category = "User",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(508),
+                            Description = "Xem danh sách người dùng",
+                            PermissionCode = "USER_READ"
+                        },
+                        new
+                        {
+                            Id = 102,
+                            Category = "User",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(511),
+                            Description = "Khóa tài khoản người dùng",
+                            PermissionCode = "USER_BAN"
+                        },
+                        new
+                        {
+                            Id = 103,
+                            Category = "User",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512),
+                            Description = "Cập nhật vai trò người dùng",
+                            PermissionCode = "USER_UPDATE_ROLE"
+                        },
+                        new
+                        {
+                            Id = 104,
+                            Category = "User",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512),
+                            Description = "Xóa người dùng",
+                            PermissionCode = "USER_DELETE"
+                        },
+                        new
+                        {
+                            Id = 201,
+                            Category = "Exercise",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(513),
+                            Description = "Xem thư viện bài tập",
+                            PermissionCode = "EXERCISE_READ"
+                        },
+                        new
+                        {
+                            Id = 202,
+                            Category = "Exercise",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(514),
+                            Description = "Thêm bài tập mới",
+                            PermissionCode = "EXERCISE_CREATE"
+                        },
+                        new
+                        {
+                            Id = 203,
+                            Category = "Exercise",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(515),
+                            Description = "Cập nhật bài tập",
+                            PermissionCode = "EXERCISE_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 204,
+                            Category = "Exercise",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(516),
+                            Description = "Xóa bài tập",
+                            PermissionCode = "EXERCISE_DELETE"
+                        },
+                        new
+                        {
+                            Id = 301,
+                            Category = "Food",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(517),
+                            Description = "Xem thư viện thực phẩm",
+                            PermissionCode = "FOOD_READ"
+                        },
+                        new
+                        {
+                            Id = 302,
+                            Category = "Food",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(518),
+                            Description = "Thêm thực phẩm mới",
+                            PermissionCode = "FOOD_CREATE"
+                        },
+                        new
+                        {
+                            Id = 303,
+                            Category = "Food",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519),
+                            Description = "Cập nhật thực phẩm",
+                            PermissionCode = "FOOD_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 304,
+                            Category = "Food",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519),
+                            Description = "Xóa thực phẩm",
+                            PermissionCode = "FOOD_DELETE"
+                        },
+                        new
+                        {
+                            Id = 401,
+                            Category = "WorkoutLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(520),
+                            Description = "Xem nhật ký tập luyện",
+                            PermissionCode = "WORKOUT_LOG_READ"
+                        },
+                        new
+                        {
+                            Id = 402,
+                            Category = "WorkoutLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(522),
+                            Description = "Tạo nhật ký tập luyện",
+                            PermissionCode = "WORKOUT_LOG_CREATE"
+                        },
+                        new
+                        {
+                            Id = 403,
+                            Category = "WorkoutLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(523),
+                            Description = "Cập nhật nhật ký tập luyện",
+                            PermissionCode = "WORKOUT_LOG_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 404,
+                            Category = "WorkoutLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(524),
+                            Description = "Xóa nhật ký tập luyện",
+                            PermissionCode = "WORKOUT_LOG_DELETE"
+                        },
+                        new
+                        {
+                            Id = 501,
+                            Category = "NutritionLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(525),
+                            Description = "Xem nhật ký dinh dưỡng",
+                            PermissionCode = "NUTRITION_LOG_READ"
+                        },
+                        new
+                        {
+                            Id = 502,
+                            Category = "NutritionLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(526),
+                            Description = "Tạo nhật ký dinh dưỡng",
+                            PermissionCode = "NUTRITION_LOG_CREATE"
+                        },
+                        new
+                        {
+                            Id = 503,
+                            Category = "NutritionLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(527),
+                            Description = "Cập nhật nhật ký dinh dưỡng",
+                            PermissionCode = "NUTRITION_LOG_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 504,
+                            Category = "NutritionLog",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528),
+                            Description = "Xóa nhật ký dinh dưỡng",
+                            PermissionCode = "NUTRITION_LOG_DELETE"
+                        },
+                        new
+                        {
+                            Id = 601,
+                            Category = "Goal",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528),
+                            Description = "Xem mục tiêu",
+                            PermissionCode = "GOAL_READ"
+                        },
+                        new
+                        {
+                            Id = 602,
+                            Category = "Goal",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(529),
+                            Description = "Tạo mục tiêu",
+                            PermissionCode = "GOAL_CREATE"
+                        },
+                        new
+                        {
+                            Id = 603,
+                            Category = "Goal",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(530),
+                            Description = "Cập nhật mục tiêu",
+                            PermissionCode = "GOAL_UPDATE"
+                        },
+                        new
+                        {
+                            Id = 604,
+                            Category = "Goal",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(531),
+                            Description = "Xóa mục tiêu",
+                            PermissionCode = "GOAL_DELETE"
+                        },
+                        new
+                        {
+                            Id = 701,
+                            Category = "Dashboard",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532),
+                            Description = "Xem dashboard cá nhân",
+                            PermissionCode = "DASHBOARD_VIEW"
+                        },
+                        new
+                        {
+                            Id = 702,
+                            Category = "Dashboard",
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532),
+                            Description = "Xem dashboard admin",
+                            PermissionCode = "DASHBOARD_ADMIN"
+                        });
+                });
+
             modelBuilder.Entity("HealthSync.Domain.Entities.ProgressRecord", b =>
                 {
                     b.Property<int>("ProgressRecordId")
@@ -593,6 +832,316 @@ namespace HealthSync.Infrastructure.Migrations
                     b.ToTable("ProgressRecords");
                 });
 
+            modelBuilder.Entity("HealthSync.Domain.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleName")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(475),
+                            Description = "Quản trị viên hệ thống, có toàn quyền",
+                            RoleName = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(486),
+                            Description = "Người dùng cuối sử dụng app",
+                            RoleName = "Customer"
+                        });
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.RolePermission", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("RoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 101,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(570)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 102,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(571)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 103,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 104,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 201,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(573)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 202,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 203,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 204,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(575)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 301,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 302,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 303,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(577)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 304,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 401,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 402,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 403,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 404,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 501,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 502,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(581)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 503,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 504,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 601,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(584)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 602,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 603,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 604,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(586)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 701,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(620)
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 702,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 201,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 301,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(622)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 401,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 402,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 403,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 404,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 501,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(625)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 502,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 503,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 504,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(627)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 601,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 602,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 603,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 604,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629)
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 701,
+                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(630)
+                        });
+                });
+
             modelBuilder.Entity("HealthSync.Domain.Entities.UserProfile", b =>
                 {
                     b.Property<int>("UserId")
@@ -627,6 +1176,24 @@ namespace HealthSync.Infrastructure.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.UserRole", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRoles");
                 });
 
             modelBuilder.Entity("HealthSync.Domain.Entities.WorkoutLog", b =>
@@ -727,6 +1294,25 @@ namespace HealthSync.Infrastructure.Migrations
                     b.Navigation("Goal");
                 });
 
+            modelBuilder.Entity("HealthSync.Domain.Entities.RolePermission", b =>
+                {
+                    b.HasOne("HealthSync.Domain.Entities.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthSync.Domain.Entities.Role", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("HealthSync.Domain.Entities.UserProfile", b =>
                 {
                     b.HasOne("HealthSync.Domain.Entities.ApplicationUser", "User")
@@ -734,6 +1320,25 @@ namespace HealthSync.Infrastructure.Migrations
                         .HasForeignKey("HealthSync.Domain.Entities.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.UserRole", b =>
+                {
+                    b.HasOne("HealthSync.Domain.Entities.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthSync.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -757,6 +1362,8 @@ namespace HealthSync.Infrastructure.Migrations
 
                     b.Navigation("Profile");
 
+                    b.Navigation("UserRoles");
+
                     b.Navigation("WorkoutLogs");
                 });
 
@@ -778,6 +1385,18 @@ namespace HealthSync.Infrastructure.Migrations
             modelBuilder.Entity("HealthSync.Domain.Entities.NutritionLog", b =>
                 {
                     b.Navigation("FoodEntries");
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.Role", b =>
+                {
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("HealthSync.Domain.Entities.WorkoutLog", b =>

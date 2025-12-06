@@ -103,7 +103,7 @@ class _PasswordResetSuccessScreenState extends State<PasswordResetSuccessScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       spreadRadius: 5,
                       offset: const Offset(0, -10),
@@ -166,7 +166,7 @@ class _PasswordResetSuccessScreenState extends State<PasswordResetSuccessScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'reset_password_screen.dart';
 import 'home_screen.dart';
+import 'complete_profile_screen.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
@@ -161,7 +162,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       spreadRadius: 5,
                       offset: const Offset(0, -10),
@@ -208,7 +209,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -260,10 +261,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                               width: 45,
                               height: 55,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   width: 1.5,
                                 ),
                               ),
@@ -368,13 +369,23 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                                       ),
                                     );
                                     
-                                    // Navigate to home screen
-                                    Navigator.of(context).pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (context) => const HomeScreen(),
-                                      ),
-                                      (route) => false,
-                                    );
+                                    // Navigate based on profile completion
+                                    final user = authProvider.user!;
+                                    if (user.isProfileComplete || user.role == 'Admin') {
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) => const HomeScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    } else {
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (context) => const CompleteProfileScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    }
                                   }
                                 } catch (e) {
                                   if (context.mounted) {

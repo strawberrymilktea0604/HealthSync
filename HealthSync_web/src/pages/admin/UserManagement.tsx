@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import Table from "@/components/admin/Table";
-import Button from "@/components/admin/Button";
-import Badge from "@/components/admin/Badge";
-import Input from "@/components/admin/Input";
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { Tag } from 'primereact/tag';
+import { Avatar } from 'primereact/avatar';
+import { Dialog } from 'primereact/dialog';
 import { adminService, AdminUserListDto } from "@/services/adminService";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
+import { Can } from "@/components/PermissionGuard";
+import { usePermissionCheck } from "@/hooks/usePermissionCheck";
+import { Permission } from "@/types/rbac";
+import 'primeflex/primeflex.css';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,10 +24,11 @@ export default function UserManagement() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newRole, setNewRole] = useState("");
-  const { toast } = useToast();
+  const { checkAndExecute } = usePermissionCheck();
 
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, selectedRole]);
 
   const fetchUsers = async () => {
@@ -27,12 +36,8 @@ export default function UserManagement() {
       setLoading(true);
       const response = await adminService.getAllUsers(1, 50, searchTerm, selectedRole);
       setUsers(response.users);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load users",
-        variant: "destructive",
-      });
+    } catch {
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -41,225 +46,348 @@ export default function UserManagement() {
   const handleUpdateRole = async () => {
     if (!selectedUser || !newRole) return;
 
-    try {
-      await adminService.updateUserRole(selectedUser, newRole);
-      toast({
-        title: "Success",
-        description: "User role updated successfully",
-      });
-      setShowRoleModal(false);
-      setSelectedUser(null);
-      setNewRole("");
-      fetchUsers();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user role",
-        variant: "destructive",
-      });
-    }
+    checkAndExecute(
+      Permission.UPDATE_USER_ROLES,
+      async () => {
+        try {
+          await adminService.updateUserRole(selectedUser, newRole);
+          toast.success("Cập nhật vai trò người dùng thành công");
+          setShowRoleModal(false);
+          setSelectedUser(null);
+          setNewRole("");
+          fetchUsers();
+        } catch {
+          toast.error("Không thể cập nhật vai trò người dùng");
+        }
+      },
+      { errorMessage: "Bạn không có quyền cập nhật vai trò người dùng" }
+    );
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
-    try {
-      await adminService.deleteUser(selectedUser);
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      });
-      setShowDeleteModal(false);
-      setSelectedUser(null);
-      fetchUsers();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      });
-    }
+    checkAndExecute(
+      Permission.DELETE_USERS,
+      async () => {
+        try {
+          await adminService.deleteUser(selectedUser);
+          toast.success("Xóa người dùng thành công");
+          setShowDeleteModal(false);
+          setSelectedUser(null);
+          fetchUsers();
+        } catch {
+          toast.error("Không thể xóa người dùng");
+        }
+      },
+      { errorMessage: "Bạn không có quyền xóa người dùng" }
+    );
   };
 
-  const columns = [
-    {
-      header: "USER ID",
-      accessor: (row: AdminUserListDto) => `USR${row.userId.toString().padStart(3, "0")}`,
-    },
-    {
-      header: "NAME",
-      accessor: (row: AdminUserListDto) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#4A6F6F] text-white flex items-center justify-center font-semibold">
-            {row.fullName
-              ? row.fullName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-              : row.email[0].toUpperCase()}
-          </div>
-          <span className="font-medium">{row.fullName || "N/A"}</span>
-        </div>
-      ),
-    },
-    {
-      header: "EMAIL",
-      accessor: "email" as keyof AdminUserListDto,
-    },
-    {
-      header: "ROLE",
-      accessor: (row: AdminUserListDto) => (
-        <Badge variant={row.role === "Admin" ? "info" : "success"}>
-          {row.role}
-        </Badge>
-      ),
-    },
-    {
-      header: "STATUS",
-      accessor: (row: AdminUserListDto) => (
-        <Badge variant={row.isActive ? "success" : "danger"}>
-          {row.isActive ? "Active" : "Inactive"}
-        </Badge>
-      ),
-    },
-    {
-      header: "JOIN DATE",
-      accessor: (row: AdminUserListDto) => new Date(row.createdAt).toLocaleDateString(),
-    },
-    {
-      header: "ACTIONS",
-      accessor: (row: AdminUserListDto) => (
-        <div className="flex gap-2">
+  const userIdBodyTemplate = (rowData: AdminUserListDto) => {
+    return `USR${rowData.userId.toString().padStart(3, "0")}`;
+  };
+
+  const nameBodyTemplate = (rowData: AdminUserListDto) => {
+    const initials = rowData.fullName
+      ? rowData.fullName.split(" ").map((n) => n[0]).join("")
+      : rowData.email[0].toUpperCase();
+    
+    return (
+      <div className="flex align-items-center gap-3">
+        <Avatar 
+          label={initials}
+          size="large" 
+          style={{ backgroundColor: '#4A6C6F', color: 'white' }}
+          shape="circle"
+        />
+        <span className="font-medium">{rowData.fullName || "N/A"}</span>
+      </div>
+    );
+  };
+
+  const roleBodyTemplate = (rowData: AdminUserListDto) => {
+    return (
+      <Tag 
+        value={rowData.role} 
+        severity={rowData.role === "Admin" ? "info" : "success"}
+        style={{ 
+          backgroundColor: rowData.role === "Admin" ? "#4A6C6F" : "#F5F5F5", 
+          color: rowData.role === "Admin" ? "white" : "#3D3B30",
+          borderRadius: '50px',
+          padding: '0.25rem 0.75rem'
+        }}
+      />
+    );
+  };
+
+  const statusBodyTemplate = (rowData: AdminUserListDto) => {
+    return (
+      <Tag 
+        value={rowData.isActive ? "Active" : "Inactive"} 
+        severity={rowData.isActive ? "success" : "danger"}
+        style={{ borderRadius: '50px', padding: '0.25rem 0.75rem' }}
+      />
+    );
+  };
+
+  const joinDateBodyTemplate = (rowData: AdminUserListDto) => {
+    return new Date(rowData.createdAt).toLocaleDateString('en-US');
+  };
+
+  const actionsBodyTemplate = (rowData: AdminUserListDto) => {
+    return (
+      <div className="flex gap-2">
+        <Can permission={Permission.UPDATE_USER_ROLES}>
           <Button
-            size="sm"
-            variant="primary"
+            label="Edit Role"
+            size="small"
+            style={{ backgroundColor: '#4A6C6F', border: 'none', borderRadius: '6px', fontSize: '0.75rem' }}
             onClick={() => {
-              setSelectedUser(row.userId);
-              setNewRole(row.role);
+              setSelectedUser(rowData.userId);
+              setNewRole(rowData.role);
               setShowRoleModal(true);
             }}
-          >
-            Edit Role
-          </Button>
+          />
+        </Can>
+        <Can permission={Permission.DELETE_USERS}>
           <Button
-            size="sm"
-            variant="danger"
+            label="Delete"
+            size="small"
+            severity="danger"
+            style={{ borderRadius: '6px', fontSize: '0.75rem' }}
             onClick={() => {
-              setSelectedUser(row.userId);
+              setSelectedUser(rowData.userId);
               setShowDeleteModal(true);
             }}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    },
+          />
+        </Can>
+      </div>
+    );
+  };
+
+  const roleOptions = [
+    { label: 'All Roles', value: 'All Roles' },
+    { label: 'Admin', value: 'Admin' },
+    { label: 'Customer', value: 'Customer' }
+  ];
+
+  const roleUpdateOptions = [
+    { label: 'Customer', value: 'Customer' },
+    { label: 'Admin', value: 'Admin' }
   ];
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              User Management
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Manage users and assign roles
-            </p>
+      <div className="p-4">
+        {/* Header with Search and Filters */}
+        <div className="surface-card border-round-xl shadow-2 p-4 mb-4">
+          <div className="flex flex-column md:flex-row gap-3 align-items-start md:align-items-center justify-content-between">
+            <div className="flex-1 w-full md:w-auto">
+              <span className="p-input-icon-left w-full">
+                <i className="pi pi-search" />
+                <InputText
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                  style={{ paddingLeft: '2.5rem', borderRadius: '8px' }}
+                />
+              </span>
+            </div>
+            <Dropdown
+              value={selectedRole}
+              options={roleOptions}
+              onChange={(e) => setSelectedRole(e.value)}
+              placeholder="All Roles"
+              className="w-full md:w-auto"
+              style={{ minWidth: '180px', borderRadius: '8px' }}
+            />
+            <Button
+              label="Add New User"
+              icon="pi pi-plus"
+              className="w-full md:w-auto"
+              style={{ backgroundColor: '#4A6C6F', border: 'none', borderRadius: '8px' }}
+            />
           </div>
-          <Button size="lg" variant="primary">
-            + Add New User
-          </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <Input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A6F6F]"
-            >
-              <option>All Roles</option>
-              <option>Admin</option>
-              <option>Customer</option>
-            </select>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading...</div>
-          ) : (
-            <Table data={users} columns={columns} />
-          )}
+        {/* Data Table */}
+        <div className="surface-card border-round-xl shadow-2">
+          <DataTable
+            value={users}
+            loading={loading}
+            paginator
+            rows={10}
+            dataKey="userId"
+            emptyMessage="No users found"
+            className="p-datatable-gridlines"
+            style={{ borderRadius: '12px', overflow: 'hidden' }}
+          >
+            <Column 
+              field="userId" 
+              header="USER ID" 
+              body={userIdBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              header="NAME" 
+              body={nameBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              field="email" 
+              header="EMAIL"
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              header="ROLE" 
+              body={roleBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              header="STATUS" 
+              body={statusBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              header="JOIN DATE" 
+              body={joinDateBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+            <Column 
+              header="ACTIONS" 
+              body={actionsBodyTemplate}
+              headerStyle={{ 
+                backgroundColor: '#F5F5F5', 
+                color: '#3D3B30', 
+                textTransform: 'uppercase', 
+                fontSize: '0.875rem', 
+                fontWeight: 600,
+                borderBottom: '1px solid #E5E5E5'
+              }}
+            />
+          </DataTable>
         </div>
       </div>
 
-      {showRoleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold mb-4">Update User Role</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Select Role</label>
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A6F6F]"
-              >
-                <option value="Customer">Customer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowRoleModal(false);
-                  setSelectedUser(null);
-                  setNewRole("");
-                }}
-              >
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleUpdateRole}>
-                Update
-              </Button>
-            </div>
+      {/* Role Update Dialog */}
+      <Dialog
+        visible={showRoleModal}
+        onHide={() => {
+          setShowRoleModal(false);
+          setSelectedUser(null);
+          setNewRole("");
+        }}
+        header="Update User Role"
+        style={{ width: '450px' }}
+        modal
+      >
+        <div className="flex flex-column gap-4">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="role" className="font-medium">Select Role</label>
+            <Dropdown
+              id="role"
+              value={newRole}
+              options={roleUpdateOptions}
+              onChange={(e) => setNewRole(e.value)}
+              placeholder="Select a role"
+              className="w-full"
+            />
+          </div>
+          <div className="flex justify-content-end gap-2">
+            <Button
+              label="Cancel"
+              outlined
+              onClick={() => {
+                setShowRoleModal(false);
+                setSelectedUser(null);
+                setNewRole("");
+              }}
+            />
+            <Button
+              label="Update"
+              onClick={handleUpdateRole}
+              style={{ backgroundColor: '#4A6C6F', border: 'none' }}
+            />
           </div>
         </div>
-      )}
+      </Dialog>
 
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold mb-4">Delete User</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this user? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setSelectedUser(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button variant="danger" onClick={handleDeleteUser}>
-                Delete
-              </Button>
-            </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        visible={showDeleteModal}
+        onHide={() => {
+          setShowDeleteModal(false);
+          setSelectedUser(null);
+        }}
+        header="Delete User"
+        style={{ width: '450px' }}
+        modal
+      >
+        <div className="flex flex-column gap-4">
+          <p className="text-600 line-height-3">
+            Are you sure you want to delete this user? This action cannot be undone.
+          </p>
+          <div className="flex justify-content-end gap-2">
+            <Button
+              label="Cancel"
+              outlined
+              onClick={() => {
+                setShowDeleteModal(false);
+                setSelectedUser(null);
+              }}
+            />
+            <Button
+              label="Delete"
+              severity="danger"
+              onClick={handleDeleteUser}
+            />
           </div>
         </div>
-      )}
+      </Dialog>
     </AdminLayout>
   );
 }

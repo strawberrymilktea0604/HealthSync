@@ -190,6 +190,7 @@ public class AuthController : ControllerBase
                 $"fullName={Uri.EscapeDataString(response.FullName)}&" +
                 $"role={Uri.EscapeDataString(response.Role)}&" +
                 $"requiresPassword={response.RequiresPassword.ToString().ToLower()}&" +
+                $"isProfileComplete={response.IsProfileComplete.ToString().ToLower()}&" +
                 $"expiresAt={Uri.EscapeDataString(response.ExpiresAt.ToString("O"))}";
 
             return Redirect(redirectUrl);

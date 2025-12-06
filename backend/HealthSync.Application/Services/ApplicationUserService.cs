@@ -43,7 +43,6 @@ public class ApplicationUserService : IApplicationUserService
         {
             Email = email,
             PasswordHash = hashedPassword,
-            Role = role,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

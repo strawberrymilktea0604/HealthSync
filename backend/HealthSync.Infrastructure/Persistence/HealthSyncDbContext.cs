@@ -21,6 +21,11 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
     public DbSet<NutritionLog> NutritionLogs { get; set; }
     public DbSet<FoodEntry> FoodEntries { get; set; }
     public DbSet<FoodItem> FoodItems { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     IQueryable<ApplicationUser> IApplicationDbContext.ApplicationUsers => ApplicationUsers;
     IQueryable<UserProfile> IApplicationDbContext.UserProfiles => UserProfiles;
@@ -32,6 +37,11 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
     IQueryable<NutritionLog> IApplicationDbContext.NutritionLogs => NutritionLogs;
     IQueryable<FoodEntry> IApplicationDbContext.FoodEntries => FoodEntries;
     IQueryable<FoodItem> IApplicationDbContext.FoodItems => FoodItems;
+    IQueryable<Role> IApplicationDbContext.Roles => Roles;
+    IQueryable<Permission> IApplicationDbContext.Permissions => Permissions;
+    IQueryable<RolePermission> IApplicationDbContext.RolePermissions => RolePermissions;
+    IQueryable<UserRole> IApplicationDbContext.UserRoles => UserRoles;
+    IQueryable<ChatMessage> IApplicationDbContext.ChatMessages => ChatMessages;
 
     void IApplicationDbContext.Add<T>(T entity)
     {
@@ -61,7 +71,6 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.UserId);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.Property(e => e.Role).IsRequired().HasMaxLength(50);
             entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
         });
 
@@ -181,6 +190,63 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.WaistCm).HasPrecision(5, 2);
         });
 
+        // --- Role ---
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RoleName).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.RoleName).IsUnique();
+            entity.Property(e => e.Description).HasMaxLength(255);
+        });
+
+        // --- Permission ---
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PermissionCode).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.PermissionCode).IsUnique();
+            entity.Property(e => e.Description).HasMaxLength(255);
+        });
+
+        // --- RolePermission (Many-to-Many between Role and Permission) ---
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(rp => new { rp.RoleId, rp.PermissionId });
+            entity.HasOne(rp => rp.Role)
+                .WithMany(r => r.RolePermissions)
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(rp => rp.Permission)
+                .WithMany(p => p.RolePermissions)
+                .HasForeignKey(rp => rp.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- UserRole (Many-to-Many between ApplicationUser and Role) ---
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(ur => new { ur.UserId, ur.RoleId });
+            entity.HasOne(ur => ur.User)
+                .WithMany(u => u.UserRoles)
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(ur => ur.Role)
+                .WithMany(r => r.UserRoles)
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // --- ChatMessage ---
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.ChatMessageId);
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.ChatMessages)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+        });
+
         // Seed data for FoodItems
         modelBuilder.Entity<FoodItem>().HasData(
             new FoodItem { FoodItemId = 1, Name = "Chicken Breast", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 165, ProteinG = 31, CarbsG = 0, FatG = 3.6m },
@@ -223,6 +289,103 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
             // Core Exercises
             new Exercise { ExerciseId = 14, Name = "Plank", MuscleGroup = "Core", Difficulty = "Beginner", Equipment = "None", Description = "Isometric core exercise" },
             new Exercise { ExerciseId = 15, Name = "Crunches", MuscleGroup = "Core", Difficulty = "Beginner", Equipment = "None", Description = "Basic abdominal exercise" }
+        );
+
+        // Seed data for Roles
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, RoleName = "Admin", Description = "Quản trị viên hệ thống, có toàn quyền" },
+            new Role { Id = 2, RoleName = "Customer", Description = "Người dùng cuối sử dụng app" }
+        );
+
+        // Seed data for Permissions
+        modelBuilder.Entity<Permission>().HasData(
+            // User Management
+            new Permission { Id = 101, PermissionCode = "USER_READ", Description = "Xem danh sách người dùng", Category = "User" },
+            new Permission { Id = 102, PermissionCode = "USER_BAN", Description = "Khóa tài khoản người dùng", Category = "User" },
+            new Permission { Id = 103, PermissionCode = "USER_UPDATE_ROLE", Description = "Cập nhật vai trò người dùng", Category = "User" },
+            new Permission { Id = 104, PermissionCode = "USER_DELETE", Description = "Xóa người dùng", Category = "User" },
+            
+            // Exercise Management
+            new Permission { Id = 201, PermissionCode = "EXERCISE_READ", Description = "Xem thư viện bài tập", Category = "Exercise" },
+            new Permission { Id = 202, PermissionCode = "EXERCISE_CREATE", Description = "Thêm bài tập mới", Category = "Exercise" },
+            new Permission { Id = 203, PermissionCode = "EXERCISE_UPDATE", Description = "Cập nhật bài tập", Category = "Exercise" },
+            new Permission { Id = 204, PermissionCode = "EXERCISE_DELETE", Description = "Xóa bài tập", Category = "Exercise" },
+            
+            // Food Management
+            new Permission { Id = 301, PermissionCode = "FOOD_READ", Description = "Xem thư viện thực phẩm", Category = "Food" },
+            new Permission { Id = 302, PermissionCode = "FOOD_CREATE", Description = "Thêm thực phẩm mới", Category = "Food" },
+            new Permission { Id = 303, PermissionCode = "FOOD_UPDATE", Description = "Cập nhật thực phẩm", Category = "Food" },
+            new Permission { Id = 304, PermissionCode = "FOOD_DELETE", Description = "Xóa thực phẩm", Category = "Food" },
+            
+            // Workout Log
+            new Permission { Id = 401, PermissionCode = "WORKOUT_LOG_READ", Description = "Xem nhật ký tập luyện", Category = "WorkoutLog" },
+            new Permission { Id = 402, PermissionCode = "WORKOUT_LOG_CREATE", Description = "Tạo nhật ký tập luyện", Category = "WorkoutLog" },
+            new Permission { Id = 403, PermissionCode = "WORKOUT_LOG_UPDATE", Description = "Cập nhật nhật ký tập luyện", Category = "WorkoutLog" },
+            new Permission { Id = 404, PermissionCode = "WORKOUT_LOG_DELETE", Description = "Xóa nhật ký tập luyện", Category = "WorkoutLog" },
+            
+            // Nutrition Log
+            new Permission { Id = 501, PermissionCode = "NUTRITION_LOG_READ", Description = "Xem nhật ký dinh dưỡng", Category = "NutritionLog" },
+            new Permission { Id = 502, PermissionCode = "NUTRITION_LOG_CREATE", Description = "Tạo nhật ký dinh dưỡng", Category = "NutritionLog" },
+            new Permission { Id = 503, PermissionCode = "NUTRITION_LOG_UPDATE", Description = "Cập nhật nhật ký dinh dưỡng", Category = "NutritionLog" },
+            new Permission { Id = 504, PermissionCode = "NUTRITION_LOG_DELETE", Description = "Xóa nhật ký dinh dưỡng", Category = "NutritionLog" },
+            
+            // Goal Management
+            new Permission { Id = 601, PermissionCode = "GOAL_READ", Description = "Xem mục tiêu", Category = "Goal" },
+            new Permission { Id = 602, PermissionCode = "GOAL_CREATE", Description = "Tạo mục tiêu", Category = "Goal" },
+            new Permission { Id = 603, PermissionCode = "GOAL_UPDATE", Description = "Cập nhật mục tiêu", Category = "Goal" },
+            new Permission { Id = 604, PermissionCode = "GOAL_DELETE", Description = "Xóa mục tiêu", Category = "Goal" },
+            
+            // Dashboard
+            new Permission { Id = 701, PermissionCode = "DASHBOARD_VIEW", Description = "Xem dashboard cá nhân", Category = "Dashboard" },
+            new Permission { Id = 702, PermissionCode = "DASHBOARD_ADMIN", Description = "Xem dashboard admin", Category = "Dashboard" }
+        );
+
+        // Seed data for RolePermissions
+        modelBuilder.Entity<RolePermission>().HasData(
+            // Admin permissions - Full access to everything
+            new RolePermission { RoleId = 1, PermissionId = 101 }, // USER_READ
+            new RolePermission { RoleId = 1, PermissionId = 102 }, // USER_BAN
+            new RolePermission { RoleId = 1, PermissionId = 103 }, // USER_UPDATE_ROLE
+            new RolePermission { RoleId = 1, PermissionId = 104 }, // USER_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 201 }, // EXERCISE_READ
+            new RolePermission { RoleId = 1, PermissionId = 202 }, // EXERCISE_CREATE
+            new RolePermission { RoleId = 1, PermissionId = 203 }, // EXERCISE_UPDATE
+            new RolePermission { RoleId = 1, PermissionId = 204 }, // EXERCISE_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 301 }, // FOOD_READ
+            new RolePermission { RoleId = 1, PermissionId = 302 }, // FOOD_CREATE
+            new RolePermission { RoleId = 1, PermissionId = 303 }, // FOOD_UPDATE
+            new RolePermission { RoleId = 1, PermissionId = 304 }, // FOOD_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 401 }, // WORKOUT_LOG_READ
+            new RolePermission { RoleId = 1, PermissionId = 402 }, // WORKOUT_LOG_CREATE
+            new RolePermission { RoleId = 1, PermissionId = 403 }, // WORKOUT_LOG_UPDATE
+            new RolePermission { RoleId = 1, PermissionId = 404 }, // WORKOUT_LOG_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 501 }, // NUTRITION_LOG_READ
+            new RolePermission { RoleId = 1, PermissionId = 502 }, // NUTRITION_LOG_CREATE
+            new RolePermission { RoleId = 1, PermissionId = 503 }, // NUTRITION_LOG_UPDATE
+            new RolePermission { RoleId = 1, PermissionId = 504 }, // NUTRITION_LOG_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 601 }, // GOAL_READ
+            new RolePermission { RoleId = 1, PermissionId = 602 }, // GOAL_CREATE
+            new RolePermission { RoleId = 1, PermissionId = 603 }, // GOAL_UPDATE
+            new RolePermission { RoleId = 1, PermissionId = 604 }, // GOAL_DELETE
+            new RolePermission { RoleId = 1, PermissionId = 701 }, // DASHBOARD_VIEW
+            new RolePermission { RoleId = 1, PermissionId = 702 }, // DASHBOARD_ADMIN
+            
+            // Customer permissions - Limited to personal data management
+            new RolePermission { RoleId = 2, PermissionId = 201 }, // EXERCISE_READ (can view exercise library)
+            new RolePermission { RoleId = 2, PermissionId = 301 }, // FOOD_READ (can view food library)
+            new RolePermission { RoleId = 2, PermissionId = 401 }, // WORKOUT_LOG_READ
+            new RolePermission { RoleId = 2, PermissionId = 402 }, // WORKOUT_LOG_CREATE
+            new RolePermission { RoleId = 2, PermissionId = 403 }, // WORKOUT_LOG_UPDATE
+            new RolePermission { RoleId = 2, PermissionId = 404 }, // WORKOUT_LOG_DELETE
+            new RolePermission { RoleId = 2, PermissionId = 501 }, // NUTRITION_LOG_READ
+            new RolePermission { RoleId = 2, PermissionId = 502 }, // NUTRITION_LOG_CREATE
+            new RolePermission { RoleId = 2, PermissionId = 503 }, // NUTRITION_LOG_UPDATE
+            new RolePermission { RoleId = 2, PermissionId = 504 }, // NUTRITION_LOG_DELETE
+            new RolePermission { RoleId = 2, PermissionId = 601 }, // GOAL_READ
+            new RolePermission { RoleId = 2, PermissionId = 602 }, // GOAL_CREATE
+            new RolePermission { RoleId = 2, PermissionId = 603 }, // GOAL_UPDATE
+            new RolePermission { RoleId = 2, PermissionId = 604 }, // GOAL_DELETE
+            new RolePermission { RoleId = 2, PermissionId = 701 }  // DASHBOARD_VIEW
         );
     }
 }

@@ -13,4 +13,15 @@ public class UserProfile
 
     // Navigation property
     public ApplicationUser User { get; set; } = null!;
+
+    // Method to check if profile is complete
+    public bool IsComplete()
+    {
+        return !string.IsNullOrWhiteSpace(FullName) &&
+               !string.IsNullOrWhiteSpace(Gender) &&
+               Gender != "Unknown" &&
+               HeightCm > 0 &&
+               WeightKg > 0 &&
+               Dob < DateTime.UtcNow.AddYears(-10); // At least 10 years old
+    }
 }

@@ -1,6 +1,8 @@
+using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,10 +15,12 @@ namespace HealthSync.Presentation.Controllers;
 public class UserProfileController : ControllerBase
 {
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IMediator _mediator;
 
-    public UserProfileController(IUserProfileRepository userProfileRepository)
+    public UserProfileController(IUserProfileRepository userProfileRepository, IMediator mediator)
     {
         _userProfileRepository = userProfileRepository;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -87,5 +91,45 @@ public class UserProfileController : ControllerBase
         await _userProfileRepository.UpdateAsync(profile);
 
         return Ok("Profile updated successfully");
+    }
+
+    [HttpPost("upload-avatar")]
+    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded");
+        }
+
+        // Validate file type
+        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+        {
+            return BadRequest("Only image files are allowed");
+        }
+
+        // Validate file size (max 5MB)
+        if (file.Length > 5 * 1024 * 1024)
+        {
+            return BadRequest("File size must be less than 5MB");
+        }
+
+        using var stream = file.OpenReadStream();
+        var command = new UploadAvatarCommand
+        {
+            UserId = userId,
+            FileStream = stream,
+            FileName = file.FileName,
+            ContentType = file.ContentType
+        };
+
+        var avatarUrl = await _mediator.Send(command);
+        return Ok(new { AvatarUrl = avatarUrl });
     }
 }

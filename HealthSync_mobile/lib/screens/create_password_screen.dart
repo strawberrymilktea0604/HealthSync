@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'home_screen.dart';
+import 'complete_profile_screen.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
   final String userId;
@@ -112,12 +113,21 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
           ),
         );
 
-        // Navigate to home screen
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
+        // Navigate based on profile completion
+        final user = authProvider.user!;
+        if (user.isProfileComplete || user.role == 'Admin') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -250,7 +260,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                             color: const Color(0xFFE8E6C8),
                             borderRadius: BorderRadius.circular(15),
                             border: Border.all(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -280,7 +290,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                           decoration: InputDecoration(
                             hintText: 'Nhập mật khẩu (tối thiểu 8 ký tự)',
                             hintStyle: TextStyle(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               fontSize: 16,
                             ),
                             filled: true,
@@ -288,21 +298,21 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 2,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 width: 2,
                               ),
                             ),
@@ -331,7 +341,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                           decoration: InputDecoration(
                             hintText: 'Xác nhận mật khẩu',
                             hintStyle: TextStyle(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               fontSize: 16,
                             ),
                             filled: true,
@@ -339,21 +349,21 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen>
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 2,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 2,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 width: 2,
                               ),
                             ),

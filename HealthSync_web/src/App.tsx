@@ -5,9 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Permission } from "@/types/rbac";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import GoogleCallback from "./pages/GoogleCallback";
+import CreatePasswordForGoogle from "./pages/CreatePasswordForGoogle";
 import VerifyEmail from "./pages/VerifyEmail";
 import RegisterSuccess from "./pages/RegisterSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -15,14 +19,16 @@ import VerifyPasswordReset from "./pages/VerifyPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
 import ResetSuccess from "./pages/ResetSuccess";
 import ChangePasswordSuccess from "./pages/ChangePasswordSuccess";
-import CreatePasswordForGoogle from "./pages/CreatePasswordForGoogle";
-import GoogleCallback from "./pages/GoogleCallback";
-import Dashboard from "./pages/Dashboard";
+import CompleteProfile from "./pages/CompleteProfile";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import ContentLibrary from "./pages/admin/ContentLibrary";
 import ProtectedRoute from "./components/ProtectedRoute";
+import GoalsPage from "./pages/GoalsPage";
+import CreateGoalPage from "./pages/CreateGoalPage";
+import AddProgressPage from "./pages/AddProgressPage";
+import GoalDetailsPage from "./pages/GoalDetailsPage";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +158,16 @@ function AppContent() {
             <GoogleCallback />
           </motion.div>
         } />
+        <Route path="/complete-profile" element={
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CompleteProfile />
+          </motion.div>
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <motion.div
@@ -165,7 +181,10 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/dashboard" element={
-          <ProtectedRoute requireAdmin={true}>
+          <ProtectedRoute 
+            requireAdmin={true}
+            requiredPermission={Permission.VIEW_ADMIN_DASHBOARD}
+          >
             <motion.div
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
@@ -177,7 +196,10 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/users" element={
-          <ProtectedRoute requireAdmin={true}>
+          <ProtectedRoute 
+            requireAdmin={true}
+            requiredPermission={Permission.VIEW_USERS}
+          >
             <motion.div
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
@@ -189,7 +211,11 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/content" element={
-          <ProtectedRoute requireAdmin={true}>
+          <ProtectedRoute 
+            requireAdmin={true}
+            requiredPermissions={[Permission.VIEW_EXERCISES, Permission.VIEW_FOODS]}
+            requireAllPermissions={false}
+          >
             <motion.div
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 1, x: 0 }}
@@ -197,6 +223,54 @@ function AppContent() {
               transition={{ duration: 0.6 }}
             >
               <ContentLibrary />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/goals" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <GoalsPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/goals/create" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <CreateGoalPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/goals/:goalId" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.4 }}
+            >
+              <GoalDetailsPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/goals/:goalId/progress" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <AddProgressPage />
             </motion.div>
           </ProtectedRoute>
         } />
