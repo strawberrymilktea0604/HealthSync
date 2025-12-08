@@ -4,10 +4,10 @@ import AnimatedLogo from "@/components/AnimatedLogo";
 import { ArrowLeft } from "lucide-react";
 
 interface AuthLayoutProps {
-  children: React.ReactNode;
-  showBackButton?: boolean;
-  backPath?: string;
-  maxWidth?: string;
+  readonly children: React.ReactNode;
+  readonly showBackButton?: boolean;
+  readonly backPath?: string;
+  readonly maxWidth?: string;
 }
 
 export default function AuthLayout({ 

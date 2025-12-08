@@ -1,7 +1,6 @@
 interface OtpInputProps {
   readonly value: string[];
   readonly onChange: (index: number, value: string) => void;
-  readonly length?: number;
 }
 
 export default function OtpInput({ value, onChange }: OtpInputProps) {
