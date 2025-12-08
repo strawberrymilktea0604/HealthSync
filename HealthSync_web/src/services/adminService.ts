@@ -95,7 +95,7 @@ export const adminService = {
     const response = await api.delete<Record<string, unknown>>(`/admin/users/${userId}`);
     const data = response.data;
     return {
-      success: data.Success !== undefined ? data.Success : data.success,
+      success: data.Success ?? data.success,
       message: data.Message || data.message || 'User deleted successfully',
     };
   },

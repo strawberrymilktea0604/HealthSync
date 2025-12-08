@@ -12,7 +12,7 @@ interface TableProps<T> {
   onRowClick?: (row: T) => void;
 }
 
-export default function Table<T>({ data, columns, onRowClick }: TableProps<T>) {
+export default function Table<T>({ data, columns, onRowClick }: Readonly<TableProps<T>>) {
   const getCellValue = (row: T, column: TableColumn<T>) => {
     if (typeof column.accessor === "function") {
       return column.accessor(row);

@@ -19,7 +19,7 @@ export default function ProtectedRoute({
   requiredPermission,
   requiredPermissions = [],
   requireAllPermissions = true,
-}: ProtectedRouteProps) {
+}: Readonly<ProtectedRouteProps>) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -79,7 +79,6 @@ export default function ProtectedRoute({
     // If user profile is not complete and not admin, redirect to complete profile
     if (!requireAdmin && !isAdmin() && !user.isProfileComplete) {
       navigate("/complete-profile");
-      return;
     }
   }, [user, requireAdmin, requiredPermission, requiredPermissions, requireAllPermissions, navigate, toast, hasPermission, hasAllPermissions, hasAnyPermission, isAdmin]);
 

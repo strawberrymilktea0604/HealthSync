@@ -10,7 +10,7 @@ export default function Input({
   error,
   className = "",
   ...props
-}: InputProps) {
+}: Readonly<InputProps>) {
   return (
     <div className="w-full">
       {label && (

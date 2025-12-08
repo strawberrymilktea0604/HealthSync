@@ -12,7 +12,7 @@ export default function Button({
   children,
   className = "",
   ...props
-}: ButtonProps) {
+}: Readonly<ButtonProps>) {
   const baseStyles = "rounded-lg font-medium transition-all duration-200";
 
   const variants = {

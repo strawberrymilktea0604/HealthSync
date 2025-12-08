@@ -4,7 +4,7 @@ interface SidebarProps {
   isCollapsed: boolean;
 }
 
-export default function Sidebar({ isCollapsed }: SidebarProps) {
+export default function Sidebar({ isCollapsed }: Readonly<SidebarProps>) {
   const navigate = useNavigate();
   const location = useLocation();
 

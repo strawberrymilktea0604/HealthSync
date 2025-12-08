@@ -15,7 +15,7 @@ export default function StatCard({
   subtitle,
   icon,
   trend,
-}: StatCardProps) {
+}: Readonly<StatCardProps>) {
   return (
     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between">

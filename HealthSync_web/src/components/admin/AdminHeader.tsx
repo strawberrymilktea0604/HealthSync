@@ -4,7 +4,7 @@ interface AdminHeaderProps {
   title?: string;
 }
 
-export default function AdminHeader({ title = "Dashboard" }: AdminHeaderProps) {
+export default function AdminHeader({ title = "Dashboard" }: Readonly<AdminHeaderProps>) {
   const navigate = useNavigate();
 
   const handleLogout = () => {

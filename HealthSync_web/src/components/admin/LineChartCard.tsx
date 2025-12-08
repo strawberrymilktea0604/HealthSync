@@ -23,7 +23,7 @@ export function LineChartCard({
   dataKey,
   xAxisKey,
   color = '#82ca9d',
-}: LineChartCardProps) {
+}: Readonly<LineChartCardProps>) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-xl font-semibold mb-4">{title}</h3>

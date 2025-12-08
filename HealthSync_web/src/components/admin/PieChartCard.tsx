@@ -23,7 +23,7 @@ export function PieChartCard({
   dataKey,
   nameKey,
   colors = DEFAULT_COLORS,
-}: PieChartCardProps) {
+}: Readonly<PieChartCardProps>) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-xl font-semibold mb-4">{title}</h3>
@@ -41,7 +41,7 @@ export function PieChartCard({
             nameKey={nameKey}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${entry[nameKey]}`} fill={colors[index % colors.length]} />
+              <Cell key={`cell-${String(entry[nameKey])}`} fill={colors[index % colors.length]} />
             ))}
           </Pie>
           <Tooltip />

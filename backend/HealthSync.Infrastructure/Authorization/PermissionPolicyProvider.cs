@@ -67,7 +67,7 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
         return permissionFields.Any(f => f.GetValue(null)?.ToString() == policyName);
     }
 
-    private AuthorizationPolicy? BuildPolicyForName(string policyName)
+    private static AuthorizationPolicy? BuildPolicyForName(string policyName)
     {
         return policyName switch
         {

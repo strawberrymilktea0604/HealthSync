@@ -88,7 +88,7 @@ export default function ContentLibrary() {
 
   const handleOpenModal = (item?: Exercise | FoodItem) => {
     if (activeTab === 0) {
-      const exercise = item as Exercise | undefined;
+      const exercise = item;
       if (exercise) {
         setEditingExercise(exercise);
         setExerciseFormData({

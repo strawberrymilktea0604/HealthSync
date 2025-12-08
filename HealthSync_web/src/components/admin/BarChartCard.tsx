@@ -23,7 +23,7 @@ export function BarChartCard({
   dataKey,
   xAxisKey,
   color = '#8884d8',
-}: BarChartCardProps) {
+}: Readonly<BarChartCardProps>) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-xl font-semibold mb-4">{title}</h3>

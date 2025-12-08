@@ -10,7 +10,7 @@ export default function Textarea({
   error,
   className = "",
   ...props
-}: TextareaProps) {
+}: Readonly<TextareaProps>) {
   return (
     <div className="w-full">
       {label && (

@@ -33,7 +33,7 @@ export default function ConfirmEmail() {
   }
 
   function handleChange(i: number, v: string) {
-    const digit = v.replace(/\D/g, "").slice(-1); // keep only last digit if user types multiple
+    const digit = v.replaceAll(/\D/g, "").slice(-1); // keep only last digit if user types multiple
     const next = [...code];
     next[i] = digit ?? "";
     setCode(next);
@@ -66,7 +66,7 @@ export default function ConfirmEmail() {
 
   function handlePaste(i: number, e: React.ClipboardEvent<HTMLInputElement>) {
     e.preventDefault();
-    const txt = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+    const txt = e.clipboardData.getData("text").replaceAll(/\D/g, "").slice(0, length);
     if (!txt) return;
     const next = [...code];
     for (let k = 0; k < length && i + k < length; k++) {

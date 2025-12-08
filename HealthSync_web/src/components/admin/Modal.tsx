@@ -8,7 +8,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonly<ModalProps>) {
   if (!isOpen) return null;
 
   const sizeClasses = {

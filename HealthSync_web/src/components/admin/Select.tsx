@@ -14,7 +14,7 @@ export default function Select({
   children,
   className = "",
   ...props
-}: SelectProps) {
+}: Readonly<SelectProps>) {
   return (
     <div className="w-full">
       {label && (

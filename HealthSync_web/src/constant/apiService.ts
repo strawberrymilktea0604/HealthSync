@@ -40,7 +40,7 @@ async function requestJson<T>(url: string, opts: RequestInit = {}): Promise<T> {
   const init: RequestInit = {
     headers: {
       "Content-Type": "application/json", 
-      ...(opts.headers || {}),
+      ...(opts.headers),
     },
     ...opts,
   };
