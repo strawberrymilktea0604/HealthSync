@@ -176,10 +176,12 @@ const CarouselItem = React.forwardRef<
   const { orientation } = useCarousel();
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
     <div
       ref={ref}
       role="group" // NOSONAR - Required for carousel ARIA pattern
       aria-label="Slide"
+      aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
         orientation === "horizontal" ? "pl-4" : "pt-4",
