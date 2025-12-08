@@ -10,7 +10,6 @@ namespace HealthSync.Infrastructure.Services;
 
 public class JwtTokenService : IJwtTokenService
 {
-    private readonly IConfiguration _configuration;
     private readonly string _issuer;
     private readonly string _audience;
     private readonly string _secretKey;
@@ -18,7 +17,6 @@ public class JwtTokenService : IJwtTokenService
 
     public JwtTokenService(IConfiguration configuration)
     {
-        _configuration = configuration;
         _issuer = configuration["Jwt:Issuer"] ?? "HealthSync";
         _audience = configuration["Jwt:Audience"] ?? "HealthSyncUsers";
         

@@ -12,18 +12,15 @@ namespace HealthSync.Application.Handlers;
 public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebCommand, AuthResponse>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IAuthService _authService;
     private readonly IGoogleAuthService _googleAuthService;
     private readonly IJwtTokenService _jwtTokenService;
 
     public GoogleLoginWebCommandHandler(
         IApplicationDbContext context,
-        IAuthService authService,
         IGoogleAuthService googleAuthService,
         IJwtTokenService jwtTokenService)
     {
         _context = context;
-        _authService = authService;
         _googleAuthService = googleAuthService;
         _jwtTokenService = jwtTokenService;
     }
