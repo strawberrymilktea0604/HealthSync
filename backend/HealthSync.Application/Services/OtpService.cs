@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 namespace HealthSync.Application.Services;
 
@@ -15,7 +16,7 @@ public class OtpService : IOtpService
 
     public string GenerateOtp(string email)
     {
-        var otp = new Random().Next(100000, 999999).ToString();
+        var otp = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         var expiry = DateTime.UtcNow.AddMinutes(10); // 10 minutes
         _otpStore[email.ToLower()] = (otp, expiry);
         return otp;
