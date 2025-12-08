@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
-import logoheader from "@/assets/logoheader.png";
 import { motion } from "framer-motion";
 
 export default function Register() {
@@ -139,7 +138,23 @@ export default function Register() {
     <div className="min-h-screen bg-[#D9D7B6] flex flex-col">
       <div className="py-4 md:py-6 px-4 md:px-8">
         <Link to="/">
-          <img src={logoheader} alt="HealthSync" className="w-32 h-auto" />
+          <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
+            Welcome to 
+            <motion.img 
+              src={logo} 
+              alt="healthsync" 
+              style={{ height: '24px', marginTop: '4px' }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </h1>
         </Link>
       </div>
       
@@ -222,9 +237,9 @@ export default function Register() {
                   <Button
                     type="submit"
                     disabled={isSendingCode}
-                    className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-10 py-2 text-xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSendingCode ? "Đang gửi..." : "Continue"}
+                    {isSendingCode ? "Đang gửi..." : "Sign up"}
                   </Button>
                 </div>
               </form>
@@ -252,14 +267,14 @@ export default function Register() {
                   <Button
                     type="button"
                     onClick={() => setStep("email")}
-                    className="bg-white text-black hover:bg-gray-100 rounded-full border border-black px-8 md:px-12 py-6 md:py-8 text-xl md:text-2xl lg:text-3xl h-auto font-normal"
+                    className="bg-white text-black hover:bg-gray-100 rounded-full border border-black px-8 py-2 text-lg h-auto font-normal"
                   >
                     Back
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-10 py-2 text-xl h-auto font-normal disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? "Đang xử lý..." : "Sign up"}
                   </Button>
@@ -278,14 +293,14 @@ export default function Register() {
               </form>
             )}
 
-            <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
-              <span className="text-xl md:text-2xl lg:text-3xl">Do you have an account?</span>
+            <div className="text-center flex flex-row items-center justify-center gap-4">
+              <span className="text-lg">Do you have an account?</span>
               <Link to="/login">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal"
+                  className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-10 py-2 text-xl h-auto font-normal"
                 >
                   Sign in
                 </motion.button>

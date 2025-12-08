@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
-import logoheader from "@/assets/logoheader.png";
+import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
 
 export default function CompleteProfile() {
@@ -141,7 +141,23 @@ export default function CompleteProfile() {
         >
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
-              <img src={logoheader} alt="HealthSync" className="h-12 mx-auto mb-4" />
+              <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2 justify-center mb-4">
+                Welcome to 
+                <motion.img 
+                  src={logo} 
+                  alt="healthsync" 
+                  style={{ height: '24px', marginTop: '4px' }}
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              </h1>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Hoàn thiện hồ sơ
               </h1>

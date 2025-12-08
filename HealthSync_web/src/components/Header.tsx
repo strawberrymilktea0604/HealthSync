@@ -1,7 +1,7 @@
 import { Search, Menu, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import logoheader from "@/assets/logoheader.png";
+import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -14,13 +14,23 @@ export default function Header() {
       <div className="max-w-[1434px] mx-auto">
         <div className="flex items-center justify-between gap-4 mb-4 lg:mb-0">
           <Link to="/">
-            <motion.img
-              src={logoheader}
-              alt="HealthSync"
-              className="w-32 h-auto"
-              animate={{ rotate: [0, -3, 3, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            />
+            <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
+              Welcome to 
+              <motion.img 
+                src={logo} 
+                alt="healthsync" 
+                style={{ height: '24px', marginTop: '4px' }}
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </h1>
           </Link>
 
           <div className="hidden lg:flex items-center gap-4 bg-[#ECE6F0] rounded-full px-4 py-3 flex-1 max-w-[355px]">

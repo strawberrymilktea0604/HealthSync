@@ -1,199 +1,212 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
+import { motion } from "framer-motion";
+import logo from "../assets/logo.png";
 
 export default function HomeGuest() {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen surface-ground">
+    <div className="min-h-screen" style={{ backgroundColor: '#E3E3C6' }}>
       {/* Header */}
-      <header className="surface-card border-bottom-1 surface-border sticky top-0 z-5 px-4 py-3">
+      <header className="px-4 py-4">
         <div className="flex align-items-center justify-content-between max-w-7xl mx-auto">
           {/* Brand */}
           <div className="flex align-items-center gap-2">
-            <h1 className="text-3xl font-bold m-0">
-              <span className="text-900">health</span>
-              <span className="text-primary">sync</span>
+            <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
+              Welcome to 
+              <motion.img 
+                src={logo} 
+                alt="healthsync" 
+                style={{ height: '24px', marginTop: '4px' }}
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
             </h1>
           </div>
 
           {/* Auth Buttons */}
-          <div className="flex align-items-center gap-2 ml-auto">
+          <div className="flex align-items-center gap-3 p-3" style={{ backgroundColor: '#FFF9C4', borderRadius: '30px' }}>
             <Button 
               label="Sign up" 
               outlined 
-              className="px-4 py-2"
-              onClick={() => window.location.href = '/signup'}
+              className="text-900 border-900 px-4 py-2 border-1 hover:bg-transparent"
+              style={{ color: '#000', borderColor: '#000', backgroundColor: 'transparent', borderRadius: '12px' }}
+              onClick={() => navigate('/register')}
             />
             <Button 
               label="Login" 
-              className="px-4 py-2"
-              onClick={() => window.location.href = '/login'}
+              className="bg-900 border-900 text-white px-4 py-2"
+              style={{ backgroundColor: '#000', borderColor: '#000', borderRadius: '12px' }}
+              onClick={() => navigate('/login')}
             />
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="surface-section py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-5">
-            <p className="text-xl mb-2">Welcome to</p>
-            <h1 className="text-6xl font-bold m-0">
-              <span className="text-900">health</span>
-              <span className="text-primary">sync</span>
-            </h1>
-          </div>
-
-          <h2 className="text-4xl font-bold text-center mb-5">
-            Dynamic Fitness Coaching Website
-          </h2>
-
-          {/* Featured Card */}
-          <div className="surface-card border-round-3xl shadow-3 p-5">
-            <div className="grid">
-              <div className="col-12 lg:col-8">
-                {/* Profile Header */}
-                <div className="flex align-items-center gap-3 mb-4">
-                  <Avatar 
-                    image="https://placehold.co/80x80" 
-                    size="large" 
-                    shape="circle" 
-                  />
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold m-0 mb-2">Coach Natalia</h3>
-                    <p className="text-600 m-0">Available for work</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button icon="pi pi-heart" rounded text />
-                    <Button icon="pi pi-bookmark" rounded text />
-                  </div>
-                </div>
-
-                {/* Main Image */}
-                <div className="border-round-2xl overflow-hidden">
-                  <img 
-                    src="https://placehold.co/800x500" 
-                    alt="Fitness coaching" 
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 mt-4">
-                  <Button icon="pi pi-heart" rounded outlined />
-                  <Button icon="pi pi-comment" rounded outlined />
-                  <Button icon="pi pi-share-alt" rounded outlined />
-                  <Button icon="pi pi-ellipsis-v" rounded outlined className="ml-auto" />
-                </div>
-              </div>
-
-              <div className="col-12 lg:col-4">
-                <div className="flex flex-column gap-3">
-                  <div className="border-round-2xl overflow-hidden">
-                    <img 
-                      src="https://placehold.co/400x300" 
-                      alt="Image 1" 
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="border-round-2xl overflow-hidden">
-                    <img 
-                      src="https://placehold.co/400x300" 
-                      alt="Image 2" 
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="surface-100 border-round-3xl p-4 text-center mt-5">
-            <p className="text-lg m-0">
-              Wanna create something great? <strong>Feel free to contact me</strong>
-            </p>
-          </div>
-
-          {/* Overview Section */}
-          <div className="surface-card border-round-3xl shadow-2 p-5 mt-5">
-            <h3 className="text-3xl font-bold mb-3">Overview</h3>
-            <p className="text-600 line-height-3 mb-4">
-              Excited to share this clean and modern wireframe for a fitness coaching website! 
-              This design focuses on user engagement and a clear information hierarchy, guiding 
-              potential clients through the coach's offerings seamlessly. The layout emphasizes 
-              the coach's expertise, showcases services, and encourages action with strategically 
-              placed CTAs.
-            </p>
-
-            <div className="border-round-2xl overflow-hidden mb-4">
-              <img 
-                src="https://placehold.co/1200x400" 
-                alt="Overview banner" 
-                className="w-full"
-              />
-            </div>
-
-            {/* Coach Profile Card */}
-            <div className="flex align-items-center gap-3 surface-100 border-round-2xl p-3 inline-flex">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 pb-8">
+        
+        <div className="mb-4">
+          <p className="text-xl m-0 mb-3">Dynamic Fitness Coaching Website</p>
+          
+          {/* Coach Header Line */}
+          <div className="flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div className="flex align-items-center gap-3">
               <Avatar 
-                image="https://placehold.co/80x80" 
+                image="https://api.builder.io/api/v1/image/assets/TEMP/203282ca523b38453ad8c2b8dd91921f06024637?width=80" 
+                size="large" 
+                shape="circle" 
+              />
+              <div className="flex align-items-center gap-3">
+                <span className="font-bold text-900">Coach Natalia</span>
+                <span className="text-700">Available for work</span>
+                <Button 
+                  label="Follow" 
+                  className="p-button-rounded bg-900 text-white text-sm py-1 px-3 border-none"
+                  style={{ backgroundColor: '#333' }}
+                />
+              </div>
+            </div>
+
+            <div className="flex align-items-center gap-2">
+              <Button icon="pi pi-heart" rounded text className="text-900 border-none" style={{ width: '50px', height: '50px', backgroundColor: '#FFF9C4' }} />
+              <Button icon="pi pi-save" rounded text className="text-900 border-none" style={{ width: '50px', height: '50px', backgroundColor: '#FFF9C4' }} />
+              <Button label="Get in touch" outlined className="text-900 border-900 px-4" style={{ backgroundColor: '#FFF9C4', borderRadius: '16px', height: '50px' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Image Section */}
+        <div className="flex gap-3 mb-6">
+          <div className="flex-1">
+            <img 
+                src="https://api.builder.io/api/v1/image/assets/TEMP/e562a8c59d085e50c143f29d2bcf90c09bdd82b3?width=1682" 
+                alt="Fitness coaching hero" 
+                className="w-full border-round-2xl shadow-2"
+            />
+          </div>
+          <div className="flex flex-column gap-3 pt-4">
+            <Button icon="pi pi-comment" rounded text className="text-900" style={{ width: '50px', height: '50px', backgroundColor: '#FFF9C4' }} />
+            <Button icon="pi pi-upload" rounded text className="text-900" style={{ width: '50px', height: '50px', backgroundColor: '#FFF9C4' }} />
+            <Button icon="pi pi-ellipsis-v" rounded text className="text-900" style={{ width: '50px', height: '50px', backgroundColor: '#FFF9C4' }} />
+          </div>
+        </div>
+
+        {/* Secondary Image Section */}
+        <div className="mb-6">
+          <img 
+            src="https://api.builder.io/api/v1/image/assets/TEMP/49f9d7dfe50aa221da51fe9ae3eed0392c09d95e?width=1682" 
+            alt="Fitness coaching hero" 
+            className="w-full border-round-2xl shadow-2"
+          />
+        </div>
+
+        {/* Contact Text */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-normal m-0">
+            Wanna create something great? <span className="font-bold">Feel free to contact me</span>
+          </h2>
+        </div>
+
+        {/* Overview Section */}
+        <div className="mb-6 max-w-4xl">
+          <h3 className="text-3xl font-normal mb-3">Overview</h3>
+          <p className="text-xl line-height-3 text-800">
+            Excited to share this clean and modern wireframe for a fitness coaching website! 
+            This design focuses on user engagement and a clear information hierarchy, guiding 
+            potential clients through the coach's offerings seamlessly. The layout emphasizes 
+            the coach's expertise, showcases services, and encourages action with strategically 
+            placed CTAs.
+          </p>
+        </div>
+
+        {/* Where Do We Sweat Image */}
+        <div className="mb-8">
+           <img 
+              src="https://api.builder.io/api/v1/image/assets/TEMP/6c4ce5b8cdddf2258704790f473ac199bd21cad7?width=1690" 
+              alt="Where do we sweat" 
+              className="w-full border-round-2xl shadow-2"
+           />
+        </div>
+
+        {/* Bottom Coach Profile with Lines */}
+        <div className="flex align-items-center w-full mb-8">
+            <div className="flex-1 border-top-1 border-900" style={{ opacity: 0.5 }}></div>
+            <div className="mx-5 flex flex-column align-items-center gap-3">
+                <Avatar 
+                image="https://api.builder.io/api/v1/image/assets/TEMP/4e07f9ce70a0a210464bed673b7acb705fc502e6?width=286" 
                 size="xlarge" 
                 shape="square"
-              />
-              <div>
-                <h4 className="text-xl font-bold m-0 mb-2">Coach Natalia</h4>
-                <Button label="Get in touch" outlined />
-              </div>
+                className="border-round-xl"
+                style={{ width: '100px', height: '100px' }}
+                />
+                <div className="text-center">
+                <h4 className="text-xl font-normal m-0 mb-3">Coach Natalia</h4>
+                <Button 
+                    label="Get in touch" 
+                    className="p-button-rounded bg-900 text-white border-none px-4 font-bold"
+                    style={{ backgroundColor: '#333' }}
+                />
+                </div>
             </div>
-          </div>
+            <div className="flex-1 border-top-1 border-900" style={{ opacity: 0.5 }}></div>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="surface-card border-top-1 surface-border py-6 mt-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid align-items-center">
-            <div className="col-12 md:col-4">
-              <h2 className="text-3xl font-bold m-0">
-                <span className="text-900">health</span>
-                <span className="text-primary">sync</span>
-              </h2>
-            </div>
-            
-            <div className="col-12 md:col-4">
-              <div className="flex flex-wrap gap-4 justify-content-center">
-                <a href="#inspiration" className="text-600 no-underline">Inspiration</a>
-                <a href="#about" className="text-600 no-underline">About</a>
-                <a href="#support" className="text-600 no-underline">Support</a>
-                <a href="#blog" className="text-600 no-underline">Blog</a>
-                <a href="#pts" className="text-600 no-underline">PTs</a>
-              </div>
-            </div>
+        {/* Footer */}
+        <footer className="w-full pb-6">
+            <div className="flex flex-wrap justify-content-between">
+                {/* Logo & Copyright */}
+                <div className="flex flex-column justify-content-between gap-6 mb-4 md:mb-0" style={{ minHeight: '120px' }}>
+                    <h2 className="text-2xl font-bold m-0">healthsync</h2>
+                    <span className="text-600 text-sm">© healthsync 2025</span>
+                </div>
 
-            <div className="col-12 md:col-4">
-              <div className="flex gap-3 justify-content-end">
-                <Button icon="pi pi-twitter" rounded text />
-                <Button icon="pi pi-facebook" rounded text />
-                <Button icon="pi pi-instagram" rounded text />
-              </div>
-            </div>
-          </div>
+                {/* Links Columns */}
+                <div className="flex gap-8 flex-wrap">
+                    <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
+                        <span className="font-bold">Inspiration</span>
+                        <a href="#" className="text-600 no-underline text-sm">Term&Conditions</a>
+                    </div>
+                    <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
+                        <span className="font-bold">Support</span>
+                        <a href="#" className="text-600 no-underline text-sm">Cookies</a>
+                    </div>
+                    <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
+                        <span className="font-bold">About</span>
+                        {/* Empty spacer */}
+                    </div>
+                    <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
+                        <span className="font-bold">Blog</span>
+                        <a href="#" className="text-600 no-underline text-sm">Freelancers</a>
+                    </div>
+                    <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
+                        <span className="font-bold">PTs</span>
+                        <a href="#" className="text-600 no-underline text-sm">Resources</a>
+                    </div>
+                </div>
 
-          <div className="border-top-1 surface-border pt-4 mt-4">
-            <div className="flex flex-wrap gap-4 justify-content-between text-sm text-600">
-              <span>© healthsync 2025</span>
-              <div className="flex gap-4">
-                <a href="#terms" className="text-600 no-underline">Term&Conditions</a>
-                <a href="#cookies" className="text-600 no-underline">Cookies</a>
-                <a href="#resources" className="text-600 no-underline">Resources</a>
-                <a href="#tags" className="text-600 no-underline">Tags</a>
-                <a href="#freelancers" className="text-600 no-underline">Freelancers</a>
-              </div>
+                {/* Social & Tags */}
+                <div className="flex flex-column justify-content-between align-items-end gap-6 mt-4 md:mt-0" style={{ minHeight: '120px' }}>
+                    <div className="border-round-2xl px-3 py-2 flex gap-3" style={{ backgroundColor: '#FFF9C4' }}>
+                        <i className="pi pi-twitter text-2xl cursor-pointer text-900"></i>
+                        <i className="pi pi-facebook text-2xl cursor-pointer text-900"></i>
+                        <i className="pi pi-instagram text-2xl cursor-pointer text-900"></i>
+                    </div>
+                    <a href="#" className="text-600 no-underline text-sm">Tags</a>
+                </div>
             </div>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </main>
     </div>
   );
 }

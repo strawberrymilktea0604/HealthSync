@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
-import logoheader from "@/assets/logoheader.png";
+import logo from "@/assets/logo.png";
+import { motion } from "framer-motion";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -16,7 +17,23 @@ export default function ForgotPassword() {
     <div className="min-h-screen bg-[#D9D7B6] flex flex-col">
       <div className="py-4 md:py-6 px-4 md:px-8">
         <Link to="/">
-          <img src={logoheader} alt="HealthSync" className="w-32 h-auto" />
+          <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
+            Welcome to 
+            <motion.img 
+              src={logo} 
+              alt="healthsync" 
+              style={{ height: '24px', marginTop: '4px' }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </h1>
         </Link>
       </div>
       

@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Permission } from "@/types/rbac";
-import Index from "./pages/Index";
+import HomeGuest from "./pages/HomeGuest";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -45,7 +45,7 @@ function AppContent() {
             exit={{ opacity: 0, x: 50 }}
             transition={{ duration: 0.5 }}
           >
-            <Index />
+            <HomeGuest />
           </motion.div>
         } />
         <Route path="/login" element={
