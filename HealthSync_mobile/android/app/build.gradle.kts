@@ -32,11 +32,22 @@ android {
         multiDexEnabled = true  // Enable multidex for Google Play Services
     }
 
+    signingConfigs {
+        create("release") {
+            // Replace with your actual keystore path and passwords
+            // Generate keystore using: keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key
+            storeFile = file("path/to/your/keystore.jks")
+            storePassword = "your_store_password"
+            keyAlias = "your_key_alias"
+            keyPassword = "your_key_password"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
