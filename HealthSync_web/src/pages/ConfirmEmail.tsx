@@ -151,6 +151,7 @@ export default function ConfirmEmail() {
               {/* OTP inputs */}
               <form onSubmit={onSubmit} className="mt-6">
                 <div className="flex justify-center gap-3 sm:gap-4">
+                  {/* eslint-disable-next-line react/no-array-index-key */}
                   {Array.from({ length }).map((_, i) => (
                     <input
                       key={`otp-digit-${i}`}

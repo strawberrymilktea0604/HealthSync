@@ -70,9 +70,10 @@ export default function VerifyEmail() {
 
             <form onSubmit={handleSubmit} className="space-y-8 md:space-y-12">
               <div className="flex justify-center gap-2 md:gap-4">
+                {/* eslint-disable-next-line react/no-array-index-key */}
                 {code.map((digit, index) => (
                   <input
-                    key={`otp-${index}`}
+                    key={`otp-digit-${index}`}
                     id={`code-${index}`}
                     type="text"
                     maxLength={1}
