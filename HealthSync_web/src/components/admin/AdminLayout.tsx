@@ -78,8 +78,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
+          role="button"
+          tabIndex={0}
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setIsMobileMenuOpen(false);
+            }
+          }}
         />
       )}
 
