@@ -47,7 +47,8 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("release")
+            // For production, set signingConfig to signingConfigs.getByName("release") after generating keystore
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
@@ -59,5 +60,5 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("com.google.android.gms:play-services-auth:21.4.0")
 }
