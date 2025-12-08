@@ -19,6 +19,7 @@ public class MinioStorageService : IStorageService
         var useSSL = bool.Parse(configuration["MinIO:UseSSL"] ?? "false");
         
         _bucketName = configuration["MinIO:BucketName"] ?? "healthsync";
+        // Note: http is used for local development; in production, useSSL should be true for https
         _endpoint = useSSL ? $"https://{minioEndpoint}" : $"http://{minioEndpoint}";
 
         _minioClient = new MinioClient()
