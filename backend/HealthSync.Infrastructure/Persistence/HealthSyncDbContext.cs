@@ -301,44 +301,44 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
         // Seed data for Permissions
         modelBuilder.Entity<Permission>().HasData(
             // User Management
-            new Permission { Id = 101, PermissionCode = "USER_READ", Description = "Xem danh sách người dùng", Category = "User" },
-            new Permission { Id = 102, PermissionCode = "USER_BAN", Description = "Khóa tài khoản người dùng", Category = "User" },
-            new Permission { Id = 103, PermissionCode = "USER_UPDATE_ROLE", Description = "Cập nhật vai trò người dùng", Category = "User" },
-            new Permission { Id = 104, PermissionCode = "USER_DELETE", Description = "Xóa người dùng", Category = "User" },
+            new Permission { Id = 101, PermissionCode = "USER_READ", Description = "Xem danh sách người dùng", Category = SystemConstants.Categories.User },
+            new Permission { Id = 102, PermissionCode = "USER_BAN", Description = "Khóa tài khoản người dùng", Category = SystemConstants.Categories.User },
+            new Permission { Id = 103, PermissionCode = "USER_UPDATE_ROLE", Description = "Cập nhật vai trò người dùng", Category = SystemConstants.Categories.User },
+            new Permission { Id = 104, PermissionCode = "USER_DELETE", Description = "Xóa người dùng", Category = SystemConstants.Categories.User },
             
             // Exercise Management
-            new Permission { Id = 201, PermissionCode = "EXERCISE_READ", Description = "Xem thư viện bài tập", Category = "Exercise" },
-            new Permission { Id = 202, PermissionCode = "EXERCISE_CREATE", Description = "Thêm bài tập mới", Category = "Exercise" },
-            new Permission { Id = 203, PermissionCode = "EXERCISE_UPDATE", Description = "Cập nhật bài tập", Category = "Exercise" },
-            new Permission { Id = 204, PermissionCode = "EXERCISE_DELETE", Description = "Xóa bài tập", Category = "Exercise" },
+            new Permission { Id = 201, PermissionCode = "EXERCISE_READ", Description = "Xem thư viện bài tập", Category = SystemConstants.Categories.Exercise },
+            new Permission { Id = 202, PermissionCode = "EXERCISE_CREATE", Description = "Thêm bài tập mới", Category = SystemConstants.Categories.Exercise },
+            new Permission { Id = 203, PermissionCode = "EXERCISE_UPDATE", Description = "Cập nhật bài tập", Category = SystemConstants.Categories.Exercise },
+            new Permission { Id = 204, PermissionCode = "EXERCISE_DELETE", Description = "Xóa bài tập", Category = SystemConstants.Categories.Exercise },
             
             // Food Management
-            new Permission { Id = 301, PermissionCode = "FOOD_READ", Description = "Xem thư viện thực phẩm", Category = "Food" },
-            new Permission { Id = 302, PermissionCode = "FOOD_CREATE", Description = "Thêm thực phẩm mới", Category = "Food" },
-            new Permission { Id = 303, PermissionCode = "FOOD_UPDATE", Description = "Cập nhật thực phẩm", Category = "Food" },
-            new Permission { Id = 304, PermissionCode = "FOOD_DELETE", Description = "Xóa thực phẩm", Category = "Food" },
+            new Permission { Id = 301, PermissionCode = "FOOD_READ", Description = "Xem thư viện thực phẩm", Category = SystemConstants.Categories.Food },
+            new Permission { Id = 302, PermissionCode = "FOOD_CREATE", Description = "Thêm thực phẩm mới", Category = SystemConstants.Categories.Food },
+            new Permission { Id = 303, PermissionCode = "FOOD_UPDATE", Description = "Cập nhật thực phẩm", Category = SystemConstants.Categories.Food },
+            new Permission { Id = 304, PermissionCode = "FOOD_DELETE", Description = "Xóa thực phẩm", Category = SystemConstants.Categories.Food },
             
             // Workout Log
-            new Permission { Id = 401, PermissionCode = "WORKOUT_LOG_READ", Description = "Xem nhật ký tập luyện", Category = "WorkoutLog" },
-            new Permission { Id = 402, PermissionCode = "WORKOUT_LOG_CREATE", Description = "Tạo nhật ký tập luyện", Category = "WorkoutLog" },
-            new Permission { Id = 403, PermissionCode = "WORKOUT_LOG_UPDATE", Description = "Cập nhật nhật ký tập luyện", Category = "WorkoutLog" },
-            new Permission { Id = 404, PermissionCode = "WORKOUT_LOG_DELETE", Description = "Xóa nhật ký tập luyện", Category = "WorkoutLog" },
+            new Permission { Id = 401, PermissionCode = "WORKOUT_LOG_READ", Description = "Xem nhật ký tập luyện", Category = SystemConstants.Categories.WorkoutLog },
+            new Permission { Id = 402, PermissionCode = "WORKOUT_LOG_CREATE", Description = "Tạo nhật ký tập luyện", Category = SystemConstants.Categories.WorkoutLog },
+            new Permission { Id = 403, PermissionCode = "WORKOUT_LOG_UPDATE", Description = "Cập nhật nhật ký tập luyện", Category = SystemConstants.Categories.WorkoutLog },
+            new Permission { Id = 404, PermissionCode = "WORKOUT_LOG_DELETE", Description = "Xóa nhật ký tập luyện", Category = SystemConstants.Categories.WorkoutLog },
             
             // Nutrition Log
-            new Permission { Id = 501, PermissionCode = "NUTRITION_LOG_READ", Description = "Xem nhật ký dinh dưỡng", Category = "NutritionLog" },
-            new Permission { Id = 502, PermissionCode = "NUTRITION_LOG_CREATE", Description = "Tạo nhật ký dinh dưỡng", Category = "NutritionLog" },
-            new Permission { Id = 503, PermissionCode = "NUTRITION_LOG_UPDATE", Description = "Cập nhật nhật ký dinh dưỡng", Category = "NutritionLog" },
-            new Permission { Id = 504, PermissionCode = "NUTRITION_LOG_DELETE", Description = "Xóa nhật ký dinh dưỡng", Category = "NutritionLog" },
+            new Permission { Id = 501, PermissionCode = "NUTRITION_LOG_READ", Description = "Xem nhật ký dinh dưỡng", Category = SystemConstants.Categories.NutritionLog },
+            new Permission { Id = 502, PermissionCode = "NUTRITION_LOG_CREATE", Description = "Tạo nhật ký dinh dưỡng", Category = SystemConstants.Categories.NutritionLog },
+            new Permission { Id = 503, PermissionCode = "NUTRITION_LOG_UPDATE", Description = "Cập nhật nhật ký dinh dưỡng", Category = SystemConstants.Categories.NutritionLog },
+            new Permission { Id = 504, PermissionCode = "NUTRITION_LOG_DELETE", Description = "Xóa nhật ký dinh dưỡng", Category = SystemConstants.Categories.NutritionLog },
             
             // Goal Management
-            new Permission { Id = 601, PermissionCode = "GOAL_READ", Description = "Xem mục tiêu", Category = "Goal" },
-            new Permission { Id = 602, PermissionCode = "GOAL_CREATE", Description = "Tạo mục tiêu", Category = "Goal" },
-            new Permission { Id = 603, PermissionCode = "GOAL_UPDATE", Description = "Cập nhật mục tiêu", Category = "Goal" },
-            new Permission { Id = 604, PermissionCode = "GOAL_DELETE", Description = "Xóa mục tiêu", Category = "Goal" },
+            new Permission { Id = 601, PermissionCode = "GOAL_READ", Description = "Xem mục tiêu", Category = SystemConstants.Categories.Goal },
+            new Permission { Id = 602, PermissionCode = "GOAL_CREATE", Description = "Tạo mục tiêu", Category = SystemConstants.Categories.Goal },
+            new Permission { Id = 603, PermissionCode = "GOAL_UPDATE", Description = "Cập nhật mục tiêu", Category = SystemConstants.Categories.Goal },
+            new Permission { Id = 604, PermissionCode = "GOAL_DELETE", Description = "Xóa mục tiêu", Category = SystemConstants.Categories.Goal },
             
             // Dashboard
-            new Permission { Id = 701, PermissionCode = "DASHBOARD_VIEW", Description = "Xem dashboard cá nhân", Category = "Dashboard" },
-            new Permission { Id = 702, PermissionCode = "DASHBOARD_ADMIN", Description = "Xem dashboard admin", Category = "Dashboard" }
+            new Permission { Id = 701, PermissionCode = "DASHBOARD_VIEW", Description = "Xem dashboard cá nhân", Category = SystemConstants.Categories.Dashboard },
+            new Permission { Id = 702, PermissionCode = "DASHBOARD_ADMIN", Description = "Xem dashboard admin", Category = SystemConstants.Categories.Dashboard }
         );
 
         // Seed data for RolePermissions

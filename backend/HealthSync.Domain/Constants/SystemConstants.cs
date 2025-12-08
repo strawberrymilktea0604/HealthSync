@@ -37,5 +37,7 @@ public static class SystemConstants
         public const string FoodItem = "FoodItem";
         public const string Goal = "Goal";
         public const string User = "User";
+        public const string Food = "Food";
+        public const string Dashboard = "Dashboard";
     }
 }
