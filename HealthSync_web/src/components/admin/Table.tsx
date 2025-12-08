@@ -48,7 +48,7 @@ export default function Table<T>({ data, columns, onRowClick }: TableProps<T>) {
           ) : (
             data.map((row, rowIndex) => (
               <tr
-                key={rowIndex} // eslint-disable-next-line react/no-array-index-key
+                key={rowIndex} // eslint-disable-line react/no-array-index-key
                 onClick={() => onRowClick?.(row)}
                 className={`${
                   onRowClick ? "cursor-pointer hover:bg-gray-50" : ""

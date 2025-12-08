@@ -64,7 +64,6 @@ const BreadcrumbPage = React.forwardRef<
   // eslint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/anchor-is-valid
   <span
     ref={ref}
-    role="link"
     aria-disabled="true"
     aria-current="page"
     className={cn("font-normal text-foreground", className)}
