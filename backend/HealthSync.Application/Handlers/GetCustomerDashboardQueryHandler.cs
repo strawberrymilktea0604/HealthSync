@@ -25,7 +25,7 @@ namespace HealthSync.Application.Handlers
 
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
             // Get user info
@@ -70,7 +70,9 @@ namespace HealthSync.Application.Handlers
                 goalProgress = new GoalProgressDto
                 {
                     GoalType = activeGoal.Type,
-                    Status = activeGoal.Status
+                    Status = activeGoal.Status,
+                    Progress = progress,
+                    Remaining = remaining
                 };
 
                 // Weight progress with chart data
@@ -118,7 +120,8 @@ namespace HealthSync.Application.Handlers
 
             var todayStats = new TodayStatsDto
             {
-                WorkoutDuration = $"{workoutMinutes} min"
+                WorkoutDuration = $"{workoutMinutes} min",
+                CaloriesConsumed = caloriesConsumed
             };
 
             // Calculate exercise streak

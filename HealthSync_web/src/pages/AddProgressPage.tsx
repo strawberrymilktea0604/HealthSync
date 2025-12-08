@@ -112,7 +112,7 @@ const AddProgressPage = () => {
                     step="0.1"
                     value={formData.value || ''}
                     onChange={(e) =>
-                      setFormData({ ...formData, value: parseFloat(e.target.value) || 0 })
+                      setFormData({ ...formData, value: Number.parseFloat(e.target.value) || 0 })
                     }
                     placeholder="Nhập giá trị"
                     className="pr-12 bg-white"
@@ -138,7 +138,7 @@ const AddProgressPage = () => {
                     onChange={(e) =>
                       setFormData({ 
                         ...formData, 
-                        weightKg: e.target.value ? parseFloat(e.target.value) : undefined 
+                        weightKg: e.target.value ? Number.parseFloat(e.target.value) : undefined 
                       })
                     }
                     placeholder="Nhập cân nặng"
@@ -164,7 +164,7 @@ const AddProgressPage = () => {
                     onChange={(e) =>
                       setFormData({ 
                         ...formData, 
-                        waistCm: e.target.value ? parseFloat(e.target.value) : undefined 
+                        waistCm: e.target.value ? Number.parseFloat(e.target.value) : undefined 
                       })
                     }
                     placeholder="Nhập vòng eo"

@@ -123,7 +123,7 @@ export default function FoodSearch() {
       } else {
         alert("Failed to add food");
       }
-    } catch (error) {
+    } catch {
       alert("Error adding food");
     }
   };

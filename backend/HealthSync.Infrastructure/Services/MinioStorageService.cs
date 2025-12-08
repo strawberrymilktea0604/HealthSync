@@ -74,7 +74,7 @@ public class MinioStorageService : IStorageService
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error uploading file to MinIO: {ex.Message}", ex);
+            throw new InvalidOperationException($"Error uploading file to MinIO: {ex.Message}", ex);
         }
     }
 
@@ -109,7 +109,7 @@ public class MinioStorageService : IStorageService
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error getting file URL from MinIO: {ex.Message}", ex);
+            throw new InvalidOperationException($"Error getting file URL from MinIO: {ex.Message}", ex);
         }
     }
 }

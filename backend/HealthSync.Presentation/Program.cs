@@ -153,7 +153,7 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<HealthSyncDbContext>();
         // Lệnh này sẽ tự động check, nếu chưa có DB thì tạo, chưa có bảng thì thêm
         // Nếu có rồi thì thôi, không báo lỗi Crash app như lệnh CreateDatabase
-        context.Database.Migrate(); 
+        await context.Database.MigrateAsync(); 
     }
     catch (Exception ex)
     {
@@ -165,5 +165,5 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+await app.RunAsync();
 

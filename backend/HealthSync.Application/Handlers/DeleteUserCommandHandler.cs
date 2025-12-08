@@ -21,7 +21,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
 
         if (user == null)
         {
-            throw new Exception($"User with ID {request.UserId} not found");
+            throw new KeyNotFoundException($"User with ID {request.UserId} not found");
         }
 
         _context.Remove(user);

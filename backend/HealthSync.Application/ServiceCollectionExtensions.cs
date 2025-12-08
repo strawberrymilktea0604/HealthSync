@@ -21,7 +21,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationUserService, ApplicationUserService>();
 
         // Add AutoMapper if needed
-        // services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         return services;
     }

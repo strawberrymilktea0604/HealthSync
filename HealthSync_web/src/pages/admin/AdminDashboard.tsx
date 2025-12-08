@@ -98,8 +98,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-900 font-bold text-4xl mb-2">{userStatistics.totalUsers.toLocaleString()}</div>
               <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i>
-                +12% from last month
+                <i className="pi pi-arrow-up text-xs mr-1"></i> +12% from last month
               </div>
             </Card>
           </div>
@@ -114,8 +113,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-900 font-bold text-4xl mb-2">{userStatistics.newUsersThisMonth}</div>
               <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i>
-                +8% from last month
+                <i className="pi pi-arrow-up text-xs mr-1"></i> +8% from last month
               </div>
             </Card>
           </div>
@@ -130,8 +128,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-900 font-bold text-4xl mb-2">{userStatistics.activeUsers.toLocaleString()}</div>
               <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i>
-                +15% from last month
+                <i className="pi pi-arrow-up text-xs mr-1"></i> +15% from last month
               </div>
             </Card>
           </div>
@@ -146,8 +143,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-900 font-bold text-4xl mb-2">{workoutStatistics.totalWorkoutLogs.toLocaleString()}</div>
               <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i>
-                This month
+                <i className="pi pi-arrow-up text-xs mr-1"></i> This month
               </div>
             </Card>
           </div>

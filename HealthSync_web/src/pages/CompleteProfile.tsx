@@ -63,8 +63,8 @@ export default function CompleteProfile() {
       return;
     }
 
-    const height = parseFloat(heightCm);
-    const weight = parseFloat(weightKg);
+    const height = Number.parseFloat(heightCm);
+    const weight = Number.parseFloat(weightKg);
 
     if (!heightCm || height <= 0 || height > 300) {
       toast({

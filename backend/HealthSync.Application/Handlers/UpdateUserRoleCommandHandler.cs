@@ -26,13 +26,13 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
 
         if (user == null)
         {
-            throw new Exception($"User with ID {request.UserId} not found");
+            throw new KeyNotFoundException($"User with ID {request.UserId} not found");
         }
 
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role, cancellationToken);
         if (role == null)
         {
-            throw new Exception($"Role '{request.Role}' not found");
+            throw new KeyNotFoundException($"Role '{request.Role}' not found");
         }
 
         // Remove existing UserRole

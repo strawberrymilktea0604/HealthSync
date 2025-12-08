@@ -235,7 +235,7 @@ const NutritionPage: React.FC = () => {
                       min="0.1"
                       step="0.1"
                       value={quantity}
-                      onChange={(e) => setQuantity(parseFloat(e.target.value))}
+                      onChange={(e) => setQuantity(Number.parseFloat(e.target.value))}
                     />
                     <div className="bg-gray-50 p-3 rounded">
                       <p className="text-sm font-semibold mb-1">Tổng dinh dưỡng:</p>

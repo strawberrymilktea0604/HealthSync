@@ -24,13 +24,12 @@ public class OtpService : IOtpService
 
     public bool ValidateOtp(string email, string otp)
     {
-        if (_otpStore.TryGetValue(email.ToLower(), out var stored))
+        if (_otpStore.TryGetValue(email.ToLower(), out var stored) &&
+            stored.Expiry > DateTime.UtcNow &&
+            stored.Otp == otp)
         {
-            if (stored.Expiry > DateTime.UtcNow && stored.Otp == otp)
-            {
-                _otpStore.TryRemove(email.ToLower(), out _);
-                return true;
-            }
+            _otpStore.TryRemove(email.ToLower(), out _);
+            return true;
         }
         return false;
     }

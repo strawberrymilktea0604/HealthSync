@@ -18,7 +18,7 @@ namespace HealthSync.Application.Handlers
         public async Task<DashboardSummaryDto> Handle(GetDashboardSummaryQuery request, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
-            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
             var totalUsers = await _context.ApplicationUsers.CountAsync(cancellationToken);
             var newUsersThisMonth = await _context.ApplicationUsers

@@ -110,7 +110,7 @@ export default function ConfirmEmail() {
       } else {
         alert("Failed to resend OTP");
       }
-    } catch (error) {
+    } catch {
       alert("Error resending OTP");
     }
   }

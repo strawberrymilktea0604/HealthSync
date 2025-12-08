@@ -121,7 +121,7 @@ public class AuthController : ControllerBase
         try
         {
             // Validate request
-            if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.Code))
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
             {
                 return BadRequest(new { Error = "Email và mã xác thực không được để trống" });
             }

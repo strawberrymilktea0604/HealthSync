@@ -26,7 +26,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, AdminUs
 
         if (user == null)
         {
-            throw new Exception($"User with ID {request.UserId} not found");
+            throw new KeyNotFoundException($"User with ID {request.UserId} not found");
         }
 
         return new AdminUserDto

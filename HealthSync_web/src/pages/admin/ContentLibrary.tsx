@@ -701,7 +701,7 @@ export default function ContentLibrary() {
                 id="servingSize"
                 type="number"
                 value={foodFormData.servingSize.toString()}
-                onChange={(e) => setFoodFormData({ ...foodFormData, servingSize: parseFloat(e.target.value) })}
+                onChange={(e) => setFoodFormData({ ...foodFormData, servingSize: Number.parseFloat(e.target.value) })}
                 className="w-full"
                 required
               />
@@ -729,7 +729,7 @@ export default function ContentLibrary() {
               id="calories"
               type="number"
               value={foodFormData.caloriesKcal.toString()}
-              onChange={(e) => setFoodFormData({ ...foodFormData, caloriesKcal: parseFloat(e.target.value) })}
+              onChange={(e) => setFoodFormData({ ...foodFormData, caloriesKcal: Number.parseFloat(e.target.value) })}
               className="w-full"
               required
             />
@@ -745,7 +745,7 @@ export default function ContentLibrary() {
                 type="number"
                 step="0.1"
                 value={foodFormData.proteinG.toString()}
-                onChange={(e) => setFoodFormData({ ...foodFormData, proteinG: parseFloat(e.target.value) })}
+                onChange={(e) => setFoodFormData({ ...foodFormData, proteinG: Number.parseFloat(e.target.value) })}
                 className="w-full"
               />
             </div>
@@ -759,7 +759,7 @@ export default function ContentLibrary() {
                 type="number"
                 step="0.1"
                 value={foodFormData.carbsG.toString()}
-                onChange={(e) => setFoodFormData({ ...foodFormData, carbsG: parseFloat(e.target.value) })}
+                onChange={(e) => setFoodFormData({ ...foodFormData, carbsG: Number.parseFloat(e.target.value) })}
                 className="w-full"
               />
             </div>
@@ -773,7 +773,7 @@ export default function ContentLibrary() {
                 type="number"
                 step="0.1"
                 value={foodFormData.fatG.toString()}
-                onChange={(e) => setFoodFormData({ ...foodFormData, fatG: parseFloat(e.target.value) })}
+                onChange={(e) => setFoodFormData({ ...foodFormData, fatG: Number.parseFloat(e.target.value) })}
                 className="w-full"
               />
             </div>

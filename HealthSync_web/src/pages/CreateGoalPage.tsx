@@ -130,7 +130,7 @@ const CreateGoalPage = () => {
                     step="0.1"
                     value={formData.targetValue || ''}
                     onChange={(e) =>
-                      setFormData({ ...formData, targetValue: parseFloat(e.target.value) || 0 })
+                      setFormData({ ...formData, targetValue: Number.parseFloat(e.target.value) || 0 })
                     }
                     placeholder="Ví dụ: 65"
                     className="pr-12 bg-white"

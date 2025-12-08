@@ -27,7 +27,6 @@ public static class ServiceCollectionExtensions
         // Register repositories
         services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
-        // services.AddScoped<IWorkoutRepository, WorkoutRepository>();
         
         // Register AI Chat Service
         services.AddSingleton<IAiChatService, GeminiAiChatService>();

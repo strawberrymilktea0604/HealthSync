@@ -228,7 +228,7 @@ export default function CreateWorkoutPage() {
                             <Input
                               type="number"
                               value={session.weightKg}
-                              onChange={(e) => updateExerciseSession(session.exerciseId, 'weightKg', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updateExerciseSession(session.exerciseId, 'weightKg', Number.parseFloat(e.target.value) || 0)}
                               min="0"
                               step="0.5"
                               className="h-9"

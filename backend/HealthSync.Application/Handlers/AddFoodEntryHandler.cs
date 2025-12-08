@@ -42,7 +42,7 @@ public class AddFoodEntryHandler : IRequestHandler<AddFoodEntryCommand, int>
 
         if (foodItem == null)
         {
-            throw new Exception("Food item not found");
+            throw new KeyNotFoundException("Food item not found");
         }
 
         // Calculate nutritional values based on quantity
