@@ -25,6 +25,14 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         <div
           className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
           onClick={onClose}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onClose();
+            }
+          }}
+          aria-label="Close modal"
         ></div>
 
         {/* Modal */}
