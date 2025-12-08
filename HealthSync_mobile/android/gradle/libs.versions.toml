@@ -1,5 +1,7 @@
 [versions]
 playServicesAuth = "21.4.0"
+firebaseBom = "33.7.0"
 
 [libraries]
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
