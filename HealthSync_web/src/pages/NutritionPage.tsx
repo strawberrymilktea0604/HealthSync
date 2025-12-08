@@ -229,8 +229,9 @@ const NutritionPage: React.FC = () => {
 
                 {selectedFoodItem && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Số lượng</label>
+                    <label htmlFor="quantity-input" className="text-sm font-medium">Số lượng</label>
                     <Input
+                      id="quantity-input"
                       type="number"
                       min="0.1"
                       step="0.1"

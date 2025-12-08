@@ -26,7 +26,7 @@ namespace HealthSync.Application.Handlers
                 UserStatistics = await GetUserStatistics(startDate, cancellationToken),
                 WorkoutStatistics = await GetWorkoutStatistics(startDate, cancellationToken),
                 NutritionStatistics = await GetNutritionStatistics(startDate, cancellationToken),
-                GoalStatistics = await GetGoalStatistics(startDate, cancellationToken)
+                GoalStatistics = await GetGoalStatistics(cancellationToken)
             };
 
             return statistics;
@@ -54,7 +54,7 @@ namespace HealthSync.Application.Handlers
                 .Select(g => new UserGrowthDto
                 {
                     Period = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    Date = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Date = new DateTime(g.Key.Year, g.Key.Month, 1, 0, 0, 0, DateTimeKind.Utc),
                     Count = g.Count()
                 })
                 .OrderBy(x => x.Date)
@@ -117,7 +117,7 @@ namespace HealthSync.Application.Handlers
                 .Select(g => new WorkoutActivityDto
                 {
                     Period = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    Date = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Date = new DateTime(g.Key.Year, g.Key.Month, 1, 0, 0, 0, DateTimeKind.Utc),
                     Count = g.Count()
                 })
                 .OrderBy(x => x.Date)
@@ -183,7 +183,7 @@ namespace HealthSync.Application.Handlers
                 .Select(g => new NutritionActivityDto
                 {
                     Period = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    Date = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    Date = new DateTime(g.Key.Year, g.Key.Month, 1, 0, 0, 0, DateTimeKind.Utc),
                     Count = g.Count()
                 })
                 .OrderBy(x => x.Date)
@@ -213,7 +213,7 @@ namespace HealthSync.Application.Handlers
             };
         }
 
-        private async Task<GoalStatisticsDto> GetGoalStatistics(DateTime startDate, CancellationToken cancellationToken)
+        private async Task<GoalStatisticsDto> GetGoalStatistics(CancellationToken cancellationToken)
         {
             var goals = await _context.Goals.ToListAsync(cancellationToken);
 

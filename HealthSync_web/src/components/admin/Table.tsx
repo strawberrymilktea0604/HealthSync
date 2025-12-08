@@ -25,9 +25,9 @@ export default function Table<T>({ data, columns, onRowClick }: TableProps<T>) {
       <table className="w-full">
         <thead>
           <tr className="bg-[#F5F3ED] border-b border-gray-200">
-            {columns.map((column, index) => (
+            {columns.map((column) => (
               <th
-                key={index}
+                key={column.header}
                 className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider"
               >
                 {column.header}
@@ -54,9 +54,9 @@ export default function Table<T>({ data, columns, onRowClick }: TableProps<T>) {
                   onRowClick ? "cursor-pointer hover:bg-gray-50" : ""
                 } transition-colors`}
               >
-                {columns.map((column, colIndex) => (
+                {columns.map((column) => (
                   <td
-                    key={colIndex}
+                    key={column.header}
                     className={`px-6 py-4 text-sm text-gray-900 ${
                       column.className || ""
                     }`}

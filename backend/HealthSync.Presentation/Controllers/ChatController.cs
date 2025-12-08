@@ -96,7 +96,7 @@ public class ChatController : ControllerBase
     /// </summary>
     [HttpGet("health")]
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public IActionResult HealthCheck()
     {
         return Ok(new

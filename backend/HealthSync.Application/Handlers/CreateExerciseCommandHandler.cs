@@ -20,7 +20,6 @@ public class CreateExerciseCommandHandler : IRequestHandler<CreateExerciseComman
         // Note: In real implementation, user should be extracted from JWT claims
         // For demo, we'll assume user is passed or retrieved from context
         // Here we'll skip user check for simplicity, but in production:
-        // if (!user.HasPermission("EXERCISE_CREATE")) throw new UnauthorizedAccessException();
 
         var exercise = new Exercise
         {
