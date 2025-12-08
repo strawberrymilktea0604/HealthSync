@@ -92,6 +92,12 @@ services:
       - EmailSettings__SenderName=${SMTP_FROM_NAME}
       - EmailSettings__Password=${SMTP_PASSWORD}
       - AI__GeminiApiKey=${GEMINI_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - GOOGLE_AUTH_URI=${GOOGLE_AUTH_URI}
+      - GOOGLE_TOKEN_URI=${GOOGLE_TOKEN_URI}
+      - GOOGLE_USERINFO_URI=${GOOGLE_USERINFO_URI}
+      - GOOGLE_TOKENINFO_URI=${GOOGLE_TOKENINFO_URI}
     ports:
       - "5001:8080"  # Host Port đổi sang 5001
     depends_on:

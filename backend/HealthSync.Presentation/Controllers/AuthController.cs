@@ -13,11 +13,21 @@ public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<AuthController> _logger;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(IMediator mediator, ILogger<AuthController> logger)
+    // Define constant for repeated error message
+    private const string InternalServerErrorMessage = "Lỗi server nội bộ";
+
+    public AuthController(IMediator mediator, ILogger<AuthController> logger, IConfiguration configuration)
     {
         _mediator = mediator;
         _logger = logger;
+        _configuration = configuration;
+    }
+
+    private string GetFrontendUrl()
+    {
+        return _configuration["FRONTEND_URL"] ?? "http://localhost:5173";
     }
 
     [HttpPost("register-admin")]
@@ -43,7 +53,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error registering admin");
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -68,7 +78,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -92,7 +102,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -111,7 +121,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -145,7 +155,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error verifying email code for {Email}", request?.Email);
-            return StatusCode(500, new { Error = "Lỗi server nội bộ", Success = false });
+            return StatusCode(500, new { Error = InternalServerErrorMessage, Success = false });
         }
     }
 
@@ -160,7 +170,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -183,7 +193,7 @@ public class AuthController : ControllerBase
             var response = await _mediator.Send(command);
 
             // Redirect to frontend with token
-            var frontendUrl = "http://localhost:5173"; // Frontend port
+            var frontendUrl = GetFrontendUrl();
             var redirectUrl = $"{frontendUrl}/google/callback?" +
                 $"token={Uri.EscapeDataString(response.Token)}&" +
                 $"userId={response.UserId}&" +
@@ -198,14 +208,14 @@ public class AuthController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            var frontendUrl = "http://localhost:5173";
+            var frontendUrl = GetFrontendUrl();
             return Redirect($"{frontendUrl}/login?error={Uri.EscapeDataString(ex.Message)}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error in GoogleCallback: {ex.Message}");
             Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            var frontendUrl = "http://localhost:5173";
+            var frontendUrl = GetFrontendUrl();
             return Redirect($"{frontendUrl}/login?error={Uri.EscapeDataString("Invalid callback parameters")}");
         }
     }
@@ -230,7 +240,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -253,7 +263,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -274,7 +284,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -294,7 +304,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -319,7 +329,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -347,7 +357,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 
@@ -366,7 +376,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+            return StatusCode(500, new { Error = InternalServerErrorMessage });
         }
     }
 }

@@ -21,9 +21,10 @@ public class GoogleAuthService : IGoogleAuthService
     public Task<string> GetAuthorizationUrl(string state)
     {
         var clientId = _configuration["GoogleOAuth:ClientId"] ?? "";
-        var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? "http://localhost:5274/api/auth/google/callback";
+        var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? _configuration["GOOGLE_REDIRECT_URI"] ?? "http://localhost:5274/api/auth/google/callback";
+        var authUri = _configuration["GOOGLE_AUTH_URI"] ?? "https://accounts.google.com/o/oauth2/v2/auth";
 
-        var url = $"https://accounts.google.com/o/oauth2/v2/auth?" +
+        var url = $"{authUri}?" +
                   $"client_id={HttpUtility.UrlEncode(clientId)}&" +
                   $"redirect_uri={HttpUtility.UrlEncode(redirectUri)}&" +
                   $"response_type=code&" +
@@ -39,10 +40,11 @@ public class GoogleAuthService : IGoogleAuthService
         {
             var clientId = _configuration["GoogleOAuth:ClientId"] ?? "";
             var clientSecret = _configuration["GoogleOAuth:ClientSecret"] ?? "";
-            var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? "http://localhost:5274/api/auth/google/callback";
+            var redirectUri = _configuration["GoogleOAuth:RedirectUri"] ?? _configuration["GOOGLE_REDIRECT_URI"] ?? "http://localhost:5274/api/auth/google/callback";
+            var tokenUri = _configuration["GOOGLE_TOKEN_URI"] ?? "https://oauth2.googleapis.com/token";
 
             // Exchange code for access token
-            var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
+            var tokenRequest = new HttpRequestMessage(HttpMethod.Post, tokenUri)
             {
                 Content = new FormUrlEncodedContent(new[]
                 {
@@ -73,7 +75,8 @@ public class GoogleAuthService : IGoogleAuthService
             }
 
             // Get user info
-            var userInfoRequest = new HttpRequestMessage(HttpMethod.Get, "https://www.googleapis.com/oauth2/v2/userinfo")
+            var userInfoUri = _configuration["GOOGLE_USERINFO_URI"] ?? "https://www.googleapis.com/oauth2/v2/userinfo";
+            var userInfoRequest = new HttpRequestMessage(HttpMethod.Get, userInfoUri)
             {
                 Headers = { { "Authorization", $"Bearer {accessToken}" } }
             };
@@ -114,8 +117,9 @@ public class GoogleAuthService : IGoogleAuthService
     public async Task<GoogleUserInfo?> VerifyIdTokenAsync(string idToken)
     {
         // Verify ID token with Google
+        var tokenInfoUri = _configuration["GOOGLE_TOKENINFO_URI"] ?? "https://oauth2.googleapis.com/tokeninfo";
         var verifyRequest = new HttpRequestMessage(HttpMethod.Get,
-            $"https://oauth2.googleapis.com/tokeninfo?id_token={HttpUtility.UrlEncode(idToken)}");
+            $"{tokenInfoUri}?id_token={HttpUtility.UrlEncode(idToken)}");
 
         var verifyResponse = await _httpClient.SendAsync(verifyRequest);
         if (!verifyResponse.IsSuccessStatusCode) return null;

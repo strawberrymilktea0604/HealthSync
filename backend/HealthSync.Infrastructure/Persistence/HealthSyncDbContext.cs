@@ -1,5 +1,6 @@
 using HealthSync.Domain.Interfaces;
 using HealthSync.Domain.Entities;
+using HealthSync.Domain.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthSync.Infrastructure.Persistence;
@@ -264,37 +265,37 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
         // Seed data for Exercises
         modelBuilder.Entity<Exercise>().HasData(
             // Chest Exercises
-            new Exercise { ExerciseId = 1, Name = "Push-ups", MuscleGroup = "Chest", Difficulty = "Beginner", Equipment = "None", Description = "Classic bodyweight chest exercise" },
-            new Exercise { ExerciseId = 2, Name = "Bench Press", MuscleGroup = "Chest", Difficulty = "Intermediate", Equipment = "Barbell", Description = "Compound chest exercise with barbell" },
-            new Exercise { ExerciseId = 3, Name = "Dumbbell Fly", MuscleGroup = "Chest", Difficulty = "Intermediate", Equipment = "Dumbbells", Description = "Isolation exercise for chest" },
+            new Exercise { ExerciseId = 1, Name = "Push-ups", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Classic bodyweight chest exercise" },
+            new Exercise { ExerciseId = 2, Name = "Bench Press", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound chest exercise with barbell" },
+            new Exercise { ExerciseId = 3, Name = "Dumbbell Fly", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation exercise for chest" },
             
             // Back Exercises
-            new Exercise { ExerciseId = 4, Name = "Pull-ups", MuscleGroup = "Back", Difficulty = "Intermediate", Equipment = "Pull-up Bar", Description = "Bodyweight back exercise" },
-            new Exercise { ExerciseId = 5, Name = "Deadlift", MuscleGroup = "Back", Difficulty = "Advanced", Equipment = "Barbell", Description = "Compound full-body exercise" },
-            new Exercise { ExerciseId = 6, Name = "Bent-over Row", MuscleGroup = "Back", Difficulty = "Intermediate", Equipment = "Barbell", Description = "Compound back exercise" },
+            new Exercise { ExerciseId = 4, Name = "Pull-ups", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.PullUpBar, Description = "Bodyweight back exercise" },
+            new Exercise { ExerciseId = 5, Name = "Deadlift", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Advanced, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound full-body exercise" },
+            new Exercise { ExerciseId = 6, Name = "Bent-over Row", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound back exercise" },
             
             // Legs Exercises
-            new Exercise { ExerciseId = 7, Name = "Squats", MuscleGroup = "Legs", Difficulty = "Beginner", Equipment = "None", Description = "Fundamental leg exercise" },
-            new Exercise { ExerciseId = 8, Name = "Lunges", MuscleGroup = "Legs", Difficulty = "Beginner", Equipment = "None", Description = "Unilateral leg exercise" },
-            new Exercise { ExerciseId = 9, Name = "Leg Press", MuscleGroup = "Legs", Difficulty = "Intermediate", Equipment = "Machine", Description = "Machine-based leg exercise" },
+            new Exercise { ExerciseId = 7, Name = "Squats", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Fundamental leg exercise" },
+            new Exercise { ExerciseId = 8, Name = "Lunges", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Unilateral leg exercise" },
+            new Exercise { ExerciseId = 9, Name = "Leg Press", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Machine, Description = "Machine-based leg exercise" },
             
             // Shoulders Exercises
-            new Exercise { ExerciseId = 10, Name = "Shoulder Press", MuscleGroup = "Shoulders", Difficulty = "Intermediate", Equipment = "Dumbbells", Description = "Overhead pressing movement" },
-            new Exercise { ExerciseId = 11, Name = "Lateral Raise", MuscleGroup = "Shoulders", Difficulty = "Beginner", Equipment = "Dumbbells", Description = "Isolation shoulder exercise" },
+            new Exercise { ExerciseId = 10, Name = "Shoulder Press", MuscleGroup = SystemConstants.MuscleGroups.Shoulders, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Overhead pressing movement" },
+            new Exercise { ExerciseId = 11, Name = "Lateral Raise", MuscleGroup = SystemConstants.MuscleGroups.Shoulders, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation shoulder exercise" },
             
             // Arms Exercises
-            new Exercise { ExerciseId = 12, Name = "Bicep Curls", MuscleGroup = "Arms", Difficulty = "Beginner", Equipment = "Dumbbells", Description = "Isolation bicep exercise" },
-            new Exercise { ExerciseId = 13, Name = "Tricep Dips", MuscleGroup = "Arms", Difficulty = "Intermediate", Equipment = "Parallel Bars", Description = "Bodyweight tricep exercise" },
+            new Exercise { ExerciseId = 12, Name = "Bicep Curls", MuscleGroup = SystemConstants.MuscleGroups.Arms, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation bicep exercise" },
+            new Exercise { ExerciseId = 13, Name = "Tricep Dips", MuscleGroup = SystemConstants.MuscleGroups.Arms, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.ParallelBars, Description = "Bodyweight tricep exercise" },
             
             // Core Exercises
-            new Exercise { ExerciseId = 14, Name = "Plank", MuscleGroup = "Core", Difficulty = "Beginner", Equipment = "None", Description = "Isometric core exercise" },
-            new Exercise { ExerciseId = 15, Name = "Crunches", MuscleGroup = "Core", Difficulty = "Beginner", Equipment = "None", Description = "Basic abdominal exercise" }
+            new Exercise { ExerciseId = 14, Name = "Plank", MuscleGroup = SystemConstants.MuscleGroups.Core, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Isometric core exercise" },
+            new Exercise { ExerciseId = 15, Name = "Crunches", MuscleGroup = SystemConstants.MuscleGroups.Core, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Basic abdominal exercise" }
         );
 
         // Seed data for Roles
         modelBuilder.Entity<Role>().HasData(
-            new Role { Id = 1, RoleName = "Admin", Description = "Quản trị viên hệ thống, có toàn quyền" },
-            new Role { Id = 2, RoleName = "Customer", Description = "Người dùng cuối sử dụng app" }
+            new Role { Id = 1, RoleName = RoleNames.ADMIN, Description = "Quản trị viên hệ thống, có toàn quyền" },
+            new Role { Id = 2, RoleName = RoleNames.CUSTOMER, Description = "Người dùng cuối sử dụng app" }
         );
 
         // Seed data for Permissions

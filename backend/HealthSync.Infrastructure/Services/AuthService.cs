@@ -1,6 +1,7 @@
 using HealthSync.Application.Extensions;
 using HealthSync.Domain.Interfaces;
 using HealthSync.Domain.Entities;
+using HealthSync.Domain.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -70,11 +71,11 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private List<string> GetPermissionsForRole(string role)
+    private static List<string> GetPermissionsForRole(string role)
     {
         return role switch
         {
-            "Admin" => new List<string>
+            RoleNames.ADMIN => new List<string>
             {
                 // All User Management
                 "Permissions.Users.View",
@@ -106,7 +107,7 @@ public class AuthService : IAuthService
                 "Permissions.Reports.View",
                 "Permissions.Reports.Export",
             },
-            "Customer" => new List<string>
+            RoleNames.CUSTOMER => new List<string>
             {
                 // View Library
                 "Permissions.Exercises.View",

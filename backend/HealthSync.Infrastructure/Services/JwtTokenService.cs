@@ -118,7 +118,7 @@ public class JwtTokenService : IJwtTokenService
                 ValidAudience = _audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
-            }, out SecurityToken validatedToken);
+            }, out _);
 
             return true;
         }
@@ -145,7 +145,7 @@ public class JwtTokenService : IJwtTokenService
                 ValidAudience = _audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
-            }, out SecurityToken validatedToken);
+            }, out _);
 
             return principal;
         }
