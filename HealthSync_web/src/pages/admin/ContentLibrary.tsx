@@ -109,7 +109,7 @@ export default function ContentLibrary() {
         });
       }
     } else {
-      const food = item as FoodItem | undefined;
+      const food = item;
       if (food) {
         setEditingFood(food);
         setFoodFormData({

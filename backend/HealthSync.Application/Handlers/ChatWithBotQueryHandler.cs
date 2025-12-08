@@ -176,7 +176,7 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
         return context;
     }
 
-    private decimal CalculateBMR(string gender, decimal weightKg, decimal heightCm, int age)
+    private static decimal CalculateBMR(string gender, decimal weightKg, decimal heightCm, int age)
     {
         // Mifflin-St Jeor Equation
         if (gender.ToLower() == "male")

@@ -144,7 +144,7 @@ export default function Login() {
 
             <div className="mb-8 md:mb-12 flex justify-center">
               <button 
-                onClick={() => window.location.href = 'http://localhost:5274/api/auth/google/web'}
+                onClick={() => globalThis.location.href = 'http://localhost:5274/api/auth/google/web'}
                 className="w-full max-w-md bg-white hover:bg-gray-50 text-black rounded-full border border-black py-3 md:py-4 text-xl md:text-2xl font-normal flex items-center justify-center gap-2 md:gap-3 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-6 h-6 md:w-8 md:h-8">

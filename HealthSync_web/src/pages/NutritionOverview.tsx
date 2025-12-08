@@ -191,7 +191,7 @@ export default function NutritionOverview() {
               icon="pi pi-list" 
               className="w-full p-4 text-xl"
               style={{ borderRadius: '2rem' }}
-              onClick={() => window.location.href = '/food-list'}
+              onClick={() => globalThis.location.href = '/food-list'}
             />
           </div>
           <div className="col-12 md:col-6">
@@ -201,7 +201,7 @@ export default function NutritionOverview() {
               className="w-full p-4 text-xl"
               outlined
               style={{ borderRadius: '2rem' }}
-              onClick={() => window.location.href = '/food-search'}
+              onClick={() => globalThis.location.href = '/food-search'}
             />
           </div>
         </div>

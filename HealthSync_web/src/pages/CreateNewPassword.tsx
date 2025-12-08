@@ -17,7 +17,7 @@ export default function CreateNewPassword() {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(globalThis.location.search);
       const token = urlParams.get('token');
       if (!token) {
         alert("Invalid reset link");

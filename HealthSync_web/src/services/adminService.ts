@@ -6,7 +6,7 @@ const mapUserData = (data: Record<string, unknown>): AdminUserListDto => ({
   email: data.Email || data.email,
   fullName: data.FullName || data.fullName,
   role: data.Role || data.role,
-  isActive: data.IsActive !== undefined ? data.IsActive : data.isActive,
+  isActive: data.IsActive ?? data.isActive,
   createdAt: data.CreatedAt || data.createdAt,
 });
 
@@ -15,7 +15,7 @@ const mapUserDetailData = (data: Record<string, unknown>): AdminUserDto => ({
   email: data.Email || data.email,
   fullName: data.FullName || data.fullName,
   role: data.Role || data.role,
-  isActive: data.IsActive !== undefined ? data.IsActive : data.isActive,
+  isActive: data.IsActive ?? data.isActive,
   createdAt: data.CreatedAt || data.createdAt,
   avatarUrl: data.AvatarUrl || data.avatarUrl,
 });

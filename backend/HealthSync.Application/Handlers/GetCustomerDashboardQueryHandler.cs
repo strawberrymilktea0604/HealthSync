@@ -149,7 +149,7 @@ namespace HealthSync.Application.Handlers
             };
         }
 
-        private int CalculateStreak(List<DateTime> workoutDates)
+        private static int CalculateStreak(List<DateTime> workoutDates)
         {
             if (workoutDates.Count == 0) return 0;
 

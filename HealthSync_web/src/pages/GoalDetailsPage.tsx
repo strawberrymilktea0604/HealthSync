@@ -46,7 +46,7 @@ const GoalDetailsPage = () => {
     try {
       setLoading(true);
       const goals = await goalService.getGoals();
-      const foundGoal = goals.find(g => g.goalId === Number.parseInt(goalId!));
+      const foundGoal = goals.find(g => g.goalId === Number.parseInt(goalId));
       if (foundGoal) {
         setGoal(foundGoal);
       }
@@ -75,7 +75,7 @@ const GoalDetailsPage = () => {
     );
     
     const startValue = sortedRecords[0].value;
-    const currentValue = sortedRecords[sortedRecords.length - 1].value;
+    const currentValue = sortedRecords.at(-1)?.value ?? 0;
     const targetValue = goal.targetValue;
     
     if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
@@ -126,7 +126,7 @@ const GoalDetailsPage = () => {
     );
 
     const startValue = sortedRecords[0].value;
-    const currentValue = sortedRecords[sortedRecords.length - 1].value;
+    const currentValue = sortedRecords.at(-1)?.value ?? 0;
     const targetValue = goal.targetValue;
 
     const change = currentValue - startValue;

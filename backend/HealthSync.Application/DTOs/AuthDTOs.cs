@@ -71,5 +71,5 @@ public class VerifyOtpRequest
 
 public class ResendOtpRequest
 {
-    // Có thể thêm email nếu cần
+    public string Email { get; set; } = string.Empty;
 }

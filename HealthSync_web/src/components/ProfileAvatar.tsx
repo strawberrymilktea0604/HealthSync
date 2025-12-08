@@ -84,7 +84,7 @@ const ProfileAvatar: React.FC = () => {
     if (!user?.fullName) return 'U';
     const names = user.fullName.split(' ');
     return names.length > 1
-      ? `${names[0][0]}${names[names.length - 1][0]}`
+      ? `${names[0][0]}${names.at(-1)?.[0]}`
       : names[0][0];
   };
 

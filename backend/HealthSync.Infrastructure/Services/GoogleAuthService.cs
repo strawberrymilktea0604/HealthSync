@@ -12,6 +12,8 @@ public class GoogleAuthService : IGoogleAuthService
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
 
+    private const string GoogleOAuthConfigMissingMessage = "Google OAuth configuration is missing";
+
     public GoogleAuthService(IConfiguration configuration, HttpClient httpClient)
     {
         _configuration = configuration;
@@ -26,7 +28,7 @@ public class GoogleAuthService : IGoogleAuthService
 
         if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(redirectUri) || string.IsNullOrEmpty(authUri))
         {
-            throw new InvalidOperationException("Google OAuth configuration is missing");
+            throw new InvalidOperationException(GoogleOAuthConfigMissingMessage);
         }
 
         var url = $"{authUri}?" +
@@ -50,7 +52,7 @@ public class GoogleAuthService : IGoogleAuthService
 
             if (string.IsNullOrEmpty(redirectUri) || string.IsNullOrEmpty(tokenUri))
             {
-                throw new InvalidOperationException("Google OAuth configuration is missing");
+                throw new InvalidOperationException(GoogleOAuthConfigMissingMessage);
             }
 
             // Exchange code for access token
@@ -89,7 +91,7 @@ public class GoogleAuthService : IGoogleAuthService
 
             if (string.IsNullOrEmpty(userInfoUri))
             {
-                throw new InvalidOperationException("Google OAuth configuration is missing");
+                throw new InvalidOperationException(GoogleOAuthConfigMissingMessage);
             }
 
             var userInfoRequest = new HttpRequestMessage(HttpMethod.Get, userInfoUri)
@@ -136,7 +138,7 @@ public class GoogleAuthService : IGoogleAuthService
 
         if (string.IsNullOrEmpty(tokenInfoUri))
         {
-            throw new InvalidOperationException("Google OAuth configuration is missing");
+            throw new InvalidOperationException(GoogleOAuthConfigMissingMessage);
         }
 
         // Verify ID token with Google

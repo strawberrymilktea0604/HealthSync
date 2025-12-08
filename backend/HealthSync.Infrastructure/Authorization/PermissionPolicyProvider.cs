@@ -53,14 +53,14 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
         return _fallbackPolicyProvider.GetPolicyAsync(policyName);
     }
 
-    private bool IsKnownPolicy(string policyName)
+    private static bool IsKnownPolicy(string policyName)
     {
         // Check against Policies constants
         var policyFields = typeof(Policies).GetFields();
         return policyFields.Any(f => f.GetValue(null)?.ToString() == policyName);
     }
 
-    private bool IsPermissionCode(string policyName)
+    private static bool IsPermissionCode(string policyName)
     {
         // Check against PermissionCodes constants
         var permissionFields = typeof(PermissionCodes).GetFields();
@@ -158,7 +158,7 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
         };
     }
 
-    private AuthorizationPolicy BuildPermissionPolicy(params string[] permissionCodes)
+    private static AuthorizationPolicy BuildPermissionPolicy(params string[] permissionCodes)
     {
         var policyBuilder = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser();

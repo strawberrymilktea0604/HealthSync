@@ -107,7 +107,7 @@ namespace HealthSync.Domain.Constants
     /// </summary>
     public static class RolePermissions
     {
-        public static readonly Dictionary<string, List<string>> AdminPermissions = new()
+        private static readonly Dictionary<string, List<string>> _adminPermissions = new()
         {
             { AppRoles.Admin, new List<string>
                 {
@@ -144,7 +144,7 @@ namespace HealthSync.Domain.Constants
             }
         };
 
-        public static readonly Dictionary<string, List<string>> CustomerPermissions = new()
+        private static readonly Dictionary<string, List<string>> _customerPermissions = new()
         {
             { AppRoles.Customer, new List<string>
                 {
@@ -177,16 +177,22 @@ namespace HealthSync.Domain.Constants
             }
         };
 
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> AdminPermissions 
+            => _adminPermissions.ToDictionary(k => k.Key, v => (IReadOnlyList<string>)v.Value);
+
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> CustomerPermissions 
+            => _customerPermissions.ToDictionary(k => k.Key, v => (IReadOnlyList<string>)v.Value);
+
         /// <summary>
         /// Lấy danh sách permissions theo role
         /// </summary>
-        public static List<string> GetPermissionsForRole(string role)
+        public static IReadOnlyList<string> GetPermissionsForRole(string role)
         {
             return role switch
             {
                 AppRoles.Admin => AdminPermissions[AppRoles.Admin],
                 AppRoles.Customer => CustomerPermissions[AppRoles.Customer],
-                _ => new List<string>()
+                _ => Array.Empty<string>()
             };
         }
 

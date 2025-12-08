@@ -76,7 +76,7 @@ public static class VerificationCodeStore
         }
     }
 
-    private class VerificationEntry
+    private sealed class VerificationEntry
     {
         public string Code { get; set; } = string.Empty;
         public DateTime ExpiresAt { get; set; }

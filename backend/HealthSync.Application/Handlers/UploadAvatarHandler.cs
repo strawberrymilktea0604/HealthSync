@@ -28,7 +28,7 @@ public class UploadAvatarHandler : IRequestHandler<UploadAvatarCommand, string>
             {
                 try
                 {
-                    var oldFileName = profile.AvatarUrl.Split('/').Last();
+                    var oldFileName = profile.AvatarUrl.Split('/')[^1];
                     await _storageService.DeleteFileAsync(oldFileName);
                 }
                 catch

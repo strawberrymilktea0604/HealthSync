@@ -81,6 +81,6 @@ export const usePermissions = () => {
     isAdmin,
     isUser,
     getUserPermissions,
-    userRole: user?.role as Role | undefined,
+    userRole: user?.role,
   };
 };

@@ -74,10 +74,10 @@ export default function GoogleCallback() {
         
         if (role === "Admin") {
           navigate("/admin/dashboard");
-        } else if (!userData.isProfileComplete) {
-          navigate("/complete-profile");
-        } else {
+        } else if (userData.isProfileComplete) {
           navigate("/dashboard");
+        } else {
+          navigate("/complete-profile");
         }
       } catch {
         toast({

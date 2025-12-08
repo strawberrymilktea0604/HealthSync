@@ -134,7 +134,7 @@ export default function ConfirmEmail() {
             {/* Back */}
             <button
               type="button"
-              onClick={() => window.history.back()}
+              onClick={() => globalThis.history.back()}
               className="inline-flex items-center gap-2 text-[15px] text-[#1e201e] bg-transparent"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" className="text-[#1e201e]">
