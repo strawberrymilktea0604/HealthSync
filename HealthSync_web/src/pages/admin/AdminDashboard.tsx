@@ -83,19 +83,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Prepare data for Most Popular Exercises
-  const exerciseOptions = {
-    indexAxis: 'y' as const,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false }
-    },
-    scales: {
-      x: { grid: { display: false }, max: 1300 },
-      y: { grid: { display: false } }
-    }
-  };
-
   return (
     <AdminLayout>
       <div className="p-4">

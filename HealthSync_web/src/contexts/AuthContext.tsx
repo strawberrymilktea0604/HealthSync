@@ -69,6 +69,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    // Check mạng trước khi gọi API
+    if (!navigator.onLine) {
+      throw new Error('Không có kết nối Internet. Vui lòng kiểm tra lại đường truyền.');
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -104,6 +109,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       return userData;
     } catch (err) {
+      // Check if it's a network error
+      if (!navigator.onLine || (err instanceof TypeError && err.message.includes('fetch'))) {
+        setError('Không thể kết nối đến server. Vui lòng thử lại sau.');
+        throw new Error('Không thể kết nối đến server. Vui lòng thử lại sau.');
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
     } finally {

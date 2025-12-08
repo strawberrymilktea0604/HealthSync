@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout_model.dart';
+import 'network_service.dart';
 
 class WorkoutService {
   static const String baseUrl = 'http://10.0.2.2:5274/api';
@@ -25,21 +26,35 @@ class WorkoutService {
     String? difficulty,
     String? search,
   }) async {
-    final queryParams = <String, String>{};
-    if (muscleGroup != null) queryParams['muscleGroup'] = muscleGroup;
-    if (difficulty != null) queryParams['difficulty'] = difficulty;
-    if (search != null) queryParams['search'] = search;
+    // Check mạng trước khi gọi API
+    if (!(await NetworkService.isConnected())) {
+      throw Exception('Không có kết nối Internet. Vui lòng kiểm tra lại đường truyền.');
+    }
 
-    final uri = Uri.parse('$baseUrl/workout/exercises')
-        .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+    try {
+      final queryParams = <String, String>{};
+      if (muscleGroup != null) queryParams['muscleGroup'] = muscleGroup;
+      if (difficulty != null) queryParams['difficulty'] = difficulty;
+      if (search != null) queryParams['search'] = search;
 
-    final response = await http.get(uri, headers: await _getHeaders());
+      final uri = Uri.parse('$baseUrl/workout/exercises')
+          .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Exercise.fromJson(json)).toList();
-    } else {
-      throw Exception('Không thể tải danh sách bài tập');
+      final response = await http.get(uri, headers: await _getHeaders());
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Exercise.fromJson(json)).toList();
+      } else {
+        throw Exception('Không thể tải danh sách bài tập');
+      }
+    } catch (e) {
+      // Nếu là lỗi mạng, throw thông báo cụ thể
+      if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+        throw Exception('Không thể kết nối đến server. Vui lòng thử lại sau.');
+      }
+      // Nếu là lỗi khác, re-throw
+      rethrow;
     }
   }
 

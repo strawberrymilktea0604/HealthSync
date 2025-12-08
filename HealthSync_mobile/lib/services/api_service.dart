@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
+import 'network_service.dart';
 
 class ApiService {
   // Sử dụng 10.0.2.2 cho Android emulator để trỏ đến localhost của máy host
@@ -9,21 +10,35 @@ class ApiService {
   
   // Đăng nhập
   Future<User> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
+    // Check mạng trước khi gọi API
+    if (!(await NetworkService.isConnected())) {
+      throw Exception('Không có kết nối Internet. Vui lòng kiểm tra lại đường truyền.');
+    }
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return User.fromJson(data);
-    } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['Error'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return User.fromJson(data);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['Error'] ?? 'Login failed');
+      }
+    } catch (e) {
+      // Nếu là lỗi mạng, throw thông báo cụ thể
+      if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+        throw Exception('Không thể kết nối đến server. Vui lòng thử lại sau.');
+      }
+      // Nếu là lỗi khác, re-throw
+      rethrow;
     }
   }
 
@@ -47,22 +62,36 @@ class ApiService {
     required String password,
     required String verificationCode,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-        'verificationCode': verificationCode,
-      }),
-    );
+    // Check mạng trước khi gọi API
+    if (!(await NetworkService.isConnected())) {
+      throw Exception('Không có kết nối Internet. Vui lòng kiểm tra lại đường truyền.');
+    }
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return User.fromJson(data);
-    } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['Error'] ?? 'Registration failed');
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'verificationCode': verificationCode,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return User.fromJson(data);
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception(error['Error'] ?? 'Registration failed');
+      }
+    } catch (e) {
+      // Nếu là lỗi mạng, throw thông báo cụ thể
+      if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+        throw Exception('Không thể kết nối đến server. Vui lòng thử lại sau.');
+      }
+      // Nếu là lỗi khác, re-throw
+      rethrow;
     }
   }
 

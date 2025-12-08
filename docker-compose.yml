@@ -7,7 +7,7 @@ services:
     container_name: healthsync-sqlserver-2  # Đã đổi tên
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=HealthSync@2025!
+      - SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=Express
     ports:
       - "1434:1433"  # Host Port đổi sang 1434
@@ -16,7 +16,7 @@ services:
     networks:
       - healthsync-network
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "HealthSync@2025!" -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -Q "SELECT 1" || exit 1
       interval: 10s
       timeout: 3s
       retries: 10
@@ -28,11 +28,11 @@ services:
     container_name: healthsync-minio-2  # Đã đổi tên
     command: server /data --console-address ":9001"
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-HealthSync@2025!}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
       # QUAN TRỌNG: Cập nhật URL public để trỏ về port mới (9002 và 9003)
-      - MINIO_SERVER_URL=${MINIO_SERVER_URL:-http://files.healthsync.local:9002}
-      - MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL:-http://console.healthsync.local:9003}
+      - MINIO_SERVER_URL=${MINIO_SERVER_URL}
+      - MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL}
     ports:
       - "9002:9000"  # API đổi sang 9002
       - "9003:9001"  # Console đổi sang 9003
@@ -59,15 +59,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
       # Kết nối nội bộ Docker vẫn dùng port gốc 1433 của container sqlserver
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=HealthSyncDB;User Id=sa;Password=HealthSync@2025!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=HealthSyncDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
       # Kết nối nội bộ Docker vẫn dùng port gốc 9000 của container minio
       - MinIO__Endpoint=minio:9000 
-      - MinIO__AccessKey=${MINIO_ROOT_USER:-minioadmin}
-      - MinIO__SecretKey=${MINIO_ROOT_PASSWORD:-HealthSync@2025!}
+      - MinIO__AccessKey=${MINIO_ROOT_USER}
+      - MinIO__SecretKey=${MINIO_ROOT_PASSWORD}
       - MinIO__BucketName=healthsync-files
       - MinIO__UseSSL=false
       # URL này trả về cho Client, nên phải dùng Port bên ngoài (9002)
-      - MinIO__ServerUrl=${MINIO_SERVER_URL:-http://files.healthsync.local:9002}
+      - MinIO__ServerUrl=${MINIO_SERVER_URL}
       # ... (Các biến JWT, Email giữ nguyên vì chúng không liên quan đến port) ...
       - JWT__SecretKey=${JWT_SECRET_KEY}
       - JWT__Issuer=HealthSyncAPI
@@ -80,16 +80,16 @@ services:
       - GoogleOAuth__ClientId=${GOOGLE_CLIENT_ID}
       - GoogleOAuth__ClientSecret=${GOOGLE_CLIENT_SECRET}
       - GoogleOAuth__AndroidClientId=${GOOGLE_ANDROID_CLIENT_ID}
-      - SMTP__Host=${SMTP_HOST:-smtp.gmail.com}
-      - SMTP__Port=${SMTP_PORT:-587}
+      - SMTP__Host=${SMTP_HOST}
+      - SMTP__Port=${SMTP_PORT}
       - SMTP__Username=${SMTP_USERNAME}
       - SMTP__Password=${SMTP_PASSWORD}
       - SMTP__FromEmail=${SMTP_FROM_EMAIL}
-      - SMTP__FromName=${SMTP_FROM_NAME:-HealthSync}
-      - EmailSettings__SmtpServer=${SMTP_HOST:-smtp.gmail.com}
-      - EmailSettings__SmtpPort=${SMTP_PORT:-587}
+      - SMTP__FromName=${SMTP_FROM_NAME}
+      - EmailSettings__SmtpServer=${SMTP_HOST}
+      - EmailSettings__SmtpPort=${SMTP_PORT}
       - EmailSettings__SenderEmail=${SMTP_USERNAME}
-      - EmailSettings__SenderName=${SMTP_FROM_NAME:-HealthSync}
+      - EmailSettings__SenderName=${SMTP_FROM_NAME}
       - EmailSettings__Password=${SMTP_PASSWORD}
       - AI__GeminiApiKey=${GEMINI_API_KEY}
     ports:
