@@ -431,3 +431,4 @@ C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\ne
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\Sprache.dll
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\System.ClientModel.dll
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\System.Numerics.Tensors.dll
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\BCrypt.Net-Next.dll

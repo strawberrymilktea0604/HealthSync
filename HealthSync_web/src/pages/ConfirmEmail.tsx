@@ -82,19 +82,37 @@ export default function ConfirmEmail() {
     if (value.length !== length) return;
     setSubmitting(true);
     try {
-      // TODO: verify OTP with your backend
-      await new Promise((r) => setTimeout(r, 700));
-      // success flow here
-      alert(`Submitted code: ${value}`);
+      const response = await fetch('/api/auth/verify-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: "test@example.com", otp: value }) // Replace with real email
+      });
+      if (response.ok) {
+        alert("Email verified successfully!");
+      } else {
+        alert("Invalid OTP");
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
-  function resend() {
+  async function resend() {
     if (secondsLeft > 0) return;
-    // TODO: call resend endpoint
-    setSecondsLeft(RESEND_SECONDS);
+    try {
+      const response = await fetch('/api/auth/resend-reset-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: "test@example.com" }) // Replace with real email
+      });
+      if (response.ok) {
+        setSecondsLeft(RESEND_SECONDS);
+      } else {
+        alert("Failed to resend OTP");
+      }
+    } catch (error) {
+      alert("Error resending OTP");
+    }
   }
 
   return (

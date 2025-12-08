@@ -17,9 +17,22 @@ export default function CreateNewPassword() {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      // TODO: call your reset password API with a token from the URL
-      await new Promise((r) => setTimeout(r, 700));
-      alert("Password reset!");
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      if (!token) {
+        alert("Invalid reset link");
+        return;
+      }
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword: pw1 })
+      });
+      if (response.ok) {
+        alert("Password reset successfully!");
+      } else {
+        alert("Failed to reset password");
+      }
     } finally {
       setSubmitting(false);
     }

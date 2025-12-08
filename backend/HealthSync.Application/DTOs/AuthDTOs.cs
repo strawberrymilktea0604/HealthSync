@@ -56,3 +56,20 @@ public class RegisterAdminRequest
     public string VerificationCode { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
 }
+
+public class ResetPasswordRequest
+{
+    public string Token { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+public class VerifyOtpRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Otp { get; set; } = string.Empty;
+}
+
+public class ResendOtpRequest
+{
+    // Có thể thêm email nếu cần
+}

@@ -2,6 +2,7 @@ using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthSync.Presentation.Controllers;
@@ -270,6 +271,98 @@ public class AuthController : ControllerBase
             }
 
             return Ok(new { ClientId = androidClientId });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] SendVerificationCodeRequest request)
+    {
+        try
+        {
+            var command = new ForgotPasswordCommand
+            {
+                Email = request.Email
+            };
+
+            await _mediator.Send(command);
+            return Ok(new { Message = "If the email exists, a reset link has been sent." });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            var command = new ResetPasswordCommand
+            {
+                Token = request.Token,
+                NewPassword = request.NewPassword
+            };
+
+            await _mediator.Send(command);
+            return Ok(new { Message = "Password reset successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("verify-reset-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyResetOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            var command = new VerifyResetOtpCommand
+            {
+                Email = request.Email,
+                Otp = request.Otp
+            };
+
+            var isValid = await _mediator.Send(command);
+            if (isValid)
+            {
+                return Ok(new { Message = "OTP verified" });
+            }
+            else
+            {
+                return BadRequest(new { Error = "Invalid OTP" });
+            }
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Error = "Lỗi server nội bộ" });
+        }
+    }
+
+    [HttpPost("resend-reset-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendResetOtp([FromBody] SendVerificationCodeRequest request)
+    {
+        try
+        {
+            var command = new ResendResetOtpCommand
+            {
+                Email = request.Email
+            };
+            await _mediator.Send(command);
+            return Ok(new { Message = "OTP resent" });
         }
         catch (Exception)
         {

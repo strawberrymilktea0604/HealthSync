@@ -1,4 +1,5 @@
 using HealthSync.Application.DTOs;
+using System.Security.Claims;
 
 namespace HealthSync.Application.Services;
 
@@ -13,7 +14,17 @@ public interface IJwtTokenService
     Task<TokenDto> GenerateTokenAsync(int userId, string email, List<string> roles, List<string> permissions);
     
     /// <summary>
+    /// Generate a reset password token
+    /// </summary>
+    Task<string> GenerateResetTokenAsync(int userId, string email);
+    
+    /// <summary>
     /// Validate a JWT token
     /// </summary>
     bool ValidateToken(string token);
+    
+    /// <summary>
+    /// Get ClaimsPrincipal from token
+    /// </summary>
+    ClaimsPrincipal? GetPrincipalFromToken(string token);
 }

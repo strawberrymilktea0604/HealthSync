@@ -107,9 +107,25 @@ export default function FoodSearch() {
     }
   };
 
-  const handleAddFood = (food: FoodSearchResult) => {
-    console.log(`Adding ${food.name} to ${mealType}`);
-    // TODO: Implement actual add food logic
+  const handleAddFood = async (food: FoodSearchResult) => {
+    try {
+      const response = await fetch('/api/nutrition/food-entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          foodItemId: food.id,
+          quantity: 1, // or some quantity
+          mealType: mealType
+        })
+      });
+      if (response.ok) {
+        alert(`Added ${food.name} to ${mealType}`);
+      } else {
+        alert("Failed to add food");
+      }
+    } catch (error) {
+      alert("Error adding food");
+    }
   };
 
   return (
