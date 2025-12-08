@@ -33,7 +33,7 @@ export default function GoogleCallback() {
       try {
         // Set user data directly since we got it from backend
         const userData = {
-          userId: parseInt(userId),
+          userId: Number.parseInt(userId),
           email,
           fullName,
           role,

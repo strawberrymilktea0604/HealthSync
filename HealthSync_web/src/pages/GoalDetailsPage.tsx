@@ -40,7 +40,7 @@ const GoalDetailsPage = () => {
     try {
       setLoading(true);
       const goals = await goalService.getGoals();
-      const foundGoal = goals.find(g => g.goalId === parseInt(goalId!));
+      const foundGoal = goals.find(g => g.goalId === Number.parseInt(goalId!));
       if (foundGoal) {
         setGoal(foundGoal);
       }

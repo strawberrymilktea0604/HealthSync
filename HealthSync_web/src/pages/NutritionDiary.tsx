@@ -91,7 +91,7 @@ export default function NutritionDiary() {
       {foods.length > 0 ? (
         <div className="flex flex-column gap-3">
           {foods.map((food, idx) => (
-            <div key={idx} className="surface-100 border-round-2xl p-3">
+            <div key={`${food.name}-${idx}`} className="surface-100 border-round-2xl p-3">
               <div className="flex justify-content-between align-items-start mb-2">
                 <div>
                   <p className="font-semibold m-0 mb-1">{food.name}</p>

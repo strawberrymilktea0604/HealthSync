@@ -100,7 +100,7 @@ export default function Index() {
           <div className="inline-block mb-4 md:mb-6">
             <img
               src="https://api.builder.io/api/v1/image/assets/TEMP/4e07f9ce70a0a210464bed673b7acb705fc502e6?width=286"
-              alt="Coach Natalia profile photo"
+              alt="Coach Natalia"
               className="w-28 h-28 md:w-36 md:h-36 rounded-3xl object-cover mb-4"
             />
           </div>

@@ -153,7 +153,7 @@ export default function ConfirmEmail() {
                 <div className="flex justify-center gap-3 sm:gap-4">
                   {Array.from({ length }).map((_, i) => (
                     <input
-                      key={`otp-${i}`}
+                      key={`otp-digit-${i}`}
                       ref={(el) => { inputsRef.current[i] = el }}
                       inputMode="numeric"
                       autoComplete="one-time-code"

@@ -154,7 +154,7 @@ export default function CreateWorkoutPage() {
                   id="duration"
                   type="number"
                   value={durationMin}
-                  onChange={(e) => setDurationMin(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setDurationMin(Number.parseInt(e.target.value) || 0)}
                   min="1"
                 />
               </div>
@@ -208,7 +208,7 @@ export default function CreateWorkoutPage() {
                             <Input
                               type="number"
                               value={session.sets}
-                              onChange={(e) => updateExerciseSession(session.exerciseId, 'sets', parseInt(e.target.value) || 0)}
+                              onChange={(e) => updateExerciseSession(session.exerciseId, 'sets', Number.parseInt(e.target.value) || 0)}
                               min="1"
                               className="h-9"
                             />
@@ -218,7 +218,7 @@ export default function CreateWorkoutPage() {
                             <Input
                               type="number"
                               value={session.reps}
-                              onChange={(e) => updateExerciseSession(session.exerciseId, 'reps', parseInt(e.target.value) || 0)}
+                              onChange={(e) => updateExerciseSession(session.exerciseId, 'reps', Number.parseInt(e.target.value) || 0)}
                               min="1"
                               className="h-9"
                             />

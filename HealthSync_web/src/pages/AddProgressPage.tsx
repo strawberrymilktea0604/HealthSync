@@ -36,7 +36,7 @@ const AddProgressPage = () => {
 
     try {
       setLoading(true);
-      await goalService.addProgress(parseInt(goalId), formData);
+      await goalService.addProgress(Number.parseInt(goalId), formData);
       toast({
         title: 'Thành công',
         description: 'Đã cập nhật tiến độ',

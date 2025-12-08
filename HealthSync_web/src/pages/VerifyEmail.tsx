@@ -72,7 +72,7 @@ export default function VerifyEmail() {
               <div className="flex justify-center gap-2 md:gap-4">
                 {code.map((digit, index) => (
                   <input
-                    key={index}
+                    key={`otp-${index}`}
                     id={`code-${index}`}
                     type="text"
                     maxLength={1}
