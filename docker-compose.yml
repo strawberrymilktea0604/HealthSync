@@ -57,7 +57,7 @@ services:
     container_name: healthsync-backend-2  # Đã đổi tên
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       # Kết nối nội bộ Docker vẫn dùng port gốc 1433 của container sqlserver
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=HealthSyncDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
       # Kết nối nội bộ Docker vẫn dùng port gốc 9000 của container minio
@@ -93,7 +93,7 @@ services:
       - EmailSettings__Password=${SMTP_PASSWORD}
       - AI__GeminiApiKey=${GEMINI_API_KEY}
     ports:
-      - "5001:80"  # Host Port đổi sang 5001
+      - "5001:8080"  # Host Port đổi sang 5001
     depends_on:
       sqlserver:
         condition: service_healthy

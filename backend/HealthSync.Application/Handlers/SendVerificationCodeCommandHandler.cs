@@ -4,6 +4,7 @@ using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,7 +33,7 @@ public class SendVerificationCodeCommandHandler : IRequestHandler<SendVerificati
         }
 
         // Generate a 6-digit code
-        var code = new Random().Next(100000, 999999).ToString();
+        var code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
         // Store the code with 5 minutes expiration
         VerificationCodeStore.Store(request.Email, code, TimeSpan.FromMinutes(5));
