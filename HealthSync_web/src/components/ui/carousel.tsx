@@ -177,9 +177,9 @@ const CarouselItem = React.forwardRef<
 
   return (
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
-    <div
+    <div // NOSONAR
       ref={ref}
-      role="group" // NOSONAR - Required for carousel ARIA pattern
+      role="group"
       aria-label="Slide"
       aria-roledescription="slide"
       className={cn(
