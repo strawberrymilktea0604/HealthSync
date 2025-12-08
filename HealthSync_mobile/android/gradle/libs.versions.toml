@@ -1,0 +1,5 @@
+[versions]
+playServicesAuth = "21.4.0"
+
+[libraries]
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }

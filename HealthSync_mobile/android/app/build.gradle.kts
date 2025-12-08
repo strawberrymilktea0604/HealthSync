@@ -45,6 +45,19 @@ android {
 
     buildTypes {
         release {
+            // 1. Bật tính năng làm rối code và xóa code thừa (R8)
+            isMinifyEnabled = true
+
+            // 2. Bật tính năng xóa file tài nguyên (ảnh, layout) không dùng đến để giảm dung lượng app
+            isShrinkResources = true
+
+            // 3. Chỉ định file cấu hình luật (ProGuard rules)
+            // File này quy định giữ lại những class nào không được đổi tên (quan trọng với Flutter)
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             // For production, set signingConfig to signingConfigs.getByName("release") after generating keystore
@@ -60,5 +73,5 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.android.gms:play-services-auth:21.4.0")
+    implementation(libs.play.services.auth)
 }
