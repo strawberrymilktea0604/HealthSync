@@ -348,7 +348,7 @@ const NutritionPage: React.FC = () => {
             <CardContent className="p-12 text-center">
               <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-500">Chưa có món ăn nào được ghi lại cho ngày này</p>
-              <p className="text-sm text-gray-400 mt-2">Nhấn "Thêm bữa ăn" để bắt đầu</p>
+              <p className="text-sm text-gray-400 mt-2">Nhấn &quot;Thêm bữa ăn&quot; để bắt đầu</p>
             </CardContent>
           </Card>
         ) : null}

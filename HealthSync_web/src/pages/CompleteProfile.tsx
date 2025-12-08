@@ -29,7 +29,6 @@ export default function CompleteProfile() {
     }
     if (user.isProfileComplete) {
       navigate("/dashboard");
-      return;
     }
   }, [user, navigate]);
 

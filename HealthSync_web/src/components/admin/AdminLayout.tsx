@@ -26,7 +26,7 @@ interface MenuItem {
   permission: Permission;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();

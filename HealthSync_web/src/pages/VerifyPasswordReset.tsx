@@ -84,7 +84,7 @@ export default function VerifyPasswordReset() {
               </div>
 
               <div className="text-xl md:text-2xl lg:text-3xl">
-                <span className="text-black">Didn't receive the code?</span>{" "}
+                <span className="text-black">Didn&apos;t receive the code?</span>{" "}
                 <button type="button" className="text-gray-400 hover:text-gray-600">
                   Resend (58)
                 </button>

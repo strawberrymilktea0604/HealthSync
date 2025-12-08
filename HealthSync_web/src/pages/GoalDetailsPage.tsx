@@ -19,7 +19,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Area,
-  AreaChart
+  AreaChart,
+  Line
 } from 'recharts';
 
 const GoalDetailsPage = () => {

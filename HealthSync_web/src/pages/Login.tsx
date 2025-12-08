@@ -158,7 +158,7 @@ export default function Login() {
             </div>
 
             <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
-              <span className="text-xl md:text-2xl">Don't have an account?</span>
+              <span className="text-xl md:text-2xl">Don&apos;t have an account?</span>
               <Link to="/register">
                 <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-10 py-3 md:py-4 text-xl md:text-2xl h-auto font-normal">
                   Register

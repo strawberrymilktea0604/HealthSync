@@ -8,7 +8,7 @@ export default function Badge({
   children,
   variant = "info",
   className = "",
-}: BadgeProps) {
+}: Readonly<BadgeProps>) {
   const variants = {
     success: "bg-green-100 text-green-800",
     danger: "bg-red-100 text-red-800",

@@ -124,8 +124,8 @@ export default function HomeGuest() {
           <p className="text-xl line-height-3 text-800">
             Excited to share this clean and modern wireframe for a fitness coaching website! 
             This design focuses on user engagement and a clear information hierarchy, guiding 
-            potential clients through the coach's offerings seamlessly. The layout emphasizes 
-            the coach's expertise, showcases services, and encourages action with strategically 
+            potential clients through the coach&apos;s offerings seamlessly. The layout emphasizes 
+            the coach&apos;s expertise, showcases services, and encourages action with strategically 
             placed CTAs.
           </p>
         </div>
