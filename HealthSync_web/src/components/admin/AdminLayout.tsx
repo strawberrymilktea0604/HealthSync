@@ -77,16 +77,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-screen bg-[#E8E4D9] overflow-hidden">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div
-          role="button"
-          tabIndex={0}
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <button
+          type="button"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden cursor-default"
           onClick={() => setIsMobileMenuOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              setIsMobileMenuOpen(false);
-            }
-          }}
+          aria-label="Close mobile menu"
         />
       )}
 

@@ -41,7 +41,7 @@ export function PieChartCard({
             nameKey={nameKey}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+              <Cell key={`cell-${entry[nameKey]}`} fill={colors[index % colors.length]} />
             ))}
           </Pie>
           <Tooltip />

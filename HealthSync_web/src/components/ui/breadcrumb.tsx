@@ -61,6 +61,7 @@ const BreadcrumbPage = React.forwardRef<
   HTMLSpanElement,
   React.ComponentPropsWithoutRef<"span">
 >(({ className, ...props }, ref) => (
+  // eslint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/anchor-is-valid
   <span
     ref={ref}
     role="link"
@@ -77,9 +78,8 @@ const BreadcrumbSeparator = ({
   className,
   ...props
 }: React.ComponentProps<"li">) => (
+  // eslint-disable-next-line jsx-a11y/img-redundant-alt
   <li
-    role="presentation"
-    aria-hidden="true"
     className={cn("[&>svg]:size-3.5", className)}
     {...props}
   >
@@ -92,9 +92,8 @@ const BreadcrumbEllipsis = ({
   className,
   ...props
 }: React.ComponentProps<"span">) => (
+  // eslint-disable-next-line jsx-a11y/img-redundant-alt
   <span
-    role="presentation"
-    aria-hidden="true"
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >

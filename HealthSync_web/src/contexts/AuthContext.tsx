@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 
 interface User {
   userId: number;
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const value: AuthContextType = {
+  const value = useMemo(() => ({
     user,
     login,
     register,
@@ -165,7 +165,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser: setUserData,
     isLoading,
     error,
-  };
+  }), [user, isLoading, error]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

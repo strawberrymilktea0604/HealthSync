@@ -29,6 +29,12 @@ const GoalDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'all'>('month');
 
+  const rangeLabels = {
+    week: 'Tuần',
+    month: 'Tháng',
+    all: 'Tất cả'
+  };
+
   useEffect(() => {
     if (goalId) {
       loadGoalDetails();
@@ -294,7 +300,7 @@ const GoalDetailsPage = () => {
                       ? 'bg-[#5FCCB4] hover:bg-[#4DB89E] text-white' 
                       : ''}
                   >
-                    {range === 'week' ? 'Tuần' : range === 'month' ? 'Tháng' : 'Tất cả'}
+                    {rangeLabels[range]}
                   </Button>
                 ))}
               </div>

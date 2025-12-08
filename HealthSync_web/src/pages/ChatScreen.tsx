@@ -76,6 +76,63 @@ const ChatScreen: React.FC = () => {
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const renderChatContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4C5A9]"></div>
+        </div>
+      );
+    }
+
+    if (messages.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <Bot className="w-20 h-20 mb-4" />
+          <p className="text-lg">Bắt đầu cuộc trò chuyện</p>
+        </div>
+      );
+    }
+
+    return messages.map((message) => (
+      <div
+        key={message.id}
+        className={`flex gap-3 ${
+          message.role === 'user' ? 'justify-end' : 'justify-start'
+        }`}
+      >
+        {message.role === 'assistant' && (
+          <div className="w-10 h-10 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
+            <Bot className="w-5 h-5 text-white" />
+          </div>
+        )}
+
+        <div
+          className={`max-w-2xl rounded-2xl px-4 py-3 ${
+            message.role === 'user'
+              ? 'bg-[#D4C5A9] text-white'
+              : 'bg-white border border-gray-200'
+          }`}
+        >
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          <p
+            className={`text-xs mt-1 ${
+              message.role === 'user' ? 'text-white/70' : 'text-gray-500'
+            }`}
+          >
+            {formatTime(message.createdAt)}
+          </p>
+        </div>
+
+        {message.role === 'user' && (
+          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-white" />
+          </div>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
@@ -111,54 +168,7 @@ const ChatScreen: React.FC = () => {
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="max-w-4xl mx-auto space-y-4">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4C5A9]"></div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-              <Bot className="w-20 h-20 mb-4" />
-              <p className="text-lg">Bắt đầu cuộc trò chuyện</p>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="w-10 h-10 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                )}
-                
-                <div
-                  className={`max-w-2xl rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-[#D4C5A9] text-white'
-                      : 'bg-white border border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      message.role === 'user' ? 'text-white/70' : 'text-gray-500'
-                    }`}
-                  >
-                    {formatTime(message.createdAt)}
-                  </p>
-                </div>
-
-                {message.role === 'user' && (
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-white" />
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+          {renderChatContent()}
           
           {isSending && (
             <div className="flex gap-3 justify-start">

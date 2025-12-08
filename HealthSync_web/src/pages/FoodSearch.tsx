@@ -128,6 +128,98 @@ export default function FoodSearch() {
     }
   };
 
+  const renderContent = () => {
+    // Trường hợp 1: Có kết quả tìm kiếm
+    if (searchResults.length > 0) {
+      return (
+        <>
+          <div className="mb-3">
+            <p className="text-xl font-semibold">
+              Kết quả tìm kiếm: {searchResults.length} món
+            </p>
+          </div>
+
+          <div className="grid">
+            {searchResults.map((food) => (
+              <div key={food.id} className="col-12">
+                <Card className="hover:shadow-3 transition-all transition-duration-300">
+                  <div className="grid align-items-center">
+                    {/* Food Info */}
+                    <div className="col-12 md:col-4">
+                      <h4 className="text-xl font-bold m-0 mb-2">{food.name}</h4>
+                      <span className="px-2 py-1 border-round text-xs font-semibold surface-100">
+                        {food.category}
+                      </span>
+                      <p className="text-600 mt-2 mb-0">{food.servingSize}</p>
+                    </div>
+
+                    {/* Nutrition Stats */}
+                    <div className="col-12 md:col-6">
+                      <div className="grid">
+                        <div className="col-6 lg:col-3 text-center">
+                          <p className="text-sm text-600 m-0">Calories</p>
+                          <p className="text-lg font-bold m-0">{food.calories}</p>
+                          <p className="text-xs text-600 m-0">kcal</p>
+                        </div>
+                        <div className="col-6 lg:col-3 text-center">
+                          <p className="text-sm text-600 m-0">Protein</p>
+                          <p className="text-lg font-bold m-0">{food.protein}</p>
+                          <p className="text-xs text-600 m-0">g</p>
+                        </div>
+                        <div className="col-6 lg:col-3 text-center">
+                          <p className="text-sm text-600 m-0">Carbs</p>
+                          <p className="text-lg font-bold m-0">{food.carbs}</p>
+                          <p className="text-xs text-600 m-0">g</p>
+                        </div>
+                        <div className="col-6 lg:col-3 text-center">
+                          <p className="text-sm text-600 m-0">Fat</p>
+                          <p className="text-lg font-bold m-0">{food.fat}</p>
+                          <p className="text-xs text-600 m-0">g</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="col-12 md:col-2">
+                      <Button 
+                        label="Thêm" 
+                        icon="pi pi-plus" 
+                        onClick={() => handleAddFood(food)}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    // Trường hợp 2: Có search nhưng không có kết quả
+    if (searchQuery && searchResults.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <i className="pi pi-search text-6xl text-400 mb-3"></i>
+          <p className="text-xl text-600">Không tìm thấy kết quả</p>
+          <p className="text-600">Hãy thử tìm kiếm với từ khóa khác</p>
+        </div>
+      );
+    }
+
+    // Trường hợp 3: Mặc định (Chưa search)
+    return (
+      <Card className="text-center">
+        <i className="pi pi-search text-6xl text-400 mb-3"></i>
+        <p className="text-xl font-semibold mb-2">Tìm kiếm món ăn</p>
+        <p className="text-600">
+          Nhập tên món ăn bạn muốn tìm và chọn bữa ăn để bắt đầu
+        </p>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen surface-ground">
       {/* Header */}
@@ -206,84 +298,7 @@ export default function FoodSearch() {
         </Card>
 
         {/* Search Results */}
-        {searchResults.length > 0 ? (
-          <>
-            <div className="mb-3">
-              <p className="text-xl font-semibold">
-                Kết quả tìm kiếm: {searchResults.length} món
-              </p>
-            </div>
-
-            <div className="grid">
-              {searchResults.map((food) => (
-                <div key={food.id} className="col-12">
-                  <Card className="hover:shadow-3 transition-all transition-duration-300">
-                    <div className="grid align-items-center">
-                      {/* Food Info */}
-                      <div className="col-12 md:col-4">
-                        <h4 className="text-xl font-bold m-0 mb-2">{food.name}</h4>
-                        <span className="px-2 py-1 border-round text-xs font-semibold surface-100">
-                          {food.category}
-                        </span>
-                        <p className="text-600 mt-2 mb-0">{food.servingSize}</p>
-                      </div>
-
-                      {/* Nutrition Stats */}
-                      <div className="col-12 md:col-6">
-                        <div className="grid">
-                          <div className="col-6 lg:col-3 text-center">
-                            <p className="text-sm text-600 m-0">Calories</p>
-                            <p className="text-lg font-bold m-0">{food.calories}</p>
-                            <p className="text-xs text-600 m-0">kcal</p>
-                          </div>
-                          <div className="col-6 lg:col-3 text-center">
-                            <p className="text-sm text-600 m-0">Protein</p>
-                            <p className="text-lg font-bold m-0">{food.protein}</p>
-                            <p className="text-xs text-600 m-0">g</p>
-                          </div>
-                          <div className="col-6 lg:col-3 text-center">
-                            <p className="text-sm text-600 m-0">Carbs</p>
-                            <p className="text-lg font-bold m-0">{food.carbs}</p>
-                            <p className="text-xs text-600 m-0">g</p>
-                          </div>
-                          <div className="col-6 lg:col-3 text-center">
-                            <p className="text-sm text-600 m-0">Fat</p>
-                            <p className="text-lg font-bold m-0">{food.fat}</p>
-                            <p className="text-xs text-600 m-0">g</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Action Button */}
-                      <div className="col-12 md:col-2">
-                        <Button 
-                          label="Thêm" 
-                          icon="pi pi-plus" 
-                          onClick={() => handleAddFood(food)}
-                          className="w-full"
-                        />
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : searchQuery && searchResults.length === 0 ? (
-          <div className="text-center py-8">
-            <i className="pi pi-search text-6xl text-400 mb-3"></i>
-            <p className="text-xl text-600">Không tìm thấy kết quả</p>
-            <p className="text-600">Hãy thử tìm kiếm với từ khóa khác</p>
-          </div>
-        ) : (
-          <Card className="text-center">
-            <i className="pi pi-search text-6xl text-400 mb-3"></i>
-            <p className="text-xl font-semibold mb-2">Tìm kiếm món ăn</p>
-            <p className="text-600">
-              Nhập tên món ăn bạn muốn tìm và chọn bữa ăn để bắt đầu
-            </p>
-          </Card>
-        )}
+        {renderContent()}
       </main>
 
       {/* Footer */}

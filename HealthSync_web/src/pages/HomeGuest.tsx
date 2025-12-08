@@ -175,11 +175,11 @@ export default function HomeGuest() {
                 <div className="flex gap-8 flex-wrap">
                     <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
                         <span className="font-bold">Inspiration</span>
-                        <a href="#" className="text-600 no-underline text-sm">Term&Conditions</a>
+                        <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Term&Conditions</button>
                     </div>
                     <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
                         <span className="font-bold">Support</span>
-                        <a href="#" className="text-600 no-underline text-sm">Cookies</a>
+                        <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Cookies</button>
                     </div>
                     <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
                         <span className="font-bold">About</span>
@@ -187,11 +187,11 @@ export default function HomeGuest() {
                     </div>
                     <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
                         <span className="font-bold">Blog</span>
-                        <a href="#" className="text-600 no-underline text-sm">Freelancers</a>
+                        <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Freelancers</button>
                     </div>
                     <div className="flex flex-column justify-content-between gap-6" style={{ minHeight: '120px' }}>
                         <span className="font-bold">PTs</span>
-                        <a href="#" className="text-600 no-underline text-sm">Resources</a>
+                        <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Resources</button>
                     </div>
                 </div>
 
@@ -202,7 +202,7 @@ export default function HomeGuest() {
                         <i className="pi pi-facebook text-2xl cursor-pointer text-900"></i>
                         <i className="pi pi-instagram text-2xl cursor-pointer text-900"></i>
                     </div>
-                    <a href="#" className="text-600 no-underline text-sm">Tags</a>
+                    <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Tags</button>
                 </div>
             </div>
         </footer>
