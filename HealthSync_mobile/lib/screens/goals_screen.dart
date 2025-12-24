@@ -70,7 +70,10 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black87),
             onPressed: () {
-              // TODO: Implement search
+              // Thông báo tạm
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Tính năng tìm kiếm đang được phát triển!')),
+              );
             },
           ),
         ],
