@@ -1,6 +1,7 @@
 using HealthSync.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Xunit;
 
 namespace HealthSync.Infrastructure.Tests.Services;
 
@@ -30,8 +31,11 @@ public class EmailServiceTests
         var email = "test@example.com";
         var code = "123456";
 
-        // Act & Assert - Should not throw
-        await _emailService.SendVerificationCodeAsync(email, code);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendVerificationCodeAsync(email, code));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -41,8 +45,11 @@ public class EmailServiceTests
         var email = "user@example.com";
         var code = "654321";
 
-        // Act & Assert - Should not throw
-        await _emailService.SendVerificationCodeAsync(email, code);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendVerificationCodeAsync(email, code));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -52,8 +59,11 @@ public class EmailServiceTests
         var email = "user@example.com";
         var code = "";
 
-        // Act & Assert - Should not throw (fallback to console)
-        await _emailService.SendVerificationCodeAsync(email, code);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendVerificationCodeAsync(email, code));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -63,8 +73,11 @@ public class EmailServiceTests
         var email = "test@example.com";
         var resetToken = "reset-token-123";
 
-        // Act & Assert - Should not throw
-        await _emailService.SendResetPasswordEmailAsync(email, resetToken);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendResetPasswordEmailAsync(email, resetToken));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -74,8 +87,11 @@ public class EmailServiceTests
         var email = "user@example.com";
         var resetToken = "token-abc-xyz";
 
-        // Act & Assert - Should not throw
-        await _emailService.SendResetPasswordEmailAsync(email, resetToken);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendResetPasswordEmailAsync(email, resetToken));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -85,8 +101,11 @@ public class EmailServiceTests
         var email = "user@example.com";
         var resetToken = "";
 
-        // Act & Assert - Should not throw (fallback to console)
-        await _emailService.SendResetPasswordEmailAsync(email, resetToken);
+        // Act
+        var exception = await Record.ExceptionAsync(() => _emailService.SendResetPasswordEmailAsync(email, resetToken));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -98,8 +117,11 @@ public class EmailServiceTests
         var email = "test@example.com";
         var code = "123456";
 
-        // Act & Assert - Should use default port 587
-        await emailService.SendVerificationCodeAsync(email, code);
+        // Act
+        var exception = await Record.ExceptionAsync(() => emailService.SendVerificationCodeAsync(email, code));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -111,8 +133,11 @@ public class EmailServiceTests
         var email = "test@example.com";
         var resetToken = "token-123";
 
-        // Act & Assert - Should use default port 587
-        await emailService.SendResetPasswordEmailAsync(email, resetToken);
+        // Act
+        var exception = await Record.ExceptionAsync(() => emailService.SendResetPasswordEmailAsync(email, resetToken));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -124,8 +149,11 @@ public class EmailServiceTests
         var email = "test@example.com";
         var code = "123456";
 
-        // Act & Assert - Should fallback to console
-        await emailService.SendVerificationCodeAsync(email, code);
+        // Act
+        var exception = await Record.ExceptionAsync(() => emailService.SendVerificationCodeAsync(email, code));
+
+        // Assert
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -137,7 +165,10 @@ public class EmailServiceTests
         var email = "test@example.com";
         var resetToken = "token-123";
 
-        // Act & Assert - Should fallback to console
-        await emailService.SendResetPasswordEmailAsync(email, resetToken);
+        // Act
+        var exception = await Record.ExceptionAsync(() => emailService.SendResetPasswordEmailAsync(email, resetToken));
+
+        // Assert
+        Assert.Null(exception);
     }
 }

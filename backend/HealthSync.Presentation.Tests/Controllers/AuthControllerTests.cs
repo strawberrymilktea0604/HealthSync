@@ -289,8 +289,8 @@ public class AuthControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var success = okResult.Value?.GetType().GetProperty("Success")?.GetValue(okResult.Value);
-        Assert.Equal(true, success);
+        var message = okResult.Value?.GetType().GetProperty("Message")?.GetValue(okResult.Value);
+        Assert.Equal("Mã xác thực hợp lệ!", message);
     }
 
     [Fact]
