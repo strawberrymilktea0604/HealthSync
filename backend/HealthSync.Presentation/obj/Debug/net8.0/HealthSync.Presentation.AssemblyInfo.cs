@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+376f0301ebbe2e2727649f51c8850c624e20b82c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22e6995162ca8f4a190e0a71b51a12e601e5b589")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthSync.Presentation")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -30,6 +30,7 @@ public class AuthController : ControllerBase
         return _configuration["FRONTEND_URL"] ?? "http://localhost:5173";
     }
 
+    [AllowAnonymous]
     [HttpPost("register-admin")]
     public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminRequest request)
     {
@@ -57,6 +58,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -82,6 +84,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -106,6 +109,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("send-verification-code")]
     public async Task<IActionResult> SendVerificationCode([FromBody] SendVerificationCodeRequest request)
     {
@@ -125,6 +129,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("verify-code")]
     public async Task<IActionResult> VerifyCode([FromBody] VerifyCodeRequest request)
     {
@@ -159,6 +164,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpGet("google/web")]
     public IActionResult GoogleLoginWeb([FromQuery] string state = "")
     {
@@ -174,6 +180,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpGet("google/callback")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string? state = null)
     {
@@ -220,6 +227,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("set-password")]
     public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest request)
     {
@@ -244,6 +252,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("google/mobile")]
     public async Task<IActionResult> GoogleLoginMobile([FromBody] GoogleLoginMobileRequest request)
     {

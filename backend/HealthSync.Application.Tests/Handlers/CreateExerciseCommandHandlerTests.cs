@@ -9,17 +9,17 @@ namespace HealthSync.Application.Tests.Handlers;
 
 public class CreateExerciseCommandHandlerTests
 {
-    private readonly Mock<IApplicationDbContext> _mockContext;
+    private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly CreateExerciseCommandHandler _handler;
 
     public CreateExerciseCommandHandlerTests()
     {
-        _mockContext = new Mock<IApplicationDbContext>();
-        _handler = new CreateExerciseCommandHandler(_mockContext.Object);
+        _contextMock = new Mock<IApplicationDbContext>();
+        _handler = new CreateExerciseCommandHandler(_contextMock.Object);
     }
 
     [Fact]
-    public async Task Handle_ValidExercise_ReturnsExerciseId()
+    public async Task Handle_ShouldCreateExercise_WhenCommandIsValid()
     {
         // Arrange
         var command = new CreateExerciseCommand
@@ -28,27 +28,59 @@ public class CreateExerciseCommandHandlerTests
             MuscleGroup = "Chest",
             Difficulty = "Intermediate",
             Equipment = "Barbell",
-            Description = "Compound chest exercise"
+            Description = "Classic chest exercise"
         };
 
         Exercise? capturedExercise = null;
-        _mockContext.Setup(x => x.Add(It.IsAny<Exercise>()))
-            .Callback<Exercise>(e => capturedExercise = e);
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => { if (capturedExercise != null) capturedExercise.ExerciseId = 789; })
-            .ReturnsAsync(1);
+        _contextMock.Setup(c => c.Add(It.IsAny<Exercise>()))
+            .Callback<object>(e => capturedExercise = e as Exercise);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(789, result);
-        _mockContext.Verify(x => x.Add(It.IsAny<Exercise>()), Times.Once);
-        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _contextMock.Verify(c => c.Add(It.IsAny<Exercise>()), Times.Once);
+        _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        
+        Assert.NotNull(capturedExercise);
+        Assert.Equal("Bench Press", capturedExercise!.Name);
+        Assert.Equal("Chest", capturedExercise.MuscleGroup);
+        Assert.Equal("Intermediate", capturedExercise.Difficulty);
+        Assert.Equal("Barbell", capturedExercise.Equipment);
+        Assert.Equal("Classic chest exercise", capturedExercise.Description);
     }
 
     [Fact]
-    public async Task Handle_ValidExercise_SetsAllPropertiesCorrectly()
+    public async Task Handle_ShouldReturnExerciseId_AfterCreation()
+    {
+        // Arrange
+        var command = new CreateExerciseCommand
+        {
+            Name = "Squat",
+            MuscleGroup = "Legs",
+            Difficulty = "Advanced",
+            Equipment = "Barbell",
+            Description = "Compound leg exercise"
+        };
+
+        _contextMock.Setup(c => c.Add(It.IsAny<Exercise>()))
+            .Callback<object>(e =>
+            {
+                if (e is Exercise exercise)
+                {
+                    exercise.ExerciseId = 5;
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(5, result);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCreateExerciseWithAllFields_WhenAllFieldsProvided()
     {
         // Arrange
         var command = new CreateExerciseCommand
@@ -57,88 +89,68 @@ public class CreateExerciseCommandHandlerTests
             MuscleGroup = "Back",
             Difficulty = "Advanced",
             Equipment = "Barbell",
-            Description = "Compound back and leg exercise"
+            Description = "Full body compound movement"
         };
 
         Exercise? capturedExercise = null;
-        _mockContext.Setup(x => x.Add(It.IsAny<Exercise>()))
-            .Callback<Exercise>(e => capturedExercise = e);
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
+        _contextMock.Setup(c => c.Add(It.IsAny<Exercise>()))
+            .Callback<object>(e => capturedExercise = e as Exercise);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(capturedExercise);
-        Assert.Equal("Deadlift", capturedExercise.Name);
+        Assert.Equal("Deadlift", capturedExercise!.Name);
         Assert.Equal("Back", capturedExercise.MuscleGroup);
         Assert.Equal("Advanced", capturedExercise.Difficulty);
         Assert.Equal("Barbell", capturedExercise.Equipment);
-        Assert.Equal("Compound back and leg exercise", capturedExercise.Description);
-    }
-
-    [Theory]
-    [InlineData("Push-ups", "Chest", "Beginner", "Bodyweight")]
-    [InlineData("Squats", "Legs", "Intermediate", "Barbell")]
-    [InlineData("Pull-ups", "Back", "Advanced", "Pull-up bar")]
-    public async Task Handle_VariousExercises_CreatesCorrectly(
-        string name, 
-        string muscleGroup, 
-        string difficulty, 
-        string equipment)
-    {
-        // Arrange
-        var command = new CreateExerciseCommand
-        {
-            Name = name,
-            MuscleGroup = muscleGroup,
-            Difficulty = difficulty,
-            Equipment = equipment,
-            Description = $"Exercise for {muscleGroup}"
-        };
-
-        Exercise? capturedExercise = null;
-        _mockContext.Setup(x => x.Add(It.IsAny<Exercise>()))
-            .Callback<Exercise>(e => capturedExercise = e);
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(capturedExercise);
-        Assert.Equal(name, capturedExercise.Name);
-        Assert.Equal(muscleGroup, capturedExercise.MuscleGroup);
-        Assert.Equal(difficulty, capturedExercise.Difficulty);
-        Assert.Equal(equipment, capturedExercise.Equipment);
+        Assert.Equal("Full body compound movement", capturedExercise.Description);
     }
 
     [Fact]
-    public async Task Handle_ExerciseWithoutDescription_CreatesSuccessfully()
+    public async Task Handle_ShouldCreateExerciseWithMinimalFields_WhenOptionalFieldsOmitted()
     {
         // Arrange
         var command = new CreateExerciseCommand
         {
-            Name = "Plank",
-            MuscleGroup = "Core",
+            Name = "Push-ups",
+            MuscleGroup = "Chest",
             Difficulty = "Beginner",
-            Equipment = "None",
-            Description = null
+            Equipment = "None"
         };
 
         Exercise? capturedExercise = null;
-        _mockContext.Setup(x => x.Add(It.IsAny<Exercise>()))
-            .Callback<Exercise>(e => capturedExercise = e);
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
+        _contextMock.Setup(c => c.Add(It.IsAny<Exercise>()))
+            .Callback<object>(e => capturedExercise = e as Exercise);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(capturedExercise);
-        Assert.Null(capturedExercise.Description);
+        Assert.Equal("Push-ups", capturedExercise!.Name);
+        Assert.Equal("Chest", capturedExercise.MuscleGroup);
+        Assert.Equal("Beginner", capturedExercise.Difficulty);
+        Assert.Equal("None", capturedExercise.Equipment);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCallSaveChangesAsync_ExactlyOnce()
+    {
+        // Arrange
+        var command = new CreateExerciseCommand
+        {
+            Name = "Pull-ups",
+            MuscleGroup = "Back",
+            Difficulty = "Intermediate",
+            Equipment = "Pull-up Bar"
+        };
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

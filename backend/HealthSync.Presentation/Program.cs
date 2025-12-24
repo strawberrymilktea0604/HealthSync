@@ -167,3 +167,5 @@ using (var scope = app.Services.CreateScope())
 
 await app.RunAsync();
 
+// Make Program class accessible to integration tests
+public partial class Program { }

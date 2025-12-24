@@ -38,7 +38,19 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
             }
         }
 
-        // Check if policy name matches a permission code
+        // Check if policy name matches "Permission:XXX" format
+        if (policyName.StartsWith("Permission:", StringComparison.OrdinalIgnoreCase))
+        {
+            var permissionCode = policyName.Substring("Permission:".Length);
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddRequirements(new PermissionRequirement(permissionCode))
+                .Build();
+            
+            return Task.FromResult<AuthorizationPolicy?>(policy);
+        }
+
+        // Check if policy name matches a permission code directly
         if (IsPermissionCode(policyName))
         {
             var policy = new AuthorizationPolicyBuilder()

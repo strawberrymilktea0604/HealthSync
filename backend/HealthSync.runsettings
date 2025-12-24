@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>opencover</Format>
+          
+          <ExcludeByFile>**/DTOs/**/*.cs,**/Migrations/**/*.cs,**/Configurations/**/*.cs,**/Program.cs,**/WeatherForecast.cs</ExcludeByFile>
+
+          <Exclude>[HealthSync.Application]HealthSync.Application.DTOs.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Migrations.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Data.Configurations.*</Exclude>
+
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

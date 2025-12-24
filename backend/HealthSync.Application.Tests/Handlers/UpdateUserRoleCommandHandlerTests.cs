@@ -1,9 +1,8 @@
 using HealthSync.Application.Commands;
-using HealthSync.Application.DTOs;
 using HealthSync.Application.Handlers;
 using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using MockQueryable.Moq;
 using Moq;
 using Xunit;
 
@@ -11,247 +10,171 @@ namespace HealthSync.Application.Tests.Handlers;
 
 public class UpdateUserRoleCommandHandlerTests
 {
-    private readonly Mock<IApplicationDbContext> _mockContext;
+    private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly UpdateUserRoleCommandHandler _handler;
 
     public UpdateUserRoleCommandHandlerTests()
     {
-        _mockContext = new Mock<IApplicationDbContext>();
-        _handler = new UpdateUserRoleCommandHandler(_mockContext.Object);
+        _contextMock = new Mock<IApplicationDbContext>();
+        _handler = new UpdateUserRoleCommandHandler(_contextMock.Object);
     }
 
     [Fact]
-    public async Task Handle_ValidUser_UpdatesRoleSuccessfully()
+    public async Task Handle_ShouldUpdateUserRole_WhenUserAndRoleExist()
     {
         // Arrange
-        var userId = 1;
-        var newRoleName = "Admin";
-
+        var oldRole = new Role { Id = 1, RoleName = "Customer" };
+        var newRole = new Role { Id = 2, RoleName = "Admin" };
+        var userRole = new UserRole { UserId = 1, RoleId = 1, Role = oldRole };
         var user = new ApplicationUser
         {
-            UserId = userId,
-            Email = "test@example.com",
+            UserId = 1,
+            Email = "user@test.com",
             IsActive = true,
-            Profile = new UserProfile { FullName = "Test User" },
-            UserRoles = new List<UserRole>
-            {
-                new UserRole { UserId = userId, RoleId = 2, Role = new Role { Id = 2, RoleName = "Customer" } }
-            }
+            CreatedAt = DateTime.UtcNow,
+            Profile = new UserProfile { FullName = "Test User", AvatarUrl = "avatar.jpg" },
+            UserRoles = new List<UserRole> { userRole }
         };
 
-        var newRole = new Role { Id = 1, RoleName = newRoleName };
+        var users = new List<ApplicationUser> { user };
+        var roles = new List<Role> { oldRole, newRole };
 
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser> { user });
-        var mockRoleSet = CreateMockDbSet(new List<Role> { newRole });
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Roles).Returns(roles.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Remove(It.IsAny<UserRole>()));
+        _contextMock.Setup(c => c.Add(It.IsAny<UserRole>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
-        _mockContext.Setup(x => x.Roles).Returns(mockRoleSet.Object);
-        _mockContext.Setup(x => x.Remove(It.IsAny<UserRole>()));
-        _mockContext.Setup(x => x.Add(It.IsAny<UserRole>()));
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        var command = new UpdateUserRoleCommand
-        {
-            UserId = userId,
-            Role = newRoleName
-        };
+        var command = new UpdateUserRoleCommand { UserId = 1, Role = "Admin" };
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(userId, result.UserId);
-        Assert.Equal(newRoleName, result.Role);
-        Assert.Equal("test@example.com", result.Email);
+        Assert.Equal("Admin", result.Role);
+        Assert.Equal("user@test.com", result.Email);
         Assert.Equal("Test User", result.FullName);
-        
-        _mockContext.Verify(x => x.Remove(It.IsAny<UserRole>()), Times.Once);
-        _mockContext.Verify(x => x.Add(It.IsAny<UserRole>()), Times.Once);
-        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _contextMock.Verify(c => c.Remove(userRole), Times.Once);
+        _contextMock.Verify(c => c.Add(It.Is<UserRole>(ur => ur.UserId == 1 && ur.RoleId == 2)), Times.Once);
+        _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_UserNotFound_ThrowsException()
+    public async Task Handle_ShouldThrowException_WhenUserNotFound()
     {
         // Arrange
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser>());
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
+        var users = new List<ApplicationUser>();
+        var roles = new List<Role> { new() { Id = 2, RoleName = "Admin" } };
 
-        var command = new UpdateUserRoleCommand
-        {
-            UserId = 999,
-            Role = "Admin"
-        };
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Roles).Returns(roles.AsQueryable().BuildMock());
+
+        var command = new UpdateUserRoleCommand { UserId = 999, Role = "Admin" };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(
-            () => _handler.Handle(command, CancellationToken.None)
-        );
-
-        Assert.Contains("User with ID 999 not found", exception.Message);
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _handler.Handle(command, CancellationToken.None));
+        
+        Assert.Equal("User with ID 999 not found", exception.Message);
     }
 
     [Fact]
-    public async Task Handle_RoleNotFound_ThrowsException()
+    public async Task Handle_ShouldThrowException_WhenRoleNotFound()
     {
         // Arrange
         var user = new ApplicationUser
         {
             UserId = 1,
-            Email = "test@example.com",
+            Email = "user@test.com",
+            UserRoles = new List<UserRole>()
+        };
+        var users = new List<ApplicationUser> { user };
+        var roles = new List<Role>();
+
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Roles).Returns(roles.AsQueryable().BuildMock());
+
+        var command = new UpdateUserRoleCommand { UserId = 1, Role = "NonExistentRole" };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _handler.Handle(command, CancellationToken.None));
+        
+        Assert.Equal("Role 'NonExistentRole' not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldHandleUserWithNoExistingRole()
+    {
+        // Arrange
+        var newRole = new Role { Id = 2, RoleName = "Admin" };
+        var user = new ApplicationUser
+        {
+            UserId = 1,
+            Email = "user@test.com",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            Profile = null,
             UserRoles = new List<UserRole>()
         };
 
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser> { user });
-        var mockRoleSet = CreateMockDbSet(new List<Role>());
+        var users = new List<ApplicationUser> { user };
+        var roles = new List<Role> { newRole };
 
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
-        _mockContext.Setup(x => x.Roles).Returns(mockRoleSet.Object);
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Roles).Returns(roles.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Add(It.IsAny<UserRole>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var command = new UpdateUserRoleCommand
-        {
-            UserId = 1,
-            Role = "InvalidRole"
-        };
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(
-            () => _handler.Handle(command, CancellationToken.None)
-        );
-
-        Assert.Contains("Role 'InvalidRole' not found", exception.Message);
-    }
-
-    [Fact]
-    public async Task Handle_UserWithoutExistingRole_AddsNewRole()
-    {
-        // Arrange
-        var userId = 1;
-        var user = new ApplicationUser
-        {
-            UserId = userId,
-            Email = "newuser@example.com",
-            IsActive = true,
-            Profile = new UserProfile { FullName = "New User" },
-            UserRoles = new List<UserRole>() // No existing roles
-        };
-
-        var newRole = new Role { Id = 2, RoleName = "Customer" };
-
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser> { user });
-        var mockRoleSet = CreateMockDbSet(new List<Role> { newRole });
-
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
-        _mockContext.Setup(x => x.Roles).Returns(mockRoleSet.Object);
-        _mockContext.Setup(x => x.Add(It.IsAny<UserRole>()));
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        var command = new UpdateUserRoleCommand
-        {
-            UserId = userId,
-            Role = "Customer"
-        };
+        var command = new UpdateUserRoleCommand { UserId = 1, Role = "Admin" };
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Customer", result.Role);
-        _mockContext.Verify(x => x.Remove(It.IsAny<UserRole>()), Times.Never);
-        _mockContext.Verify(x => x.Add(It.IsAny<UserRole>()), Times.Once);
+        Assert.Equal("Admin", result.Role);
+        Assert.Equal("", result.FullName); // Null profile returns empty string
+        Assert.Null(result.AvatarUrl);
+        _contextMock.Verify(c => c.Remove(It.IsAny<UserRole>()), Times.Never);
+        _contextMock.Verify(c => c.Add(It.Is<UserRole>(ur => ur.UserId == 1 && ur.RoleId == 2)), Times.Once);
     }
 
-    private Mock<DbSet<T>> CreateMockDbSet<T>(List<T> data) where T : class
+    [Fact]
+    public async Task Handle_ShouldReturnCorrectAdminUserDto()
     {
-        var queryable = data.AsQueryable();
-        var mockSet = new Mock<DbSet<T>>();
+        // Arrange
+        var newRole = new Role { Id = 2, RoleName = "Admin" };
+        var createdAt = DateTime.UtcNow.AddDays(-10);
+        var user = new ApplicationUser
+        {
+            UserId = 5,
+            Email = "admin@test.com",
+            IsActive = true,
+            CreatedAt = createdAt,
+            Profile = new UserProfile { FullName = "Admin User", AvatarUrl = "admin.jpg" },
+            UserRoles = new List<UserRole>()
+        };
 
-        mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
-        mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
-        mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-        mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
-        mockSet.As<IAsyncEnumerable<T>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
-            .Returns(new TestAsyncEnumerator<T>(queryable.GetEnumerator()));
+        var users = new List<ApplicationUser> { user };
+        var roles = new List<Role> { newRole };
 
-        return mockSet;
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Roles).Returns(roles.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Add(It.IsAny<UserRole>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var command = new UpdateUserRoleCommand { UserId = 5, Role = "Admin" };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(5, result.UserId);
+        Assert.Equal("admin@test.com", result.Email);
+        Assert.Equal("Admin User", result.FullName);
+        Assert.Equal("Admin", result.Role);
+        Assert.True(result.IsActive);
+        Assert.Equal(createdAt, result.CreatedAt);
+        Assert.Equal("admin.jpg", result.AvatarUrl);
     }
-}
-
-// Helper classes for async query testing
-internal class TestAsyncQueryProvider<TEntity> : IAsyncQueryProvider
-{
-    private readonly IQueryProvider _inner;
-
-    internal TestAsyncQueryProvider(IQueryProvider inner)
-    {
-        _inner = inner;
-    }
-
-    public IQueryable CreateQuery(System.Linq.Expressions.Expression expression)
-    {
-        return new TestAsyncEnumerable<TEntity>(expression);
-    }
-
-    public IQueryable<TElement> CreateQuery<TElement>(System.Linq.Expressions.Expression expression)
-    {
-        return new TestAsyncEnumerable<TElement>(expression);
-    }
-
-    public object Execute(System.Linq.Expressions.Expression expression)
-    {
-        return _inner.Execute(expression)!;
-    }
-
-    public TResult Execute<TResult>(System.Linq.Expressions.Expression expression)
-    {
-        return _inner.Execute<TResult>(expression);
-    }
-
-    public TResult ExecuteAsync<TResult>(System.Linq.Expressions.Expression expression, CancellationToken cancellationToken = default)
-    {
-        var resultType = typeof(TResult).GetGenericArguments()[0];
-        var executionResult = typeof(IQueryProvider)
-            .GetMethod(nameof(IQueryProvider.Execute), 1, new[] { typeof(System.Linq.Expressions.Expression) })!
-            .MakeGenericMethod(resultType)
-            .Invoke(this, new[] { expression });
-
-        return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))!
-            .MakeGenericMethod(resultType)
-            .Invoke(null, new[] { executionResult })!;
-    }
-}
-
-internal class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
-{
-    public TestAsyncEnumerable(System.Linq.Expressions.Expression expression) : base(expression) { }
-
-    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-    {
-        return new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
-    }
-}
-
-internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
-{
-    private readonly IEnumerator<T> _inner;
-
-    public TestAsyncEnumerator(IEnumerator<T> inner)
-    {
-        _inner = inner;
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _inner.Dispose();
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask<bool> MoveNextAsync()
-    {
-        return ValueTask.FromResult(_inner.MoveNext());
-    }
-
-    public T Current => _inner.Current;
 }

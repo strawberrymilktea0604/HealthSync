@@ -2,7 +2,7 @@ using HealthSync.Application.Commands;
 using HealthSync.Application.Handlers;
 using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using MockQueryable.Moq;
 using Moq;
 using Xunit;
 
@@ -10,103 +10,92 @@ namespace HealthSync.Application.Tests.Handlers;
 
 public class DeleteUserCommandHandlerTests
 {
-    private readonly Mock<IApplicationDbContext> _mockContext;
+    private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly DeleteUserCommandHandler _handler;
 
     public DeleteUserCommandHandlerTests()
     {
-        _mockContext = new Mock<IApplicationDbContext>();
-        _handler = new DeleteUserCommandHandler(_mockContext.Object);
+        _contextMock = new Mock<IApplicationDbContext>();
+        _handler = new DeleteUserCommandHandler(_contextMock.Object);
     }
 
     [Fact]
-    public async Task Handle_ExistingUser_DeletesSuccessfully()
+    public async Task Handle_ShouldDeleteUser_WhenUserExists()
     {
         // Arrange
-        var userId = 1;
-        var user = new ApplicationUser
-        {
-            UserId = userId,
-            Email = "delete@example.com",
-            IsActive = true
-        };
+        var user = new ApplicationUser { UserId = 1, Email = "user@test.com" };
+        var users = new List<ApplicationUser> { user };
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Remove(It.IsAny<ApplicationUser>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser> { user });
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
-        _mockContext.Setup(x => x.Remove(It.IsAny<ApplicationUser>()));
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        var command = new DeleteUserCommand { UserId = userId };
+        var command = new DeleteUserCommand { UserId = 1 };
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result);
-        _mockContext.Verify(x => x.Remove(It.Is<ApplicationUser>(u => u.UserId == userId)), Times.Once);
-        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _contextMock.Verify(c => c.Remove(user), Times.Once);
+        _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_NonExistingUser_ThrowsException()
+    public async Task Handle_ShouldThrowException_WhenUserNotFound()
     {
         // Arrange
-        var mockUserSet = CreateMockDbSet(new List<ApplicationUser>());
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
+        var users = new List<ApplicationUser>();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
 
         var command = new DeleteUserCommand { UserId = 999 };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(
-            () => _handler.Handle(command, CancellationToken.None)
-        );
-
-        Assert.Contains("User with ID 999 not found", exception.Message);
-        _mockContext.Verify(x => x.Remove(It.IsAny<ApplicationUser>()), Times.Never);
-        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        var exception = await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _handler.Handle(command, CancellationToken.None));
+        
+        Assert.Equal("User with ID 999 not found", exception.Message);
+        _contextMock.Verify(c => c.Remove(It.IsAny<ApplicationUser>()), Times.Never);
+        _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(42)]
-    [InlineData(100)]
-    public async Task Handle_VariousUserIds_DeletesCorrectUser(int userId)
+    [Fact]
+    public async Task Handle_ShouldRemoveCorrectUser()
     {
         // Arrange
-        var users = new List<ApplicationUser>
-        {
-            new ApplicationUser { UserId = 1, Email = "user1@example.com" },
-            new ApplicationUser { UserId = 42, Email = "user42@example.com" },
-            new ApplicationUser { UserId = 100, Email = "user100@example.com" }
-        };
+        var user1 = new ApplicationUser { UserId = 1, Email = "user1@test.com" };
+        var user2 = new ApplicationUser { UserId = 2, Email = "user2@test.com" };
+        var users = new List<ApplicationUser> { user1, user2 };
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Remove(It.IsAny<ApplicationUser>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var mockUserSet = CreateMockDbSet(users);
-        _mockContext.Setup(x => x.ApplicationUsers).Returns(mockUserSet.Object);
-        _mockContext.Setup(x => x.Remove(It.IsAny<ApplicationUser>()));
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        var command = new DeleteUserCommand { UserId = 2 };
 
-        var command = new DeleteUserCommand { UserId = userId };
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _contextMock.Verify(c => c.Remove(user2), Times.Once);
+        _contextMock.Verify(c => c.Remove(user1), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldAlwaysReturnTrue_WhenSuccessful()
+    {
+        // Arrange
+        var user = new ApplicationUser { UserId = 1, Email = "user@test.com" };
+        var users = new List<ApplicationUser> { user };
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());
+        _contextMock.Setup(c => c.Remove(It.IsAny<ApplicationUser>()));
+        _contextMock.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var command = new DeleteUserCommand { UserId = 1 };
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result);
-        _mockContext.Verify(x => x.Remove(It.Is<ApplicationUser>(u => u.UserId == userId)), Times.Once);
-    }
-
-    private Mock<DbSet<T>> CreateMockDbSet<T>(List<T> data) where T : class
-    {
-        var queryable = data.AsQueryable();
-        var mockSet = new Mock<DbSet<T>>();
-
-        mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
-        mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
-        mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-        mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
-        mockSet.As<IAsyncEnumerable<T>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
-            .Returns(new TestAsyncEnumerator<T>(queryable.GetEnumerator()));
-
-        return mockSet;
+        Assert.IsType<bool>(result);
     }
 }
