@@ -148,7 +148,7 @@ namespace HealthSync.Application.Tests.Handlers
                 }
             };
 
-            ApplicationUser capturedAdmin = null;
+            ApplicationUser? capturedAdmin = null;
             var adminList = new List<ApplicationUser>().AsQueryable().BuildMock();
 
             // Setup ApplicationUsers to return empty first (for existence check and duplicate email check), then captured admin (for reload)
@@ -241,7 +241,7 @@ namespace HealthSync.Application.Tests.Handlers
                 }
             };
 
-            ApplicationUser capturedAdmin = null;
+            ApplicationUser? capturedAdmin = null;
             var adminList = new List<ApplicationUser>().AsQueryable().BuildMock();
 
             var callCount = 0;
@@ -292,7 +292,6 @@ namespace HealthSync.Application.Tests.Handlers
                 Email = "admin@test.com",
                 Password = "Admin@123",
                 VerificationCode = "123456"
-                // FullName is null or empty
             };
 
             // Act

@@ -1,3 +1,4 @@
+#pragma warning disable CS8625
 using HealthSync.Application.Extensions;
 using HealthSync.Domain.Entities;
 using Xunit;
@@ -72,7 +73,7 @@ public class ApplicationUserExtensionsTests
         {
             UserRoles = new List<UserRole>
             {
-                new UserRole { Role = null }
+                new UserRole { Role = null! }
             }
         };
 
@@ -214,3 +215,4 @@ public class ApplicationUserExtensionsTests
         Assert.True(hasPermission);
     }
 }
+#pragma warning restore CS8625

@@ -9,6 +9,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,13 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    // Handle file uploads
+    options.MapType<IFormFile>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
+
     // Cấu hình JWT Bearer Authentication cho Swagger
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -74,7 +83,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Nhập JWT token vào ô bên dưới.\n\nVí dụ: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n\nKhông cần thêm từ 'Bearer' phía trước."
+        Description = "Enter JWT token below.\n\nExample: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n\nDo not add 'Bearer' prefix."
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -139,8 +148,7 @@ app.UseAuthorization();
 
 // Endpoint kiểm tra sức khỏe của API
 app.MapGet("/health", () => "HealthSync API is running!")
-    .WithName("GetHealth")
-    .WithOpenApi();
+    .WithName("GetHealth");
 
 app.MapControllers();
 
@@ -169,3 +177,34 @@ await app.RunAsync();
 
 // Make Program class accessible to integration tests
 public partial class Program { protected Program() { } }
+
+public class FileUploadOperationFilter : IOperationFilter
+{
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    {
+        var fileParameters = context.ApiDescription.ParameterDescriptions
+            .Where(p => p.Type == typeof(IFormFile))
+            .ToList();
+
+        if (fileParameters.Any())
+        {
+            operation.RequestBody = new OpenApiRequestBody
+            {
+                Content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["multipart/form-data"] = new OpenApiMediaType
+                    {
+                        Schema = new OpenApiSchema
+                        {
+                            Type = "object",
+                            Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                ["file"] = new OpenApiSchema { Type = "string", Format = "binary" }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    }
+}

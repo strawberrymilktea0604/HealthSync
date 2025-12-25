@@ -94,7 +94,7 @@ public class UserProfileController : ControllerBase
     }
 
     [HttpPost("upload-avatar")]
-    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+    public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequest request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
@@ -102,34 +102,39 @@ public class UserProfileController : ControllerBase
             return Unauthorized();
         }
 
-        if (file == null || file.Length == 0)
+        if (request.File == null || request.File.Length == 0)
         {
             return BadRequest("No file uploaded");
         }
 
         // Validate file type
         var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
-        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+        if (!allowedTypes.Contains(request.File.ContentType.ToLower()))
         {
             return BadRequest("Only image files are allowed");
         }
 
         // Validate file size (max 5MB)
-        if (file.Length > 5 * 1024 * 1024)
+        if (request.File.Length > 5 * 1024 * 1024)
         {
             return BadRequest("File size must be less than 5MB");
         }
 
-        using var stream = file.OpenReadStream();
+        using var stream = request.File.OpenReadStream();
         var command = new UploadAvatarCommand
         {
             UserId = userId,
             FileStream = stream,
-            FileName = file.FileName,
-            ContentType = file.ContentType
+            FileName = request.File.FileName,
+            ContentType = request.File.ContentType
         };
 
         var avatarUrl = await _mediator.Send(command);
         return Ok(new { AvatarUrl = avatarUrl });
     }
+}
+
+public class UploadAvatarRequest
+{
+    public required IFormFile File { get; set; }
 }

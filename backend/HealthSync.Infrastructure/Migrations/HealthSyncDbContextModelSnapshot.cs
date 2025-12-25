@@ -57,6 +57,36 @@ namespace HealthSync.Infrastructure.Migrations
                     b.ToTable("ApplicationUsers");
                 });
 
+            modelBuilder.Entity("HealthSync.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("ChatMessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContextData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChatMessageId");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("HealthSync.Domain.Entities.Exercise", b =>
                 {
                     b.Property<int>("ExerciseId")
@@ -587,7 +617,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 101,
                             Category = "User",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(508),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3918),
                             Description = "Xem danh sách người dùng",
                             PermissionCode = "USER_READ"
                         },
@@ -595,7 +625,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 102,
                             Category = "User",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(511),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3926),
                             Description = "Khóa tài khoản người dùng",
                             PermissionCode = "USER_BAN"
                         },
@@ -603,7 +633,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 103,
                             Category = "User",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3930),
                             Description = "Cập nhật vai trò người dùng",
                             PermissionCode = "USER_UPDATE_ROLE"
                         },
@@ -611,7 +641,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 104,
                             Category = "User",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(512),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3933),
                             Description = "Xóa người dùng",
                             PermissionCode = "USER_DELETE"
                         },
@@ -619,7 +649,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 201,
                             Category = "Exercise",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(513),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3935),
                             Description = "Xem thư viện bài tập",
                             PermissionCode = "EXERCISE_READ"
                         },
@@ -627,7 +657,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 202,
                             Category = "Exercise",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(514),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3938),
                             Description = "Thêm bài tập mới",
                             PermissionCode = "EXERCISE_CREATE"
                         },
@@ -635,7 +665,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 203,
                             Category = "Exercise",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(515),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3941),
                             Description = "Cập nhật bài tập",
                             PermissionCode = "EXERCISE_UPDATE"
                         },
@@ -643,7 +673,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 204,
                             Category = "Exercise",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(516),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3943),
                             Description = "Xóa bài tập",
                             PermissionCode = "EXERCISE_DELETE"
                         },
@@ -651,7 +681,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 301,
                             Category = "Food",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(517),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3946),
                             Description = "Xem thư viện thực phẩm",
                             PermissionCode = "FOOD_READ"
                         },
@@ -659,7 +689,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 302,
                             Category = "Food",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(518),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3948),
                             Description = "Thêm thực phẩm mới",
                             PermissionCode = "FOOD_CREATE"
                         },
@@ -667,7 +697,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 303,
                             Category = "Food",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3950),
                             Description = "Cập nhật thực phẩm",
                             PermissionCode = "FOOD_UPDATE"
                         },
@@ -675,7 +705,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 304,
                             Category = "Food",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(519),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3953),
                             Description = "Xóa thực phẩm",
                             PermissionCode = "FOOD_DELETE"
                         },
@@ -683,7 +713,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 401,
                             Category = "WorkoutLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(520),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3955),
                             Description = "Xem nhật ký tập luyện",
                             PermissionCode = "WORKOUT_LOG_READ"
                         },
@@ -691,7 +721,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 402,
                             Category = "WorkoutLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(522),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3958),
                             Description = "Tạo nhật ký tập luyện",
                             PermissionCode = "WORKOUT_LOG_CREATE"
                         },
@@ -699,7 +729,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 403,
                             Category = "WorkoutLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(523),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3960),
                             Description = "Cập nhật nhật ký tập luyện",
                             PermissionCode = "WORKOUT_LOG_UPDATE"
                         },
@@ -707,7 +737,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 404,
                             Category = "WorkoutLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(524),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3962),
                             Description = "Xóa nhật ký tập luyện",
                             PermissionCode = "WORKOUT_LOG_DELETE"
                         },
@@ -715,7 +745,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 501,
                             Category = "NutritionLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(525),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3965),
                             Description = "Xem nhật ký dinh dưỡng",
                             PermissionCode = "NUTRITION_LOG_READ"
                         },
@@ -723,7 +753,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 502,
                             Category = "NutritionLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(526),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3967),
                             Description = "Tạo nhật ký dinh dưỡng",
                             PermissionCode = "NUTRITION_LOG_CREATE"
                         },
@@ -731,7 +761,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 503,
                             Category = "NutritionLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(527),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3970),
                             Description = "Cập nhật nhật ký dinh dưỡng",
                             PermissionCode = "NUTRITION_LOG_UPDATE"
                         },
@@ -739,7 +769,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 504,
                             Category = "NutritionLog",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3972),
                             Description = "Xóa nhật ký dinh dưỡng",
                             PermissionCode = "NUTRITION_LOG_DELETE"
                         },
@@ -747,7 +777,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 601,
                             Category = "Goal",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(528),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3974),
                             Description = "Xem mục tiêu",
                             PermissionCode = "GOAL_READ"
                         },
@@ -755,7 +785,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 602,
                             Category = "Goal",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(529),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3977),
                             Description = "Tạo mục tiêu",
                             PermissionCode = "GOAL_CREATE"
                         },
@@ -763,7 +793,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 603,
                             Category = "Goal",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(530),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3979),
                             Description = "Cập nhật mục tiêu",
                             PermissionCode = "GOAL_UPDATE"
                         },
@@ -771,7 +801,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 604,
                             Category = "Goal",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(531),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3981),
                             Description = "Xóa mục tiêu",
                             PermissionCode = "GOAL_DELETE"
                         },
@@ -779,7 +809,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 701,
                             Category = "Dashboard",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4073),
                             Description = "Xem dashboard cá nhân",
                             PermissionCode = "DASHBOARD_VIEW"
                         },
@@ -787,7 +817,7 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             Id = 702,
                             Category = "Dashboard",
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(532),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4076),
                             Description = "Xem dashboard admin",
                             PermissionCode = "DASHBOARD_ADMIN"
                         });
@@ -860,14 +890,14 @@ namespace HealthSync.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(475),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3856),
                             Description = "Quản trị viên hệ thống, có toàn quyền",
                             RoleName = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(486),
+                            CreatedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3864),
                             Description = "Người dùng cuối sử dụng app",
                             RoleName = "Customer"
                         });
@@ -895,247 +925,247 @@ namespace HealthSync.Infrastructure.Migrations
                         {
                             RoleId = 1,
                             PermissionId = 101,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(570)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4165)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 102,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(571)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4169)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 103,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4171)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 104,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(572)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4173)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 201,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(573)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4176)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 202,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4178)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 203,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(574)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4180)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 204,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(575)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4182)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 301,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4183)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 302,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(576)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4185)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 303,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(577)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4187)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 304,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4188)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 401,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(578)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4190)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 402,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4192)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 403,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(579)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4194)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 404,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4195)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 501,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(580)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4197)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 502,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(581)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4199)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 503,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4200)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 504,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(582)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4202)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 601,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(584)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4204)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 602,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4206)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 603,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(585)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4207)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 604,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(586)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4209)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 701,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(620)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4210)
                         },
                         new
                         {
                             RoleId = 1,
                             PermissionId = 702,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4212)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 201,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(621)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4214)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 301,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(622)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4215)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 401,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4217)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 402,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(623)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4219)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 403,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4220)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 404,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(624)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4222)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 501,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(625)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4224)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 502,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4226)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 503,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(626)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4227)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 504,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(627)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4229)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 601,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4231)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 602,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(628)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4232)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 603,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4234)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 604,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(629)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4236)
                         },
                         new
                         {
                             RoleId = 2,
                             PermissionId = 701,
-                            GrantedAt = new DateTime(2025, 12, 4, 20, 57, 24, 775, DateTimeKind.Utc).AddTicks(630)
+                            GrantedAt = new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4238)
                         });
                 });
 
@@ -1218,6 +1248,17 @@ namespace HealthSync.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("WorkoutLogs");
+                });
+
+            modelBuilder.Entity("HealthSync.Domain.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("HealthSync.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HealthSync.Domain.Entities.ExerciseSession", b =>
@@ -1353,6 +1394,8 @@ namespace HealthSync.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthSync.Domain.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("ChatMessages");
+
                     b.Navigation("Goals");
 
                     b.Navigation("NutritionLogs");
