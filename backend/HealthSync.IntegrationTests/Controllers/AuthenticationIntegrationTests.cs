@@ -6,6 +6,7 @@ using System.Text.Json;
 using HealthSync.Application.DTOs;
 using HealthSync.Domain.Entities;
 using HealthSync.Infrastructure.Persistence;
+using HealthSync.Presentation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;

@@ -175,36 +175,39 @@ using (var scope = app.Services.CreateScope())
 
 await app.RunAsync();
 
-// Make Program class accessible to integration tests
-public partial class Program { protected Program() { } }
-
-public class FileUploadOperationFilter : IOperationFilter
+namespace HealthSync.Presentation
 {
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
-    {
-        var fileParameters = context.ApiDescription.ParameterDescriptions
-            .Where(p => p.Type == typeof(IFormFile))
-            .ToList();
+    // Make Program class accessible to integration tests
+    public partial class Program { protected Program() { } }
 
-        if (fileParameters.Any())
+    public class FileUploadOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            operation.RequestBody = new OpenApiRequestBody
+            var fileParameters = context.ApiDescription.ParameterDescriptions
+                .Where(p => p.Type == typeof(IFormFile))
+                .ToList();
+
+            if (fileParameters.Any())
             {
-                Content = new Dictionary<string, OpenApiMediaType>
+                operation.RequestBody = new OpenApiRequestBody
                 {
-                    ["multipart/form-data"] = new OpenApiMediaType
+                    Content = new Dictionary<string, OpenApiMediaType>
                     {
-                        Schema = new OpenApiSchema
+                        ["multipart/form-data"] = new OpenApiMediaType
                         {
-                            Type = "object",
-                            Properties = new Dictionary<string, OpenApiSchema>
+                            Schema = new OpenApiSchema
                             {
-                                ["file"] = new OpenApiSchema { Type = "string", Format = "binary" }
+                                Type = "object",
+                                Properties = new Dictionary<string, OpenApiSchema>
+                                {
+                                    ["file"] = new OpenApiSchema { Type = "string", Format = "binary" }
+                                }
                             }
                         }
                     }
-                }
-            };
+                };
+            }
         }
     }
 }
