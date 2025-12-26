@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Bench Press",
+    "muscleGroup": "Chest",
+    "difficulty": "Intermediate",
+    "equipment": "Barbell, Bench",
+    "description": "Lie on a bench, lower the bar to your chest, then press it up."
+  },
+  {
+    "name": "Squat",
+    "muscleGroup": "Legs",
+    "difficulty": "Beginner",
+    "equipment": "Barbell",
+    "description": "Stand with feet shoulder-width, lower your body as if sitting back into a chair, then stand up."
+  },
+  {
+    "name": "Deadlift",
+    "muscleGroup": "Back",
+    "difficulty": "Advanced",
+    "equipment": "Barbell",
+    "description": "Stand with feet hip-width, bend at hips and knees to grip the bar, then lift by extending hips and knees."
+  },
+  {
+    "name": "Pull-up",
+    "muscleGroup": "Back",
+    "difficulty": "Intermediate",
+    "equipment": "Pull-up Bar",
+    "description": "Hang from a bar with palms facing away, pull your body up until chin is over the bar."
+  },
+  {
+    "name": "Push-up",
+    "muscleGroup": "Chest",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "description": "Start in plank position, lower your body until chest nearly touches the floor, then push back up."
+  },
+  {
+    "name": "Lunges",
+    "muscleGroup": "Legs",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "description": "Step forward with one leg, lower your hips until both knees are bent at 90 degrees, then push back to start."
+  },
+  {
+    "name": "Overhead Press",
+    "muscleGroup": "Shoulders",
+    "difficulty": "Intermediate",
+    "equipment": "Barbell or Dumbbells",
+    "description": "Stand with feet shoulder-width, press the weight overhead from shoulder height."
+  },
+  {
+    "name": "Bicep Curl",
+    "muscleGroup": "Arms",
+    "difficulty": "Beginner",
+    "equipment": "Dumbbells",
+    "description": "Stand with dumbbells in hands, curl the weights up to shoulders, then lower."
+  },
+  {
+    "name": "Tricep Dips",
+    "muscleGroup": "Arms",
+    "difficulty": "Intermediate",
+    "equipment": "Bench or Parallel Bars",
+    "description": "Sit on the edge of a bench, lower your body by bending elbows, then push back up."
+  },
+  {
+    "name": "Plank",
+    "muscleGroup": "Core",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "description": "Hold a forearm plank position, keeping body straight for time."
+  },
+  {
+    "name": "Russian Twist",
+    "muscleGroup": "Core",
+    "difficulty": "Intermediate",
+    "equipment": "None or Medicine Ball",
+    "description": "Sit with knees bent, lean back slightly, twist torso side to side."
+  },
+  {
+    "name": "Burpees",
+    "muscleGroup": "Full Body",
+    "difficulty": "Advanced",
+    "equipment": "None",
+    "description": "From standing, squat down, kick feet back to plank, do a push-up, jump feet forward, then jump up."
+  },
+  {
+    "name": "Mountain Climbers",
+    "muscleGroup": "Core",
+    "difficulty": "Intermediate",
+    "equipment": "None",
+    "description": "In plank position, alternate bringing knees to chest quickly."
+  },
+  {
+    "name": "Jumping Jacks",
+    "muscleGroup": "Full Body",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "description": "Jump while spreading legs and raising arms overhead, then return to start."
+  },
+  {
+    "name": "Calf Raises",
+    "muscleGroup": "Legs",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "description": "Stand on toes, raise heels as high as possible, then lower."
+  }
+]

@@ -5,6 +5,7 @@ using HealthSync.Application.Queries;
 using HealthSync.Infrastructure;
 using HealthSync.Infrastructure.Persistence;
 using HealthSync.Presentation.Middleware;
+using HealthSync.Presentation.Services;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,7 @@ builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
+builder.Services.AddScoped<DataSeeder>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
 
@@ -162,12 +164,16 @@ using (var scope = app.Services.CreateScope())
         // Lệnh này sẽ tự động check, nếu chưa có DB thì tạo, chưa có bảng thì thêm
         // Nếu có rồi thì thôi, không báo lỗi Crash app như lệnh CreateDatabase
         await context.Database.MigrateAsync(); 
+
+        // Seed data
+        var seeder = services.GetRequiredService<DataSeeder>();
+        await seeder.SeedAsync();
     }
     catch (Exception ex)
     {
         // Log lỗi ra nhưng KHÔNG làm crash app
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
         
         // Mẹo: Nếu lỗi "Already exists" thì coi như thành công, cho chạy tiếp
     }

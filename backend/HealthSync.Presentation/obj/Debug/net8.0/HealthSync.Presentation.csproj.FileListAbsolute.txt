@@ -432,3 +432,6 @@ C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\obj\Debug\ne
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\obj\Debug\net8.0\HealthSync.Presentation.pdb
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\obj\Debug\net8.0\HealthSync.Presentation.genruntimeconfig.cache
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\obj\Debug\net8.0\ref\HealthSync.Presentation.dll
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\Assets\SeedData\exercises.json
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\Assets\SeedData\foods.json
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Presentation\bin\Debug\net8.0\Bogus.dll

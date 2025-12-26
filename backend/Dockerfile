@@ -8,6 +8,11 @@ COPY HealthSync.Domain/HealthSync.Domain.csproj HealthSync.Domain/
 COPY HealthSync.Application/HealthSync.Application.csproj HealthSync.Application/
 COPY HealthSync.Infrastructure/HealthSync.Infrastructure.csproj HealthSync.Infrastructure/
 COPY HealthSync.Presentation/HealthSync.Presentation.csproj HealthSync.Presentation/
+COPY HealthSync.Domain.Tests/HealthSync.Domain.Tests.csproj HealthSync.Domain.Tests/
+COPY HealthSync.Application.Tests/HealthSync.Application.Tests.csproj HealthSync.Application.Tests/
+COPY HealthSync.Infrastructure.Tests/HealthSync.Infrastructure.Tests.csproj HealthSync.Infrastructure.Tests/
+COPY HealthSync.Presentation.Tests/HealthSync.Presentation.Tests.csproj HealthSync.Presentation.Tests/
+COPY HealthSync.IntegrationTests/HealthSync.IntegrationTests.csproj HealthSync.IntegrationTests/
 
 # Restore dependencies
 RUN dotnet restore

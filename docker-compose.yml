@@ -1,41 +1,38 @@
-version: '3.8'
-
 services:
   # SQL Server Database
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: healthsync-sqlserver-2  # Đã đổi tên
+    container_name: healthsync-sqlserver # Đặt tên cố định cho DB là OK
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=Express
     ports:
-      - "1434:1433"  # Host Port đổi sang 1434
+      - "1434:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     networks:
       - healthsync-network
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -Q "SELECT 1" || exit 1
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q 'SELECT 1' -C || exit 1"]
       interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
 
   # MinIO Object Storage
   minio:
     image: minio/minio:latest
-    container_name: healthsync-minio-2  # Đã đổi tên
+    container_name: healthsync-minio # Đặt tên cố định cho MinIO là OK
     command: server /data --console-address ":9001"
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-      # QUAN TRỌNG: Cập nhật URL public để trỏ về port mới (9002 và 9003)
       - MINIO_SERVER_URL=${MINIO_SERVER_URL}
       - MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL}
     ports:
-      - "9002:9000"  # API đổi sang 9002
-      - "9003:9001"  # Console đổi sang 9003
+      - "9002:9000"
+      - "9003:9001"
     volumes:
       - minio-data:/data
     networks:
@@ -54,21 +51,19 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: healthsync-backend-2  # Đã đổi tên
+    # KHÔNG DÙNG container_name Ở ĐÂY
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      # Kết nối nội bộ Docker vẫn dùng port gốc 1433 của container sqlserver
+      # Internal Docker Networking
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=HealthSyncDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true
-      # Kết nối nội bộ Docker vẫn dùng port gốc 9000 của container minio
       - MinIO__Endpoint=minio:9000 
       - MinIO__AccessKey=${MINIO_ROOT_USER}
       - MinIO__SecretKey=${MINIO_ROOT_PASSWORD}
       - MinIO__BucketName=healthsync-files
       - MinIO__UseSSL=false
-      # URL này trả về cho Client, nên phải dùng Port bên ngoài (9002)
       - MinIO__ServerUrl=${MINIO_SERVER_URL}
-      # ... (Các biến JWT, Email giữ nguyên vì chúng không liên quan đến port) ...
+      # ... Giữ nguyên các biến JWT, Email, Google ...
       - JWT__SecretKey=${JWT_SECRET_KEY}
       - JWT__Issuer=HealthSyncAPI
       - JWT__Audience=HealthSyncClient
@@ -98,8 +93,7 @@ services:
       - GOOGLE_TOKEN_URI=${GOOGLE_TOKEN_URI}
       - GOOGLE_USERINFO_URI=${GOOGLE_USERINFO_URI}
       - GOOGLE_TOKENINFO_URI=${GOOGLE_TOKENINFO_URI}
-    ports:
-      - "5001:8080"  # Host Port đổi sang 5001
+    # QUAN TRỌNG: Đã xóa phần ports để tránh xung đột khi scale
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -107,6 +101,8 @@ services:
         condition: service_healthy
     networks:
       - healthsync-network
+    deploy:
+      replicas: 2
     restart: unless-stopped
 
   # React Web Frontend
@@ -114,24 +110,25 @@ services:
     build:
       context: ./HealthSync_web
       dockerfile: Dockerfile
-    container_name: healthsync-web-2  # Đã đổi tên
-    ports:
-      - "3001:80"  # Host Port đổi sang 3001
+    # KHÔNG DÙNG container_name Ở ĐÂY
+    # QUAN TRỌNG: Đã xóa phần ports
     depends_on:
       - backend
     networks:
       - healthsync-network
+    deploy:
+      replicas: 2
     restart: unless-stopped
 
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: healthsync-nginx-2  # Đã đổi tên
+    container_name: healthsync-nginx
     environment:
       - TZ=Asia/Ho_Chi_Minh
     ports:
-      - "8080:80"   # HTTP đổi sang 8080
-      - "8443:443"  # HTTPS đổi sang 8443
+      - "8080:80"   # Truy cập Web qua port này
+      - "8443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
@@ -139,10 +136,8 @@ services:
       - nginx-cache:/var/cache/nginx
       - nginx-logs:/var/log/nginx
     depends_on:
-      backend:
-        condition: service_started
-      web:
-        condition: service_started
+      - backend
+      - web
     networks:
       - healthsync-network
     restart: unless-stopped
