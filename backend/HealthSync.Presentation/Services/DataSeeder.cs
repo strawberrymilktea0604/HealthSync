@@ -24,6 +24,15 @@ public class DataSeeder
 
     public async Task SeedAsync()
     {
+        await SeedBucketAsync();
+        await SeedImagesAsync();
+        await SeedExercisesAsync();
+        await SeedFoodItemsAsync();
+        await SeedFakeUsersAsync();
+    }
+
+    private async Task SeedBucketAsync()
+    {
         // 1. Ensure Bucket exists
         var bucketName = "healthsync-files";
         bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
@@ -43,8 +52,12 @@ public class DataSeeder
             }";
             await _minioClient.SetPolicyAsync(new SetPolicyArgs().WithBucket(bucketName).WithPolicy(policyJson));
         }
+    }
 
+    private async Task SeedImagesAsync()
+    {
         // 2. Seed Images to MinIO
+        var bucketName = "healthsync-files";
         var imagePath = Path.Combine(_env.ContentRootPath, "Assets", "SeedData", "Images");
         var images = new Dictionary<string, string>
         {
@@ -104,9 +117,12 @@ public class DataSeeder
                 }
             }
         }
+    }
 
+    private async Task SeedExercisesAsync()
+    {
         // 3. Seed Exercises
-        if (!_dbContext.Exercises.Any())
+        if (!await _dbContext.Exercises.AnyAsync())
         {
             var exercisesJson = await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Assets", "SeedData", "exercises.json"));
             var exercisesData = JsonSerializer.Deserialize<List<ExerciseSeedData>>(exercisesJson);
@@ -125,9 +141,12 @@ public class DataSeeder
                 await _dbContext.SaveChangesAsync();
             }
         }
+    }
 
+    private async Task SeedFoodItemsAsync()
+    {
         // 4. Seed FoodItems
-        if (!_dbContext.FoodItems.Any())
+        if (!await _dbContext.FoodItems.AnyAsync())
         {
             var foodsJson = await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Assets", "SeedData", "foods.json"));
             var foodsData = JsonSerializer.Deserialize<List<FoodItemSeedData>>(foodsJson);
@@ -148,9 +167,12 @@ public class DataSeeder
                 await _dbContext.SaveChangesAsync();
             }
         }
+    }
 
+    private async Task SeedFakeUsersAsync()
+    {
         // 5. Seed Fake Users for Testing Pagination
-        if (_dbContext.ApplicationUsers.Count() < 50)
+        if (await _dbContext.ApplicationUsers.CountAsync() < 50)
         {
             // Ensure Customer role exists
             var customerRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
