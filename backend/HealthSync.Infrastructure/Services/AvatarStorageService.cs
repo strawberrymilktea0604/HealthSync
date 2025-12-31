@@ -10,12 +10,12 @@ public class AvatarStorageService : IAvatarStorageService
     private readonly IMinioClient _minioClient;
     private readonly string _publicUrl;
     private const string AVATAR_BUCKET = "avatars";
-    private const string DEFAULT_MINIO_URL = "http://localhost:9002";
+    // private const string DEFAULT_MINIO_URL = "http://localhost:9002"; // Removed hardcoded URI
 
     public AvatarStorageService(IMinioClient minioClient, IConfiguration configuration)
     {
         _minioClient = minioClient;
-        _publicUrl = configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
+        _publicUrl = configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
         EnsureAvatarBucketExistsAsync().Wait();
     }
 

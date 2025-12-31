@@ -85,6 +85,7 @@ export default function FoodManagement() {
       setSelectedFood(null);
       fetchFoods();
     } catch (error) {
+      console.error('Error updating food:', error);
       toast.error('Không thể cập nhật thực phẩm');
     }
   };

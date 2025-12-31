@@ -25,7 +25,7 @@ public class DataSeeder
 
     private readonly AvatarSeeder _avatarSeeder;
     private const string BUCKET_NAME = "healthsync-files";
-    private const string DEFAULT_MINIO_URL = "http://localhost:9002";
+    // private const string DEFAULT_MINIO_URL = "http://localhost:9002"; // Removed hardcoded URI
 
     public DataSeeder(IMinioClient minioClient, HealthSyncDbContext dbContext, IConfiguration configuration, IWebHostEnvironment env, HttpClient httpClient)
     {
@@ -33,7 +33,7 @@ public class DataSeeder
         _dbContext = dbContext;
         _configuration = configuration;
         _env = env;
-        var publicUrl = configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
+        var publicUrl = configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
         _avatarSeeder = new AvatarSeeder(minioClient, httpClient, publicUrl);
     }
 
@@ -250,7 +250,7 @@ public class DataSeeder
         
         if (exercisesData != null)
         {
-            var publicUrl = _configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
+            var publicUrl = _configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
             
             // CHECK & XÓA DỮ LIỆU CŨ nếu đã có (để đảm bảo đồng bộ 100% với JSON)
             if (await _dbContext.Exercises.AnyAsync())
@@ -303,7 +303,7 @@ public class DataSeeder
         
         if (foodsData != null)
         {
-            var publicUrl = _configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
+            var publicUrl = _configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
             
             // CHECK & XÓA DỮ LIỆU CŨ nếu đã có (để đảm bảo đồng bộ 100% với JSON)
             if (await _dbContext.FoodItems.AnyAsync())
@@ -422,7 +422,7 @@ public class AvatarSeeder
     private readonly string _publicUrl;
     private const string BUCKET_NAME = "avatars";
 
-    public AvatarSeeder(IMinioClient minioClient, HttpClient httpClient, string publicUrl = "http://localhost:9002")
+    public AvatarSeeder(IMinioClient minioClient, HttpClient httpClient, string publicUrl)
     {
         _minioClient = minioClient;
         _httpClient = httpClient;

@@ -23,7 +23,7 @@ public class AdminController : ControllerBase
     private readonly IMinioClient _minioClient;
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
-    private const string DEFAULT_MINIO_URL = "http://localhost:9002";
+    // private const string DEFAULT_MINIO_URL = "http://localhost:9002"; // Removed hardcoded URI
 
     public AdminController(IMediator mediator, ILogger<AdminController> logger, IMinioClient minioClient, HttpClient httpClient, IConfiguration configuration)
     {
@@ -179,7 +179,7 @@ public class AdminController : ControllerBase
             else
             {
                 // Generate từ DiceBear
-                var publicUrl = _configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
+                var publicUrl = _configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
                 var avatarSeeder = new AvatarSeeder(_minioClient, _httpClient, publicUrl);
                 avatarUrl = await avatarSeeder.SeedAvatarAsync(user.UserName);
                 if (avatarUrl == null)
@@ -203,7 +203,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-        {
+
             var command = new DeleteUserCommand { UserId = userId };
             await _mediator.Send(command);
             return Ok(new { Message = "User deleted successfully" });
