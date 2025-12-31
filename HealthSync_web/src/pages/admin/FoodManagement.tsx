@@ -97,6 +97,7 @@ export default function FoodManagement() {
       toast.success('Xóa thực phẩm thành công');
       fetchFoods();
     } catch (error) {
+      console.error('Error deleting food:', error);
       toast.error('Không thể xóa thực phẩm');
     }
   };
@@ -147,6 +148,7 @@ export default function FoodManagement() {
         fileUploadRef.current.clear();
       }
     } catch (error) {
+      console.error('Error uploading image:', error);
       toast.error('Không thể upload ảnh');
     } finally {
       setUploadingImage(false);
