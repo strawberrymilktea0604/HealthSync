@@ -15,15 +15,14 @@ public class ExercisesControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IStorageService> _storageServiceMock;
-    private readonly Mock<IConfiguration> _configurationMock;
+
     private readonly ExercisesController _controller;
 
     public ExercisesControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
         _storageServiceMock = new Mock<IStorageService>();
-        _configurationMock = new Mock<IConfiguration>();
-        _controller = new ExercisesController(_mediatorMock.Object, _storageServiceMock.Object, _configurationMock.Object);
+        _controller = new ExercisesController(_mediatorMock.Object, _storageServiceMock.Object);
     }
 
     [Fact]

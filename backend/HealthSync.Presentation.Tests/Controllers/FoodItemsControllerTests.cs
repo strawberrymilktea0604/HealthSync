@@ -16,15 +16,14 @@ public class FoodItemsControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IStorageService> _storageServiceMock;
-    private readonly Mock<IConfiguration> _configurationMock;
+
     private readonly FoodItemsController _controller;
 
     public FoodItemsControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
         _storageServiceMock = new Mock<IStorageService>();
-        _configurationMock = new Mock<IConfiguration>();
-        _controller = new FoodItemsController(_mediatorMock.Object, _storageServiceMock.Object, _configurationMock.Object);
+        _controller = new FoodItemsController(_mediatorMock.Object, _storageServiceMock.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
