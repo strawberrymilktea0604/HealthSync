@@ -24,6 +24,8 @@ public class DataSeeder
     private readonly IWebHostEnvironment _env;
 
     private readonly AvatarSeeder _avatarSeeder;
+    private const string BUCKET_NAME = "healthsync-files";
+    private const string DEFAULT_MINIO_URL = "http://localhost:9002";
 
     public DataSeeder(IMinioClient minioClient, HealthSyncDbContext dbContext, IConfiguration configuration, IWebHostEnvironment env, HttpClient httpClient)
     {
@@ -31,7 +33,7 @@ public class DataSeeder
         _dbContext = dbContext;
         _configuration = configuration;
         _env = env;
-        var publicUrl = configuration["MinIO:PublicUrl"] ?? "http://localhost:9002";
+        var publicUrl = configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
         _avatarSeeder = new AvatarSeeder(minioClient, httpClient, publicUrl);
     }
 
@@ -117,11 +119,10 @@ public class DataSeeder
     private async Task SeedBucketAsync()
     {
         // 1. Ensure Bucket exists
-        var bucketName = "healthsync-files";
-        bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
+        bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(BUCKET_NAME));
         if (!found)
         {
-            await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName));
+            await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(BUCKET_NAME));
 
             // Set public policy
             var policyJson = @"{
@@ -130,17 +131,16 @@ public class DataSeeder
                     ""Effect"": ""Allow"",
                     ""Principal"": { ""AWS"": [""*""] },
                     ""Action"": [""s3:GetObject""],
-                    ""Resource"": [""arn:aws:s3:::" + bucketName + @"/*""]
+                    ""Resource"": [""arn:aws:s3:::" + BUCKET_NAME + @"/*""]
                 }]
             }";
-            await _minioClient.SetPolicyAsync(new SetPolicyArgs().WithBucket(bucketName).WithPolicy(policyJson));
+            await _minioClient.SetPolicyAsync(new SetPolicyArgs().WithBucket(BUCKET_NAME).WithPolicy(policyJson));
         }
     }
 
     private async Task SeedImagesAsync()
     {
         // 2. Seed Images to MinIO
-        var bucketName = "healthsync-files";
         var imagePath = Path.Combine(_env.ContentRootPath, "Assets", "SeedData", "Images");
         
         // DEBUG LOG: In ra để xem đường dẫn thực tế đang trỏ đi đâu
@@ -200,7 +200,7 @@ public class DataSeeder
             bool objectExists = false;
             try
             {
-                await _minioClient.StatObjectAsync(new StatObjectArgs().WithBucket(bucketName).WithObject(objectName));
+                await _minioClient.StatObjectAsync(new StatObjectArgs().WithBucket(BUCKET_NAME).WithObject(objectName));
                 objectExists = true;
                 Console.WriteLine($"[Info] File already exists in MinIO: {objectName}");
             }
@@ -220,7 +220,7 @@ public class DataSeeder
                                       ? "image/jpeg" : "image/png";
 
                     await _minioClient.PutObjectAsync(new PutObjectArgs()
-                        .WithBucket(bucketName)
+                        .WithBucket(BUCKET_NAME)
                         .WithObject(objectName)
                         .WithStreamData(fileStream)
                         .WithObjectSize(fileStream.Length)
@@ -250,8 +250,7 @@ public class DataSeeder
         
         if (exercisesData != null)
         {
-            var publicUrl = _configuration["MinIO:PublicUrl"] ?? "http://localhost:9002";
-            var bucketName = "healthsync-files";
+            var publicUrl = _configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
             
             // CHECK & XÓA DỮ LIỆU CŨ nếu đã có (để đảm bảo đồng bộ 100% với JSON)
             if (await _dbContext.Exercises.AnyAsync())
@@ -269,7 +268,7 @@ public class DataSeeder
                 // Tạo tên file và URL theo quy tắc
                 var imageName = $"{e.Name.ToLower().Replace(" ", "_").Replace("-", "_")}.jpg";
                 var objectName = $"exercises/{imageName}";
-                var imageUrl = $"{publicUrl}/{bucketName}/{objectName}";
+                var imageUrl = $"{publicUrl}/{BUCKET_NAME}/{objectName}";
                 
                 exercises.Add(new Exercise
                 {
@@ -304,8 +303,7 @@ public class DataSeeder
         
         if (foodsData != null)
         {
-            var publicUrl = _configuration["MinIO:PublicUrl"] ?? "http://localhost:9002";
-            var bucketName = "healthsync-files";
+            var publicUrl = _configuration["MinIO:PublicUrl"] ?? DEFAULT_MINIO_URL;
             
             // CHECK & XÓA DỮ LIỆU CŨ nếu đã có (để đảm bảo đồng bộ 100% với JSON)
             if (await _dbContext.FoodItems.AnyAsync())
@@ -324,7 +322,7 @@ public class DataSeeder
                 var extension = f.Name == "Apple" ? ".png" : ".jpg";
                 var imageName = $"{f.Name.ToLower().Replace(" ", "_")}{extension}";
                 var objectName = $"foods/{imageName}";
-                var imageUrl = $"{publicUrl}/{bucketName}/{objectName}";
+                var imageUrl = $"{publicUrl}/{BUCKET_NAME}/{objectName}";
                 
                 foodItems.Add(new FoodItem
                 {

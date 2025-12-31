@@ -74,6 +74,7 @@ export default function ExerciseManagement() {
       setFormData({ name: '', muscleGroup: '', difficulty: '', equipment: '', description: '' });
       fetchExercises();
     } catch (error) {
+      console.error('Error creating exercise:', error);
       toast.error('Không thể tạo bài tập');
     }
   };
@@ -91,6 +92,7 @@ export default function ExerciseManagement() {
       setSelectedExercise(null);
       fetchExercises();
     } catch (error) {
+      console.error('Error updating exercise:', error);
       toast.error('Không thể cập nhật bài tập');
     }
   };
@@ -102,6 +104,7 @@ export default function ExerciseManagement() {
       toast.success('Xóa bài tập thành công');
       fetchExercises();
     } catch (error) {
+      console.error('Error deleting exercise:', error);
       toast.error('Không thể xóa bài tập');
     }
   };
@@ -151,6 +154,7 @@ export default function ExerciseManagement() {
         fileUploadRef.current.clear();
       }
     } catch (error) {
+      console.error('Error uploading image:', error);
       toast.error('Không thể upload ảnh');
     } finally {
       setUploadingImage(false);
@@ -319,7 +323,7 @@ export default function ExerciseManagement() {
               </div>
             )}
             <div className="field">
-              <label>Chọn ảnh mới</label>
+              <div className="block mb-2 font-medium">Chọn ảnh mới</div>
               <FileUpload
                 ref={fileUploadRef}
                 mode="basic"

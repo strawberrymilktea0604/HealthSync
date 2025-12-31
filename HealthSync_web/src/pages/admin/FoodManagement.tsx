@@ -7,7 +7,6 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { FileUpload } from 'primereact/fileupload';
 import { foodItemService, FoodItem, UpdateFoodItemDto } from '@/services/foodItemService';
 import { toast } from 'sonner';
@@ -68,6 +67,7 @@ export default function FoodManagement() {
       });
       fetchFoods();
     } catch (error) {
+      console.error('Error creating food:', error);
       toast.error('Không thể tạo thực phẩm');
     }
   };
@@ -270,7 +270,7 @@ export default function FoodManagement() {
             </div>
             <div className="field">
               <label htmlFor="servingSize">Khẩu phần</label>
-              <InputText id="servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="servingSize" type="number" value={String(formData.servingSize)} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="servingUnit">Đơn vị</label>
@@ -278,19 +278,19 @@ export default function FoodManagement() {
             </div>
             <div className="field">
               <label htmlFor="caloriesKcal">Calories (kcal)</label>
-              <InputText id="caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="caloriesKcal" type="number" value={String(formData.caloriesKcal)} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="proteinG">Protein (g)</label>
-              <InputText id="proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="proteinG" type="number" value={String(formData.proteinG)} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="carbsG">Carbs (g)</label>
-              <InputText id="carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="carbsG" type="number" value={String(formData.carbsG)} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="fatG">Fat (g)</label>
-              <InputText id="fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="fatG" type="number" value={String(formData.fatG)} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
           </div>
         </Dialog>
@@ -315,7 +315,7 @@ export default function FoodManagement() {
             </div>
             <div className="field">
               <label htmlFor="edit-servingSize">Khẩu phần</label>
-              <InputText id="edit-servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="edit-servingSize" type="number" value={String(formData.servingSize)} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-servingUnit">Đơn vị</label>
@@ -323,19 +323,19 @@ export default function FoodManagement() {
             </div>
             <div className="field">
               <label htmlFor="edit-caloriesKcal">Calories (kcal)</label>
-              <InputText id="edit-caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="edit-caloriesKcal" type="number" value={String(formData.caloriesKcal)} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-proteinG">Protein (g)</label>
-              <InputText id="edit-proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="edit-proteinG" type="number" value={String(formData.proteinG)} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-carbsG">Carbs (g)</label>
-              <InputText id="edit-carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="edit-carbsG" type="number" value={String(formData.carbsG)} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-fatG">Fat (g)</label>
-              <InputText id="edit-fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
+              <InputText id="edit-fatG" type="number" value={String(formData.fatG)} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
           </div>
         </Dialog>

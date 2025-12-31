@@ -63,8 +63,8 @@ const ProfileAvatar: React.FC = () => {
       });
     } catch (error: unknown) {
       console.error('Error uploading avatar:', error);
-      const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Không thể tải ảnh lên';
       toast({
         title: 'Lỗi',
@@ -96,7 +96,7 @@ const ProfileAvatar: React.FC = () => {
       <CardContent className="flex flex-col items-center space-y-4">
         <div className="relative">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={avatarUrl ? `${avatarUrl}?t=${new Date().getTime()}` : avatarUrl} alt={user?.fullName || 'User'} />
+            <AvatarImage src={avatarUrl ? `${avatarUrl}?t=${Date.now()}` : avatarUrl} alt={user?.fullName || 'User'} />
             <AvatarFallback className="text-3xl">
               {getInitials()}
             </AvatarFallback>

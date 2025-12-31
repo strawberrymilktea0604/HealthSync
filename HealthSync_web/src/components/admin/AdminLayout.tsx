@@ -6,7 +6,6 @@ import { Permission } from "@/types/rbac";
 import {
   LayoutDashboard,
   Users,
-  BookOpen,
   Menu,
   X,
   LogOut,
@@ -128,11 +127,10 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
               <button
                 key={item.path}
                 onClick={() => handleMenuClick(item.path)}
-                className={`w-full flex items-center gap-4 px-6 py-4 transition-colors ${
-                  isActive(item.path)
+                className={`w-full flex items-center gap-4 px-6 py-4 transition-colors ${isActive(item.path)
                     ? "bg-[#5A7F7F] border-l-4 border-[#E8E4D9]"
                     : "hover:bg-[#5A7F7F]"
-                }`}
+                  }`}
                 title={isSidebarCollapsed ? item.label : ""}
               >
                 <Icon size={24} />

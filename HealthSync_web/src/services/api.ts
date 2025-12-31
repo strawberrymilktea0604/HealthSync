@@ -32,10 +32,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid, redirect to login
-      const currentPath = window.location.pathname;
+      const currentPath = globalThis.location.pathname;
       if (!currentPath.includes('/login')) {
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        globalThis.location.href = '/login';
       }
     }
     return Promise.reject(error);

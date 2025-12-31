@@ -9,7 +9,6 @@ public class MinioStorageService : IStorageService
 {
     private readonly IMinioClient _minioClient;
     private readonly string _bucketName;
-    private readonly string _endpoint;
     private readonly string _publicUrl;
 
     public MinioStorageService(IConfiguration configuration)
@@ -21,9 +20,9 @@ public class MinioStorageService : IStorageService
         
         _bucketName = configuration["MinIO:BucketName"] ?? "healthsync-files";
         // Note: http is used for local development; in production, useSSL should be true for https
-        _endpoint = useSSL ? $"https://{minioEndpoint}" : $"http://{minioEndpoint}";
+        var endpoint = useSSL ? $"https://{minioEndpoint}" : $"http://{minioEndpoint}";
         // Public URL for frontend access (e.g., http://localhost:9002 when MinIO is accessed from browser)
-        _publicUrl = configuration["MinIO:PublicUrl"] ?? _endpoint;
+        _publicUrl = configuration["MinIO:PublicUrl"] ?? endpoint;
 
         _minioClient = new MinioClient()
             .WithEndpoint(minioEndpoint)

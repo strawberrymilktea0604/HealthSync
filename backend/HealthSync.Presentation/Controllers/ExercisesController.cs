@@ -16,6 +16,7 @@ public class ExercisesController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IStorageService _storageService;
+    private const string EXERCISE_NOT_FOUND = "Không tìm thấy bài tập";
 
 
     public ExercisesController(IMediator mediator, IStorageService storageService)
@@ -57,7 +58,7 @@ public class ExercisesController : ControllerBase
 
         if (exercise == null)
         {
-            return NotFound(new { message = "Không tìm thấy bài tập" });
+            return NotFound(new { message = EXERCISE_NOT_FOUND });
         }
 
         return Ok(exercise);
@@ -100,7 +101,7 @@ public class ExercisesController : ControllerBase
 
         if (!result)
         {
-            return NotFound(new { message = "Không tìm thấy bài tập" });
+            return NotFound(new { message = EXERCISE_NOT_FOUND });
         }
 
         return Ok(new { message = "Cập nhật bài tập thành công" });
@@ -121,7 +122,7 @@ public class ExercisesController : ControllerBase
 
             if (!result)
             {
-                return NotFound(new { message = "Không tìm thấy bài tập" });
+                return NotFound(new { message = EXERCISE_NOT_FOUND });
             }
 
             return Ok(new { message = "Xóa bài tập thành công" });
@@ -150,7 +151,7 @@ public class ExercisesController : ControllerBase
 
         if (exercise == null)
         {
-            return NotFound(new { message = "Không tìm thấy bài tập" });
+            return NotFound(new { message = EXERCISE_NOT_FOUND });
         }
 
         // Upload file lên MinIO (vào folder exercises trong bucket healthsync-files)

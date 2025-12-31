@@ -16,6 +16,7 @@ public class FoodItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IStorageService _storageService;
+    private const string FOOD_ITEM_NOT_FOUND = "Không tìm thấy món ăn";
 
 
     public FoodItemsController(IMediator mediator, IStorageService storageService)
@@ -48,7 +49,7 @@ public class FoodItemsController : ControllerBase
 
         if (foodItem == null)
         {
-            return NotFound(new { message = "Không tìm thấy món ăn" });
+            return NotFound(new { message = FOOD_ITEM_NOT_FOUND });
         }
 
         return Ok(foodItem);
@@ -91,7 +92,7 @@ public class FoodItemsController : ControllerBase
 
         if (!result)
         {
-            return NotFound(new { message = "Không tìm thấy món ăn" });
+            return NotFound(new { message = FOOD_ITEM_NOT_FOUND });
         }
 
         return Ok(new { message = "Cập nhật món ăn thành công" });
@@ -112,7 +113,7 @@ public class FoodItemsController : ControllerBase
 
             if (!result)
             {
-                return NotFound(new { message = "Không tìm thấy món ăn" });
+                return NotFound(new { message = FOOD_ITEM_NOT_FOUND });
             }
 
             return Ok(new { message = "Xóa món ăn thành công" });
@@ -141,7 +142,7 @@ public class FoodItemsController : ControllerBase
 
         if (foodItem == null)
         {
-            return NotFound(new { message = "Không tìm thấy món ăn" });
+            return NotFound(new { message = FOOD_ITEM_NOT_FOUND });
         }
 
         // Upload file lên MinIO (vào folder foods trong bucket healthsync-files)
