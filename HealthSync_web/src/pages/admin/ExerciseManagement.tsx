@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
@@ -23,7 +23,7 @@ export default function ExerciseManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const navigate = useNavigate();
+
   const fileUploadRef = useRef<FileUpload>(null);
 
   const [formData, setFormData] = useState({
@@ -126,9 +126,9 @@ export default function ExerciseManagement() {
   const imageTemplate = (rowData: Exercise) => {
     if (rowData.imageUrl) {
       return (
-        <img 
+        <img
           src={`${rowData.imageUrl}?t=${Date.now()}`}
-          alt={rowData.name} 
+          alt={rowData.name}
           className="w-4rem h-4rem object-cover border-round"
         />
       );
@@ -237,23 +237,23 @@ export default function ExerciseManagement() {
           <div className="p-fluid">
             <div className="field">
               <label htmlFor="name">Tên bài tập</label>
-              <InputText id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <InputText id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="muscleGroup">Nhóm cơ</label>
-              <Dropdown id="muscleGroup" value={formData.muscleGroup} options={muscleGroups} onChange={(e) => setFormData({...formData, muscleGroup: e.value})} placeholder="Chọn nhóm cơ" />
+              <Dropdown id="muscleGroup" value={formData.muscleGroup} options={muscleGroups} onChange={(e) => setFormData({ ...formData, muscleGroup: e.value })} placeholder="Chọn nhóm cơ" />
             </div>
             <div className="field">
               <label htmlFor="difficulty">Độ khó</label>
-              <Dropdown id="difficulty" value={formData.difficulty} options={difficulties} onChange={(e) => setFormData({...formData, difficulty: e.value})} placeholder="Chọn độ khó" />
+              <Dropdown id="difficulty" value={formData.difficulty} options={difficulties} onChange={(e) => setFormData({ ...formData, difficulty: e.value })} placeholder="Chọn độ khó" />
             </div>
             <div className="field">
               <label htmlFor="equipment">Dụng cụ</label>
-              <InputText id="equipment" value={formData.equipment} onChange={(e) => setFormData({...formData, equipment: e.target.value})} />
+              <InputText id="equipment" value={formData.equipment} onChange={(e) => setFormData({ ...formData, equipment: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="description">Mô tả</label>
-              <InputTextarea id="description" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={4} />
+              <InputTextarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} />
             </div>
           </div>
         </Dialog>
@@ -273,23 +273,23 @@ export default function ExerciseManagement() {
           <div className="p-fluid">
             <div className="field">
               <label htmlFor="edit-name">Tên bài tập</label>
-              <InputText id="edit-name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <InputText id="edit-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="edit-muscleGroup">Nhóm cơ</label>
-              <Dropdown id="edit-muscleGroup" value={formData.muscleGroup} options={muscleGroups} onChange={(e) => setFormData({...formData, muscleGroup: e.value})} placeholder="Chọn nhóm cơ" />
+              <Dropdown id="edit-muscleGroup" value={formData.muscleGroup} options={muscleGroups} onChange={(e) => setFormData({ ...formData, muscleGroup: e.value })} placeholder="Chọn nhóm cơ" />
             </div>
             <div className="field">
               <label htmlFor="edit-difficulty">Độ khó</label>
-              <Dropdown id="edit-difficulty" value={formData.difficulty} options={difficulties} onChange={(e) => setFormData({...formData, difficulty: e.value})} placeholder="Chọn độ khó" />
+              <Dropdown id="edit-difficulty" value={formData.difficulty} options={difficulties} onChange={(e) => setFormData({ ...formData, difficulty: e.value })} placeholder="Chọn độ khó" />
             </div>
             <div className="field">
               <label htmlFor="edit-equipment">Dụng cụ</label>
-              <InputText id="edit-equipment" value={formData.equipment} onChange={(e) => setFormData({...formData, equipment: e.target.value})} />
+              <InputText id="edit-equipment" value={formData.equipment} onChange={(e) => setFormData({ ...formData, equipment: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="edit-description">Mô tả</label>
-              <InputTextarea id="edit-description" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={4} />
+              <InputTextarea id="edit-description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} />
             </div>
           </div>
         </Dialog>
@@ -310,8 +310,8 @@ export default function ExerciseManagement() {
           <div className="p-fluid">
             {selectedExercise?.imageUrl && (
               <div className="field">
-                <label>Ảnh hiện tại</label>
-                <img 
+                <div className="block mb-2 font-medium">Ảnh hiện tại</div>
+                <img
                   src={`${selectedExercise.imageUrl}?t=${Date.now()}`}
                   alt={selectedExercise.name}
                   className="w-full border-round mb-3"

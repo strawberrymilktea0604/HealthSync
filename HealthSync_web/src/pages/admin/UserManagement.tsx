@@ -12,7 +12,7 @@ import { Dialog } from 'primereact/dialog';
 import { adminService, AdminUserListDto } from "@/services/adminService";
 import { toast } from 'sonner';
 import { Can } from "@/components/PermissionGuard";
-import { usePermissionCheck } from "@/hooks/usePermissionCheck";
+
 import { Permission } from "@/types/rbac";
 import 'primeflex/primeflex.css';
 
@@ -33,8 +33,8 @@ export default function UserManagement() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const { checkAndExecute } = usePermissionCheck();
-  
+
+
   const [formData, setFormData] = useState({
     email: '',
     fullName: '',
@@ -223,13 +223,13 @@ export default function UserManagement() {
     const initials = rowData.fullName
       ? rowData.fullName.split(" ").map((n) => n[0]).join("")
       : rowData.email[0].toUpperCase();
-    
+
     return (
       <div className="flex align-items-center gap-3">
-        <Avatar 
+        <Avatar
           image={rowData.avatarUrl ? `${rowData.avatarUrl}?t=${Date.now()}` : rowData.avatarUrl}
           label={initials}
-          size="large" 
+          size="large"
           style={{ backgroundColor: '#4A6C6F', color: 'white' }}
           shape="circle"
         />
@@ -240,11 +240,11 @@ export default function UserManagement() {
 
   const roleBodyTemplate = (rowData: AdminUserListDto) => {
     return (
-      <Tag 
-        value={rowData.role} 
+      <Tag
+        value={rowData.role}
         severity={rowData.role === "Admin" ? "info" : "success"}
-        style={{ 
-          backgroundColor: rowData.role === "Admin" ? "#4A6C6F" : "#F5F5F5", 
+        style={{
+          backgroundColor: rowData.role === "Admin" ? "#4A6C6F" : "#F5F5F5",
           color: rowData.role === "Admin" ? "white" : "#3D3B30",
           borderRadius: '50px',
           padding: '0.25rem 0.75rem'
@@ -255,8 +255,8 @@ export default function UserManagement() {
 
   const statusBodyTemplate = (rowData: AdminUserListDto) => {
     return (
-      <Tag 
-        value={rowData.isActive ? "Active" : "Inactive"} 
+      <Tag
+        value={rowData.isActive ? "Active" : "Inactive"}
         severity={rowData.isActive ? "success" : "danger"}
         style={{ borderRadius: '50px', padding: '0.25rem 0.75rem' }}
       />
@@ -380,39 +380,39 @@ export default function UserManagement() {
             dataKey="userId"
             emptyMessage="Không có người dùng nào"
           >
-            <Column 
-              field="userId" 
-              header="USER ID" 
+            <Column
+              field="userId"
+              header="USER ID"
               body={userIdBodyTemplate}
               sortable
             />
-            <Column 
-              header="NAME" 
+            <Column
+              header="NAME"
               body={nameBodyTemplate}
               sortable
             />
-            <Column 
-              field="email" 
+            <Column
+              field="email"
               header="EMAIL"
               sortable
             />
-            <Column 
-              header="ROLE" 
+            <Column
+              header="ROLE"
               body={roleBodyTemplate}
               sortable
             />
-            <Column 
-              header="STATUS" 
+            <Column
+              header="STATUS"
               body={statusBodyTemplate}
               sortable
             />
-            <Column 
-              header="JOIN DATE" 
+            <Column
+              header="JOIN DATE"
               body={joinDateBodyTemplate}
               sortable
             />
-            <Column 
-              header="THAO TÁC" 
+            <Column
+              header="THAO TÁC"
               body={actionsBodyTemplate}
               style={{ width: '120px' }}
             />
@@ -430,14 +430,14 @@ export default function UserManagement() {
         }}
         footer={
           <div>
-            <Button 
-              label="Hủy" 
-              icon="pi pi-times" 
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
               onClick={() => {
                 setShowCreateModal(false);
                 setFormData({ email: '', fullName: '', role: 'Customer', password: '', confirmPassword: '' });
-              }} 
-              className="p-button-text" 
+              }}
+              className="p-button-text"
             />
             <Button label="Tạo" icon="pi pi-check" onClick={handleCreate} />
           </div>
@@ -446,19 +446,19 @@ export default function UserManagement() {
         <div className="p-fluid">
           <div className="field">
             <label htmlFor="create-email">Email</label>
-            <InputText 
-              id="create-email" 
-              value={formData.email} 
-              onChange={(e) => setFormData({...formData, email: e.target.value})} 
+            <InputText
+              id="create-email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="user@example.com"
             />
           </div>
           <div className="field">
             <label htmlFor="create-fullName">Họ và tên</label>
-            <InputText 
-              id="create-fullName" 
-              value={formData.fullName} 
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+            <InputText
+              id="create-fullName"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               placeholder="Nguyễn Văn A"
             />
           </div>
@@ -468,27 +468,27 @@ export default function UserManagement() {
               id="create-role"
               value={formData.role}
               options={roleUpdateOptions}
-              onChange={(e) => setFormData({...formData, role: e.value})}
+              onChange={(e) => setFormData({ ...formData, role: e.value })}
               placeholder="Chọn vai trò"
             />
           </div>
           <div className="field">
             <label htmlFor="create-password">Mật khẩu</label>
-            <InputText 
-              id="create-password" 
+            <InputText
+              id="create-password"
               type="password"
-              value={formData.password} 
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="Nhập mật khẩu"
             />
           </div>
           <div className="field">
             <label htmlFor="create-confirmPassword">Xác nhận mật khẩu</label>
-            <InputText 
-              id="create-confirmPassword" 
+            <InputText
+              id="create-confirmPassword"
               type="password"
-              value={formData.confirmPassword} 
-              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               placeholder="Nhập lại mật khẩu"
             />
           </div>
@@ -505,14 +505,14 @@ export default function UserManagement() {
         }}
         footer={
           <div>
-            <Button 
-              label="Hủy" 
-              icon="pi pi-times" 
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
               onClick={() => {
                 setShowEditModal(false);
                 setSelectedUser(null);
-              }} 
-              className="p-button-text" 
+              }}
+              className="p-button-text"
             />
             <Button label="Lưu" icon="pi pi-check" onClick={handleEdit} />
           </div>
@@ -521,18 +521,18 @@ export default function UserManagement() {
         <div className="p-fluid">
           <div className="field">
             <label htmlFor="edit-email">Email</label>
-            <InputText 
-              id="edit-email" 
-              value={formData.email} 
+            <InputText
+              id="edit-email"
+              value={formData.email}
               disabled
             />
           </div>
           <div className="field">
             <label htmlFor="edit-fullName">Họ và tên</label>
-            <InputText 
-              id="edit-fullName" 
-              value={formData.fullName} 
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+            <InputText
+              id="edit-fullName"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
             />
           </div>
           <div className="field">
@@ -541,7 +541,7 @@ export default function UserManagement() {
               id="edit-role"
               value={formData.role}
               options={roleUpdateOptions}
-              onChange={(e) => setFormData({...formData, role: e.value})}
+              onChange={(e) => setFormData({ ...formData, role: e.value })}
               placeholder="Chọn vai trò"
             />
           </div>
@@ -560,16 +560,16 @@ export default function UserManagement() {
         }}
         footer={
           <div>
-            <Button 
-              label="Hủy" 
-              icon="pi pi-times" 
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
               onClick={() => {
                 setShowAvatarModal(false);
                 setSelectedUser(null);
                 setAvatarFile(null);
                 setAvatarPreview(null);
-              }} 
-              className="p-button-text" 
+              }}
+              className="p-button-text"
             />
             <Button label="Cập nhật" icon="pi pi-check" onClick={handleUpdateAvatar} />
           </div>
@@ -578,9 +578,9 @@ export default function UserManagement() {
         <div className="p-fluid">
           <div className="field text-center mb-4">
             {avatarPreview && (
-              <img 
-                src={avatarPreview} 
-                alt="Avatar Preview" 
+              <img
+                src={avatarPreview}
+                alt="Avatar Preview"
                 className="border-circle mx-auto"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
               />
@@ -612,16 +612,16 @@ export default function UserManagement() {
         }}
         footer={
           <div>
-            <Button 
-              label="Hủy" 
-              icon="pi pi-times" 
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
               onClick={() => {
                 setShowPasswordModal(false);
                 setSelectedUser(null);
                 setNewPassword('');
                 setConfirmNewPassword('');
-              }} 
-              className="p-button-text" 
+              }}
+              className="p-button-text"
             />
             <Button label="Cập nhật" icon="pi pi-check" onClick={handleUpdatePassword} />
           </div>
@@ -630,16 +630,16 @@ export default function UserManagement() {
         <div className="p-fluid">
           <div className="field mb-3">
             <label htmlFor="user-email">Email người dùng</label>
-            <InputText 
-              id="user-email" 
-              value={selectedUser?.email || ''} 
-              disabled 
+            <InputText
+              id="user-email"
+              value={selectedUser?.email || ''}
+              disabled
             />
           </div>
           <div className="field mb-3">
             <label htmlFor="new-password">Mật khẩu mới *</label>
-            <InputText 
-              id="new-password" 
+            <InputText
+              id="new-password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -648,8 +648,8 @@ export default function UserManagement() {
           </div>
           <div className="field">
             <label htmlFor="confirm-new-password">Xác nhận mật khẩu *</label>
-            <InputText 
-              id="confirm-new-password" 
+            <InputText
+              id="confirm-new-password"
               type="password"
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
@@ -669,20 +669,20 @@ export default function UserManagement() {
         }}
         footer={
           <div>
-            <Button 
-              label="Hủy" 
-              icon="pi pi-times" 
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
               onClick={() => {
                 setShowDeleteModal(false);
                 setSelectedUser(null);
-              }} 
-              className="p-button-text" 
+              }}
+              className="p-button-text"
             />
-            <Button 
-              label="Xóa" 
-              icon="pi pi-check" 
-              severity="danger" 
-              onClick={handleDeleteUser} 
+            <Button
+              label="Xóa"
+              icon="pi pi-check"
+              severity="danger"
+              onClick={handleDeleteUser}
             />
           </div>
         }

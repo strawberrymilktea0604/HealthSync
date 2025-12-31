@@ -11,15 +11,7 @@ const mapUserData = (data: Record<string, unknown>): AdminUserListDto => ({
   avatarUrl: data.AvatarUrl || data.avatarUrl,
 });
 
-const mapUserDetailData = (data: Record<string, unknown>): AdminUserDto => ({
-  userId: data.UserId || data.userId,
-  email: data.Email || data.email,
-  fullName: data.FullName || data.fullName,
-  role: data.Role || data.role,
-  isActive: data.IsActive ?? data.isActive,
-  createdAt: data.CreatedAt || data.createdAt,
-  avatarUrl: data.AvatarUrl || data.avatarUrl,
-});
+const mapUserDetailData = (data: Record<string, unknown>): AdminUserDto => mapUserData(data);
 
 export interface AdminUserListDto {
   userId: number;
@@ -75,18 +67,18 @@ export const adminService = {
       page: page.toString(),
       pageSize: pageSize.toString(),
     });
-    
+
     if (searchTerm) {
       params.append('searchTerm', searchTerm);
     }
-    
+
     if (role && role !== 'All Roles') {
       params.append('role', role);
     }
 
     const response = await api.get<Record<string, unknown>>(`/admin/users?${params.toString()}`);
     const data = response.data;
-    
+
     return {
       users: (data.Users || data.users || []).map(mapUserData),
       totalCount: data.TotalCount || data.totalCount || 0,

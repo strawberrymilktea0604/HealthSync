@@ -22,7 +22,7 @@ public class DataSeeder
     private readonly HealthSyncDbContext _dbContext;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
-    private readonly HttpClient _httpClient;
+
     private readonly AvatarSeeder _avatarSeeder;
 
     public DataSeeder(IMinioClient minioClient, HealthSyncDbContext dbContext, IConfiguration configuration, IWebHostEnvironment env, HttpClient httpClient)
@@ -31,7 +31,6 @@ public class DataSeeder
         _dbContext = dbContext;
         _configuration = configuration;
         _env = env;
-        _httpClient = httpClient;
         var publicUrl = configuration["MinIO:PublicUrl"] ?? "http://localhost:9002";
         _avatarSeeder = new AvatarSeeder(minioClient, httpClient, publicUrl);
     }

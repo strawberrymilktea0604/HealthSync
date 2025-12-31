@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
@@ -22,7 +22,7 @@ export default function FoodManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const navigate = useNavigate();
+
   const fileUploadRef = useRef<FileUpload>(null);
 
   const [formData, setFormData] = useState({
@@ -121,9 +121,9 @@ export default function FoodManagement() {
   const imageTemplate = (rowData: FoodItem) => {
     if (rowData.imageUrl) {
       return (
-        <img 
+        <img
           src={`${rowData.imageUrl}?t=${Date.now()}`}
-          alt={rowData.name} 
+          alt={rowData.name}
           className="w-4rem h-4rem object-cover border-round"
         />
       );
@@ -266,31 +266,31 @@ export default function FoodManagement() {
           <div className="p-fluid">
             <div className="field">
               <label htmlFor="name">Tên thực phẩm</label>
-              <InputText id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <InputText id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="servingSize">Khẩu phần</label>
-              <InputText id="servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({...formData, servingSize: parseFloat(e.target.value) || 0})} />
+              <InputText id="servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="servingUnit">Đơn vị</label>
-              <InputText id="servingUnit" value={formData.servingUnit} onChange={(e) => setFormData({...formData, servingUnit: e.target.value})} />
+              <InputText id="servingUnit" value={formData.servingUnit} onChange={(e) => setFormData({ ...formData, servingUnit: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="caloriesKcal">Calories (kcal)</label>
-              <InputText id="caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({...formData, caloriesKcal: parseFloat(e.target.value) || 0})} />
+              <InputText id="caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="proteinG">Protein (g)</label>
-              <InputText id="proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({...formData, proteinG: parseFloat(e.target.value) || 0})} />
+              <InputText id="proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="carbsG">Carbs (g)</label>
-              <InputText id="carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({...formData, carbsG: parseFloat(e.target.value) || 0})} />
+              <InputText id="carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="fatG">Fat (g)</label>
-              <InputText id="fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({...formData, fatG: parseFloat(e.target.value) || 0})} />
+              <InputText id="fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
           </div>
         </Dialog>
@@ -311,31 +311,31 @@ export default function FoodManagement() {
           <div className="p-fluid">
             <div className="field">
               <label htmlFor="edit-name">Tên thực phẩm</label>
-              <InputText id="edit-name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <InputText id="edit-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="edit-servingSize">Khẩu phần</label>
-              <InputText id="edit-servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({...formData, servingSize: parseFloat(e.target.value) || 0})} />
+              <InputText id="edit-servingSize" type="number" value={formData.servingSize} onChange={(e) => setFormData({ ...formData, servingSize: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-servingUnit">Đơn vị</label>
-              <InputText id="edit-servingUnit" value={formData.servingUnit} onChange={(e) => setFormData({...formData, servingUnit: e.target.value})} />
+              <InputText id="edit-servingUnit" value={formData.servingUnit} onChange={(e) => setFormData({ ...formData, servingUnit: e.target.value })} />
             </div>
             <div className="field">
               <label htmlFor="edit-caloriesKcal">Calories (kcal)</label>
-              <InputText id="edit-caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({...formData, caloriesKcal: parseFloat(e.target.value) || 0})} />
+              <InputText id="edit-caloriesKcal" type="number" value={formData.caloriesKcal} onChange={(e) => setFormData({ ...formData, caloriesKcal: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-proteinG">Protein (g)</label>
-              <InputText id="edit-proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({...formData, proteinG: parseFloat(e.target.value) || 0})} />
+              <InputText id="edit-proteinG" type="number" value={formData.proteinG} onChange={(e) => setFormData({ ...formData, proteinG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-carbsG">Carbs (g)</label>
-              <InputText id="edit-carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({...formData, carbsG: parseFloat(e.target.value) || 0})} />
+              <InputText id="edit-carbsG" type="number" value={formData.carbsG} onChange={(e) => setFormData({ ...formData, carbsG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="field">
               <label htmlFor="edit-fatG">Fat (g)</label>
-              <InputText id="edit-fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({...formData, fatG: parseFloat(e.target.value) || 0})} />
+              <InputText id="edit-fatG" type="number" value={formData.fatG} onChange={(e) => setFormData({ ...formData, fatG: Number.parseFloat(e.target.value) || 0 })} />
             </div>
           </div>
         </Dialog>

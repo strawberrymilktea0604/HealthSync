@@ -16,13 +16,12 @@ public class ExercisesController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IStorageService _storageService;
-    private readonly IConfiguration _configuration;
 
-    public ExercisesController(IMediator mediator, IStorageService storageService, IConfiguration configuration)
+
+    public ExercisesController(IMediator mediator, IStorageService storageService)
     {
         _mediator = mediator;
         _storageService = storageService;
-        _configuration = configuration;
     }
 
     /// <summary>

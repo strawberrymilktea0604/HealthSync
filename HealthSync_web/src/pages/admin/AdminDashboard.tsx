@@ -17,7 +17,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStatistics();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
   const fetchStatistics = async () => {
@@ -75,9 +75,9 @@ export default function AdminDashboard() {
 
   // Check for required numeric fields
   if (typeof statistics.userStatistics.totalUsers !== 'number' ||
-      typeof statistics.userStatistics.activeUsers !== 'number' ||
-      typeof statistics.userStatistics.newUsersThisMonth !== 'number' ||
-      typeof statistics.workoutStatistics.totalWorkoutLogs !== 'number') {
+    typeof statistics.userStatistics.activeUsers !== 'number' ||
+    typeof statistics.userStatistics.newUsersThisMonth !== 'number' ||
+    typeof statistics.workoutStatistics.totalWorkoutLogs !== 'number') {
     console.error('Statistics data contains invalid numeric values:', statistics);
     return (
       <AdminLayout>
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { userStatistics, workoutStatistics, nutritionStatistics, goalStatistics } = statistics;
+  const { userStatistics, workoutStatistics } = statistics;
 
   // User Role Distribution Chart
   const userRoleData = {
@@ -203,24 +203,26 @@ export default function AdminDashboard() {
                   .filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()))
                   .slice(0, 5)
                   .map((exercise) => (
-                  <div key={exercise.exerciseId} className="flex align-items-center gap-3">
-                    <div className="w-1rem h-1rem border-circle" style={{ backgroundColor: '#4A6C6F' }}></div>
-                    <span className="font-medium text-900">{exercise.exerciseName || 'Unknown Exercise'}</span>
-                    <div className="flex-1 mx-3">
-                      <div className="w-full h-0-5rem bg-gray-200 border-round">
-                        <div 
-                          className="h-full bg-primary border-round" 
-                          style={{ width: `${(() => {
-                            const filteredExercises = (workoutStatistics.topExercises || []).filter(e => e && typeof e.exerciseName === 'string' && e.exerciseName.trim() !== '' && e.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()));
-                            const maxUsage = filteredExercises.length > 0 ? Math.max(...filteredExercises.map(e => e.usageCount)) : 1;
-                            return (exercise.usageCount / maxUsage) * 100;
-                          })()}%` }}
-                        ></div>
+                    <div key={exercise.exerciseId} className="flex align-items-center gap-3">
+                      <div className="w-1rem h-1rem border-circle" style={{ backgroundColor: '#4A6C6F' }}></div>
+                      <span className="font-medium text-900">{exercise.exerciseName || 'Unknown Exercise'}</span>
+                      <div className="flex-1 mx-3">
+                        <div className="w-full h-0-5rem bg-gray-200 border-round">
+                          <div
+                            className="h-full bg-primary border-round"
+                            style={{
+                              width: `${(() => {
+                                const filteredExercises = (workoutStatistics.topExercises || []).filter(e => e && typeof e.exerciseName === 'string' && e.exerciseName.trim() !== '' && e.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()));
+                                const maxUsage = filteredExercises.length > 0 ? Math.max(...filteredExercises.map(e => e.usageCount)) : 1;
+                                return (exercise.usageCount / maxUsage) * 100;
+                              })()}%`
+                            }}
+                          ></div>
+                        </div>
                       </div>
+                      <span className="text-500 text-sm">{exercise.usageCount.toLocaleString()}</span>
                     </div>
-                    <span className="text-500 text-sm">{exercise.usageCount.toLocaleString()}</span>
-                  </div>
-                ))}
+                  ))}
                 {(workoutStatistics.topExercises || []).filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase())).length === 0 && (
                   <p className="text-500 text-center">Chưa có dữ liệu bài tập</p>
                 )}

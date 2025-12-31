@@ -90,8 +90,8 @@ export default function CompleteProfile() {
         fullName: fullName.trim(),
         dob: dateOfBirth,
         gender,
-        heightCm: parseFloat(heightCm),
-        weightKg: parseFloat(weightKg),
+        heightCm: Number.parseFloat(heightCm),
+        weightKg: Number.parseFloat(weightKg),
         activityLevel,
       });
 
@@ -131,16 +131,16 @@ export default function CompleteProfile() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2 justify-center mb-4">
-                Welcome to 
-                <motion.img 
-                  src={logo} 
-                  alt="healthsync" 
+                Welcome to
+                <motion.img
+                  src={logo}
+                  alt="healthsync"
                   style={{ height: '24px', marginTop: '4px' }}
-                  animate={{ 
+                  animate={{
                     scale: [1, 1.1, 1],
                     rotate: [0, 5, -5, 0]
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 2,
                     repeat: Infinity,
                     ease: "easeInOut"

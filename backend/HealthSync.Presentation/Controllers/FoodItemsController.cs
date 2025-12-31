@@ -16,13 +16,12 @@ public class FoodItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IStorageService _storageService;
-    private readonly IConfiguration _configuration;
 
-    public FoodItemsController(IMediator mediator, IStorageService storageService, IConfiguration configuration)
+
+    public FoodItemsController(IMediator mediator, IStorageService storageService)
     {
         _mediator = mediator;
         _storageService = storageService;
-        _configuration = configuration;
     }
 
     /// <summary>
