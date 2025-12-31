@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -20,68 +21,198 @@ export default function UserManagement() {
   const [selectedRole, setSelectedRole] = useState("All Roles");
   const [users, setUsers] = useState<AdminUserListDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<number | null>(null);
-  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AdminUserListDto | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [newRole, setNewRole] = useState("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const { checkAndExecute } = usePermissionCheck();
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    fullName: '',
+    role: 'Customer',
+    password: '',
+    confirmPassword: ''
+  });
 
-  useEffect(() => {
-    fetchUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, selectedRole]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllUsers(1, 50, searchTerm, selectedRole);
+      const response = await adminService.getAllUsers(page, 10, searchTerm, selectedRole);
       setUsers(response.users);
-    } catch {
-      toast.error("Failed to load users");
+      setTotalRecords(response.totalCount);
+    } catch (error: any) {
+      console.error('Error fetching users:', error);
+      toast.error(error.response?.data?.message || "Không thể tải danh sách người dùng");
     } finally {
       setLoading(false);
     }
+  }, [page, searchTerm, selectedRole]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    // Reset to page 1 when search or filter changes
+    setPage(1);
+  }, [searchTerm, selectedRole]);
+
+  const handleCreate = async () => {
+    if (!formData.email || !formData.fullName || !formData.password) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    try {
+      await adminService.createUser({
+        email: formData.email,
+        fullName: formData.fullName,
+        role: formData.role,
+        password: formData.password
+      });
+      toast.success("Tạo người dùng thành công");
+      setShowCreateModal(false);
+      setFormData({ email: '', fullName: '', role: 'Customer', password: '', confirmPassword: '' });
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể tạo người dùng");
+    }
   };
 
-  const handleUpdateRole = async () => {
-    if (!selectedUser || !newRole) return;
+  const handleEdit = async () => {
+    if (!selectedUser || !formData.fullName || !formData.role) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
 
-    checkAndExecute(
-      Permission.UPDATE_USER_ROLES,
-      async () => {
-        try {
-          await adminService.updateUserRole(selectedUser, newRole);
-          toast.success("Cập nhật vai trò người dùng thành công");
-          setShowRoleModal(false);
-          setSelectedUser(null);
-          setNewRole("");
-          fetchUsers();
-        } catch {
-          toast.error("Không thể cập nhật vai trò người dùng");
-        }
-      },
-      { errorMessage: "Bạn không có quyền cập nhật vai trò người dùng" }
-    );
+    // Check if trying to downgrade last admin
+    if (selectedUser.role === 'Admin' && formData.role === 'Customer') {
+      const adminCount = users.filter(u => u.role === 'Admin').length;
+      if (adminCount <= 1) {
+        toast.error("Không thể chuyển admin cuối cùng thành user. Phải có ít nhất 1 admin trong hệ thống.");
+        return;
+      }
+    }
+
+    try {
+      await adminService.updateUser(selectedUser.userId, {
+        fullName: formData.fullName,
+        role: formData.role
+      });
+      toast.success("Cập nhật người dùng thành công");
+      setShowEditModal(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể cập nhật người dùng");
+    }
+  };
+
+  const openEditDialog = (user: AdminUserListDto) => {
+    setSelectedUser(user);
+    setFormData({
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      password: '',
+      confirmPassword: ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateAvatar = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await adminService.updateUserAvatar(selectedUser.userId, avatarFile);
+      toast.success("Cập nhật avatar thành công");
+      setShowAvatarModal(false);
+      setSelectedUser(null);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể cập nhật avatar");
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!selectedUser) return;
+
+    if (!newPassword) {
+      toast.error("Vui lòng nhập mật khẩu mới");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Mật khẩu phải có ít nhất 6 ký tự");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    try {
+      await adminService.updateUserPassword(selectedUser.userId, newPassword);
+      toast.success("Cập nhật mật khẩu thành công");
+      setShowPasswordModal(false);
+      setSelectedUser(null);
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể cập nhật mật khẩu");
+    }
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
-    checkAndExecute(
-      Permission.DELETE_USERS,
-      async () => {
-        try {
-          await adminService.deleteUser(selectedUser);
-          toast.success("Xóa người dùng thành công");
-          setShowDeleteModal(false);
-          setSelectedUser(null);
-          fetchUsers();
-        } catch {
-          toast.error("Không thể xóa người dùng");
-        }
-      },
-      { errorMessage: "Bạn không có quyền xóa người dùng" }
-    );
+    // Check if trying to delete last admin
+    if (selectedUser.role === 'Admin') {
+      const adminCount = users.filter(u => u.role === 'Admin').length;
+      if (adminCount <= 1) {
+        toast.error("Không thể xóa admin cuối cùng. Phải có ít nhất 1 admin trong hệ thống.");
+        return;
+      }
+    }
+
+    try {
+      await adminService.deleteUser(selectedUser.userId);
+      toast.success("Xóa người dùng thành công");
+      setShowDeleteModal(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể xóa người dùng");
+    }
   };
 
   const userIdBodyTemplate = (rowData: AdminUserListDto) => {
@@ -96,6 +227,7 @@ export default function UserManagement() {
     return (
       <div className="flex align-items-center gap-3">
         <Avatar 
+          image={rowData.avatarUrl ? `${rowData.avatarUrl}?t=${Date.now()}` : rowData.avatarUrl}
           label={initials}
           size="large" 
           style={{ backgroundColor: '#4A6C6F', color: 'white' }}
@@ -138,26 +270,51 @@ export default function UserManagement() {
   const actionsBodyTemplate = (rowData: AdminUserListDto) => {
     return (
       <div className="flex gap-2">
+        <Can permission={Permission.UPDATE_USERS}>
+          <Button
+            icon="pi pi-image"
+            className="p-button-rounded p-button-text p-button-success"
+            tooltip="Cập nhật avatar"
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => {
+              setSelectedUser(rowData);
+              setAvatarFile(null);
+              setAvatarPreview(rowData.avatarUrl || null);
+              setShowAvatarModal(true);
+            }}
+          />
+        </Can>
+        <Can permission={Permission.UPDATE_USERS}>
+          <Button
+            icon="pi pi-key"
+            className="p-button-rounded p-button-text p-button-warning"
+            tooltip="Đổi mật khẩu"
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => {
+              setSelectedUser(rowData);
+              setNewPassword('');
+              setConfirmNewPassword('');
+              setShowPasswordModal(true);
+            }}
+          />
+        </Can>
         <Can permission={Permission.UPDATE_USER_ROLES}>
           <Button
-            label="Edit Role"
-            size="small"
-            style={{ backgroundColor: '#4A6C6F', border: 'none', borderRadius: '6px', fontSize: '0.75rem' }}
-            onClick={() => {
-              setSelectedUser(rowData.userId);
-              setNewRole(rowData.role);
-              setShowRoleModal(true);
-            }}
+            icon="pi pi-pencil"
+            className="p-button-rounded p-button-text p-button-info"
+            tooltip="Chỉnh sửa"
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => openEditDialog(rowData)}
           />
         </Can>
         <Can permission={Permission.DELETE_USERS}>
           <Button
-            label="Delete"
-            size="small"
-            severity="danger"
-            style={{ borderRadius: '6px', fontSize: '0.75rem' }}
+            icon="pi pi-trash"
+            className="p-button-rounded p-button-text p-button-danger"
+            tooltip="Xóa người dùng"
+            tooltipOptions={{ position: 'top' }}
             onClick={() => {
-              setSelectedUser(rowData.userId);
+              setSelectedUser(rowData);
               setShowDeleteModal(true);
             }}
           />
@@ -177,180 +334,326 @@ export default function UserManagement() {
     { label: 'Admin', value: 'Admin' }
   ];
 
+  const onPage = (event: any) => {
+    setPage(event.page + 1); // PrimeReact pages are 0-based
+  };
+
   return (
     <AdminLayout>
       <div className="p-4">
-        {/* Header with Search and Filters */}
-        <div className="surface-card border-round-xl shadow-2 p-4 mb-4">
-          <div className="flex flex-column md:flex-row gap-3 align-items-start md:align-items-center justify-content-between">
-            <div className="flex-1 w-full md:w-auto">
-              <span className="p-input-icon-left w-full">
-                <i className="pi pi-search" />
-                <InputText
-                  placeholder="Search users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                  style={{ paddingLeft: '2.5rem', borderRadius: '8px' }}
-                />
-              </span>
+        <Card title="Quản lý Người dùng">
+          <div className="flex justify-content-between align-items-center mb-4">
+            <div className="flex gap-2">
+              <InputText
+                placeholder="Tìm kiếm người dùng..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-12rem"
+              />
+              <Dropdown
+                value={selectedRole}
+                options={roleOptions}
+                onChange={(e) => setSelectedRole(e.value)}
+                placeholder="All Roles"
+                className="w-10rem"
+              />
             </div>
-            <Dropdown
-              value={selectedRole}
-              options={roleOptions}
-              onChange={(e) => setSelectedRole(e.value)}
-              placeholder="All Roles"
-              className="w-full md:w-auto"
-              style={{ minWidth: '180px', borderRadius: '8px' }}
-            />
             <Button
-              label="Add New User"
+              label="Thêm người dùng"
               icon="pi pi-plus"
-              className="w-full md:w-auto"
-              style={{ backgroundColor: '#4A6C6F', border: 'none', borderRadius: '8px' }}
+              className="p-button-primary"
+              onClick={() => {
+                setFormData({ email: '', fullName: '', role: 'Customer', password: '', confirmPassword: '' });
+                setShowCreateModal(true);
+              }}
             />
           </div>
-        </div>
 
-        {/* Data Table */}
-        <div className="surface-card border-round-xl shadow-2">
           <DataTable
             value={users}
             loading={loading}
             paginator
             rows={10}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            lazy
             dataKey="userId"
-            emptyMessage="No users found"
-            className="p-datatable-gridlines"
-            style={{ borderRadius: '12px', overflow: 'hidden' }}
+            emptyMessage="Không có người dùng nào"
           >
             <Column 
               field="userId" 
               header="USER ID" 
               body={userIdBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
               header="NAME" 
               body={nameBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
               field="email" 
               header="EMAIL"
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
               header="ROLE" 
               body={roleBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
               header="STATUS" 
               body={statusBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
               header="JOIN DATE" 
               body={joinDateBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              sortable
             />
             <Column 
-              header="ACTIONS" 
+              header="THAO TÁC" 
               body={actionsBodyTemplate}
-              headerStyle={{ 
-                backgroundColor: '#F5F5F5', 
-                color: '#3D3B30', 
-                textTransform: 'uppercase', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                borderBottom: '1px solid #E5E5E5'
-              }}
+              style={{ width: '120px' }}
             />
           </DataTable>
-        </div>
+        </Card>
       </div>
 
-      {/* Role Update Dialog */}
+      {/* Create User Dialog */}
       <Dialog
-        visible={showRoleModal}
+        header="Thêm người dùng mới"
+        visible={showCreateModal}
         onHide={() => {
-          setShowRoleModal(false);
-          setSelectedUser(null);
-          setNewRole("");
+          setShowCreateModal(false);
+          setFormData({ email: '', fullName: '', role: 'Customer', password: '', confirmPassword: '' });
         }}
-        header="Update User Role"
-        style={{ width: '450px' }}
-        modal
+        footer={
+          <div>
+            <Button 
+              label="Hủy" 
+              icon="pi pi-times" 
+              onClick={() => {
+                setShowCreateModal(false);
+                setFormData({ email: '', fullName: '', role: 'Customer', password: '', confirmPassword: '' });
+              }} 
+              className="p-button-text" 
+            />
+            <Button label="Tạo" icon="pi pi-check" onClick={handleCreate} />
+          </div>
+        }
       >
-        <div className="flex flex-column gap-4">
-          <div className="flex flex-column gap-2">
-            <label htmlFor="role" className="font-medium">Select Role</label>
-            <Dropdown
-              id="role"
-              value={newRole}
-              options={roleUpdateOptions}
-              onChange={(e) => setNewRole(e.value)}
-              placeholder="Select a role"
-              className="w-full"
+        <div className="p-fluid">
+          <div className="field">
+            <label htmlFor="create-email">Email</label>
+            <InputText 
+              id="create-email" 
+              value={formData.email} 
+              onChange={(e) => setFormData({...formData, email: e.target.value})} 
+              placeholder="user@example.com"
             />
           </div>
-          <div className="flex justify-content-end gap-2">
-            <Button
-              label="Cancel"
-              outlined
-              onClick={() => {
-                setShowRoleModal(false);
-                setSelectedUser(null);
-                setNewRole("");
-              }}
+          <div className="field">
+            <label htmlFor="create-fullName">Họ và tên</label>
+            <InputText 
+              id="create-fullName" 
+              value={formData.fullName} 
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+              placeholder="Nguyễn Văn A"
             />
-            <Button
-              label="Update"
-              onClick={handleUpdateRole}
-              style={{ backgroundColor: '#4A6C6F', border: 'none' }}
+          </div>
+          <div className="field">
+            <label htmlFor="create-role">Vai trò</label>
+            <Dropdown
+              id="create-role"
+              value={formData.role}
+              options={roleUpdateOptions}
+              onChange={(e) => setFormData({...formData, role: e.value})}
+              placeholder="Chọn vai trò"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="create-password">Mật khẩu</label>
+            <InputText 
+              id="create-password" 
+              type="password"
+              value={formData.password} 
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="Nhập mật khẩu"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="create-confirmPassword">Xác nhận mật khẩu</label>
+            <InputText 
+              id="create-confirmPassword" 
+              type="password"
+              value={formData.confirmPassword} 
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              placeholder="Nhập lại mật khẩu"
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog
+        header="Chỉnh sửa người dùng"
+        visible={showEditModal}
+        onHide={() => {
+          setShowEditModal(false);
+          setSelectedUser(null);
+        }}
+        footer={
+          <div>
+            <Button 
+              label="Hủy" 
+              icon="pi pi-times" 
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedUser(null);
+              }} 
+              className="p-button-text" 
+            />
+            <Button label="Lưu" icon="pi pi-check" onClick={handleEdit} />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field">
+            <label htmlFor="edit-email">Email</label>
+            <InputText 
+              id="edit-email" 
+              value={formData.email} 
+              disabled
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="edit-fullName">Họ và tên</label>
+            <InputText 
+              id="edit-fullName" 
+              value={formData.fullName} 
+              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="edit-role">Vai trò</label>
+            <Dropdown
+              id="edit-role"
+              value={formData.role}
+              options={roleUpdateOptions}
+              onChange={(e) => setFormData({...formData, role: e.value})}
+              placeholder="Chọn vai trò"
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Avatar Update Dialog */}
+      <Dialog
+        header="Cập nhật Avatar"
+        visible={showAvatarModal}
+        onHide={() => {
+          setShowAvatarModal(false);
+          setSelectedUser(null);
+          setAvatarFile(null);
+          setAvatarPreview(null);
+        }}
+        footer={
+          <div>
+            <Button 
+              label="Hủy" 
+              icon="pi pi-times" 
+              onClick={() => {
+                setShowAvatarModal(false);
+                setSelectedUser(null);
+                setAvatarFile(null);
+                setAvatarPreview(null);
+              }} 
+              className="p-button-text" 
+            />
+            <Button label="Cập nhật" icon="pi pi-check" onClick={handleUpdateAvatar} />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field text-center mb-4">
+            {avatarPreview && (
+              <img 
+                src={avatarPreview} 
+                alt="Avatar Preview" 
+                className="border-circle mx-auto"
+                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+              />
+            )}
+          </div>
+          <div className="field">
+            <label htmlFor="avatar-file">Chọn ảnh mới</label>
+            <input
+              id="avatar-file"
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="p-inputtext"
+            />
+            <small className="text-500">Nếu không chọn ảnh, hệ thống sẽ tạo avatar ngẫu nhiên</small>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Password Update Dialog */}
+      <Dialog
+        header="Đổi mật khẩu"
+        visible={showPasswordModal}
+        onHide={() => {
+          setShowPasswordModal(false);
+          setSelectedUser(null);
+          setNewPassword('');
+          setConfirmNewPassword('');
+        }}
+        footer={
+          <div>
+            <Button 
+              label="Hủy" 
+              icon="pi pi-times" 
+              onClick={() => {
+                setShowPasswordModal(false);
+                setSelectedUser(null);
+                setNewPassword('');
+                setConfirmNewPassword('');
+              }} 
+              className="p-button-text" 
+            />
+            <Button label="Cập nhật" icon="pi pi-check" onClick={handleUpdatePassword} />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field mb-3">
+            <label htmlFor="user-email">Email người dùng</label>
+            <InputText 
+              id="user-email" 
+              value={selectedUser?.email || ''} 
+              disabled 
+            />
+          </div>
+          <div className="field mb-3">
+            <label htmlFor="new-password">Mật khẩu mới *</label>
+            <InputText 
+              id="new-password" 
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="confirm-new-password">Xác nhận mật khẩu *</label>
+            <InputText 
+              id="confirm-new-password" 
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              placeholder="Nhập lại mật khẩu mới"
             />
           </div>
         </div>
@@ -358,35 +661,33 @@ export default function UserManagement() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog
+        header="Xác nhận xóa"
         visible={showDeleteModal}
         onHide={() => {
           setShowDeleteModal(false);
           setSelectedUser(null);
         }}
-        header="Delete User"
-        style={{ width: '450px' }}
-        modal
-      >
-        <div className="flex flex-column gap-4">
-          <p className="text-600 line-height-3">
-            Are you sure you want to delete this user? This action cannot be undone.
-          </p>
-          <div className="flex justify-content-end gap-2">
-            <Button
-              label="Cancel"
-              outlined
+        footer={
+          <div>
+            <Button 
+              label="Hủy" 
+              icon="pi pi-times" 
               onClick={() => {
                 setShowDeleteModal(false);
                 setSelectedUser(null);
-              }}
+              }} 
+              className="p-button-text" 
             />
-            <Button
-              label="Delete"
-              severity="danger"
-              onClick={handleDeleteUser}
+            <Button 
+              label="Xóa" 
+              icon="pi pi-check" 
+              severity="danger" 
+              onClick={handleDeleteUser} 
             />
           </div>
-        </div>
+        }
+      >
+        <p>Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác.</p>
       </Dialog>
     </AdminLayout>
   );

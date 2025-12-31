@@ -7,6 +7,7 @@ export interface Exercise {
   difficulty: string;
   equipment?: string;
   description?: string;
+  imageUrl?: string;
 }
 
 export interface CreateExerciseDto {
@@ -57,5 +58,17 @@ export const exerciseService = {
   // Xóa bài tập
   async deleteExercise(id: number): Promise<void> {
     await api.delete(`/Exercises/${id}`);
+  },
+
+  // Upload ảnh bài tập
+  async uploadExerciseImage(id: number, file: File): Promise<{ imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.put(`/Exercises/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
 };

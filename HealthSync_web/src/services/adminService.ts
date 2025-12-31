@@ -8,6 +8,7 @@ const mapUserData = (data: Record<string, unknown>): AdminUserListDto => ({
   role: data.Role || data.role,
   isActive: data.IsActive ?? data.isActive,
   createdAt: data.CreatedAt || data.createdAt,
+  avatarUrl: data.AvatarUrl || data.avatarUrl,
 });
 
 const mapUserDetailData = (data: Record<string, unknown>): AdminUserDto => ({
@@ -27,6 +28,7 @@ export interface AdminUserListDto {
   role: string;
   isActive: boolean;
   createdAt: string;
+  avatarUrl?: string;
 }
 
 export interface AdminUserDto {
@@ -47,6 +49,18 @@ export interface AdminUsersResponse {
 }
 
 export interface UpdateUserRoleRequest {
+  role: string;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  fullName: string;
+  role: string;
+  password: string;
+}
+
+export interface UpdateUserRequest {
+  fullName: string;
   role: string;
 }
 
@@ -91,12 +105,47 @@ export const adminService = {
     return mapUserDetailData(response.data);
   },
 
+  updateUserPassword: async (userId: number, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.put<Record<string, unknown>>(`/admin/users/${userId}/password`, { newPassword });
+    const data = response.data;
+    return {
+      message: data.Message || data.message || 'Password updated successfully',
+    };
+  },
+
+  createUser: async (data: CreateUserRequest): Promise<AdminUserDto> => {
+    const response = await api.post<Record<string, unknown>>('/admin/users', data);
+    return mapUserDetailData(response.data);
+  },
+
+  updateUser: async (userId: number, data: UpdateUserRequest): Promise<AdminUserDto> => {
+    const response = await api.put<Record<string, unknown>>(`/admin/users/${userId}`, data);
+    return mapUserDetailData(response.data);
+  },
+
   deleteUser: async (userId: number): Promise<{ success: boolean; message: string }> => {
     const response = await api.delete<Record<string, unknown>>(`/admin/users/${userId}`);
     const data = response.data;
     return {
       success: data.Success ?? data.success,
       message: data.Message || data.message || 'User deleted successfully',
+    };
+  },
+
+  updateUserAvatar: async (userId: number, file: File | null): Promise<{ message: string; avatarUrl: string }> => {
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+    const response = await api.put<Record<string, unknown>>(`/admin/users/${userId}/avatar`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    const data = response.data;
+    return {
+      message: data.Message || data.message || 'Avatar updated successfully',
+      avatarUrl: data.AvatarUrl || data.avatarUrl || '',
     };
   },
 };

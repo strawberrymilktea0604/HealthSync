@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
+import authService from "../services/authService";
 
 export default function CreatePasswordForGoogle() {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,21 +36,10 @@ export default function CreatePasswordForGoogle() {
       }
       const user = JSON.parse(userData);
 
-      const response = await fetch('http://localhost:5274/api/auth/set-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.userId,
-          password: password,
-        }),
+      await authService.setPassword({
+        userId: user.userId.toString(),
+        password: password,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.Error || 'Failed to set password');
-      }
 
       toast({
         title: "Success",

@@ -63,6 +63,7 @@ services:
       - MinIO__BucketName=healthsync-files
       - MinIO__UseSSL=false
       - MinIO__ServerUrl=${MINIO_SERVER_URL}
+      - MinIO__PublicUrl=http://localhost:9002
       # ... Giữ nguyên các biến JWT, Email, Google ...
       - JWT__SecretKey=${JWT_SECRET_KEY}
       - JWT__Issuer=HealthSyncAPI
@@ -110,6 +111,8 @@ services:
     build:
       context: ./HealthSync_web
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api
     # KHÔNG DÙNG container_name Ở ĐÂY
     # QUAN TRỌNG: Đã xóa phần ports
     depends_on:

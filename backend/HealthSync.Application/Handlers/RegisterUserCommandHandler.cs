@@ -6,6 +6,7 @@ using HealthSync.Domain.Interfaces;
 using HealthSync.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace HealthSync.Application.Handlers;
 
@@ -15,32 +16,50 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
     private readonly IAuthService _authService;
     private readonly IMediator _mediator;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IConfiguration _configuration;
 
     public RegisterUserCommandHandler(
         IApplicationDbContext context,
         IAuthService authService,
         IMediator mediator,
-        IJwtTokenService jwtTokenService)
+        IJwtTokenService jwtTokenService,
+        IConfiguration configuration)
     {
         _context = context;
         _authService = authService;
         _mediator = mediator;
         _jwtTokenService = jwtTokenService;
+        _configuration = configuration;
     }
 
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        // Verify the email code first
-        var verifyCommand = new VerifyEmailCodeCommand
+        // Skip verification if configured (for testing)
+        var skipVerification = false;
+        try
         {
-            Email = request.Email,
-            Code = request.VerificationCode
-        };
+            skipVerification = _configuration?.GetValue<bool>("SkipEmailVerification") ?? false;
+        }
+        catch
+        {
+            // Configuration not available, default to false
+            skipVerification = false;
+        }
+        
+        if (!skipVerification)
+        {
+            // Verify the email code first
+            var verifyCommand = new VerifyEmailCodeCommand
+            {
+                Email = request.Email,
+                Code = request.VerificationCode
+            };
 
-        var isVerified = await _mediator.Send(verifyCommand, cancellationToken);
-        if (!isVerified)
-        {
-            throw new InvalidOperationException("Mã xác thực không hợp lệ!");
+            var isVerified = await _mediator.Send(verifyCommand, cancellationToken);
+            if (!isVerified)
+            {
+                throw new InvalidOperationException("Mã xác thực không hợp lệ!");
+            }
         }
 
         // Kiểm tra email đã tồn tại chưa
@@ -65,6 +84,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, A
             Email = request.Email,
             PasswordHash = _authService.HashPassword(request.Password),
             IsActive = true,
+            EmailConfirmed = skipVerification, // Set confirmed if skipping verification
             CreatedAt = DateTime.UtcNow
         };
 

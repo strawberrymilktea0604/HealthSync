@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Minio;
 using System.Reflection;
 using System.Text;
 
@@ -52,6 +53,23 @@ public static class ServiceCollectionExtensions
 
         // Register StorageService (MinIO)
         services.AddScoped<IStorageService, MinioStorageService>();
+        services.AddScoped<IAvatarStorageService, AvatarStorageService>();
+
+        // Register MinIO Client
+        services.AddSingleton<IMinioClient>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var minioEndpoint = configuration["MinIO:Endpoint"] ?? "minio:9000";
+            var accessKey = configuration["MinIO:AccessKey"] ?? "minioadmin";
+            var secretKey = configuration["MinIO:SecretKey"] ?? "minioadmin";
+            var useSSL = bool.Parse(configuration["MinIO:UseSSL"] ?? "false");
+
+            return new MinioClient()
+                .WithEndpoint(minioEndpoint)
+                .WithCredentials(accessKey, secretKey)
+                .WithSSL(useSSL)
+                .Build();
+        });
 
         // Add MediatR
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
@@ -64,6 +82,9 @@ public static class ServiceCollectionExtensions
                        ?? jwtSettings["SecretKey"] 
                        ?? Environment.GetEnvironmentVariable("JwtSettings__SecretKey")
                        ?? throw new InvalidOperationException("JWT SecretKey not configured. Set JWT_SECRET_KEY environment variable or JwtSettings:SecretKey in appsettings.json");
+
+        // CRITICAL: Clear the default claim type mapping to prevent .NET from changing "role" to the full URL
+        System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
         services.AddAuthentication(options =>
         {
@@ -81,7 +102,10 @@ public static class ServiceCollectionExtensions
                 ValidIssuer = jwtSettings["Issuer"] ?? "HealthSync",
                 ValidAudience = jwtSettings["Audience"] ?? "HealthSyncUsers",
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                // Ensure Backend reads the correct Role field in Token
+                RoleClaimType = "role",
+                NameClaimType = "name"
             };
         });
 

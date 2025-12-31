@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Polly;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,14 +108,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep PascalCase
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // Use camelCase for JS/React
         options.JsonSerializerOptions.WriteIndented = false;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
     });
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
-    options.SerializerOptions.PropertyNamingPolicy = null;
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     options.SerializerOptions.WriteIndented = false;
 });
 
@@ -154,28 +156,86 @@ app.MapGet("/health", () => "HealthSync API is running!")
 
 app.MapControllers();
 
-// Migration tự động khi khởi chạy Docker
+// Migration tự động với Retry Policy + Random Jitter để tránh Race Condition
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var context = services.GetRequiredService<HealthSyncDbContext>();
+
     try
     {
-        var context = services.GetRequiredService<HealthSyncDbContext>();
-        // Lệnh này sẽ tự động check, nếu chưa có DB thì tạo, chưa có bảng thì thêm
-        // Nếu có rồi thì thôi, không báo lỗi Crash app như lệnh CreateDatabase
-        await context.Database.MigrateAsync(); 
+        logger.LogInformation("⏳ Waiting for SQL Server to be ready...");
 
-        // Seed data
-        var seeder = services.GetRequiredService<DataSeeder>();
-        await seeder.SeedAsync();
+        // 1. Random Jitter: Ngủ ngẫu nhiên 1-5 giây để 2 container không chạy đồng thời
+        var random = new Random();
+        int delay = random.Next(1000, 5000);
+        logger.LogInformation("🎲 Random delay: {Delay}ms before migration attempt", delay);
+        await Task.Delay(delay);
+
+        // 2. Định nghĩa Retry Policy (Thử lại tối đa 5 lần)
+        var retryPolicy = Policy
+            .Handle<SqlException>(ex => 
+                ex.Number == 1801 || // Database already exists
+                ex.Number == 4060 || // Cannot open database (đang tạo dở)
+                ex.Number == 18456 || // Login failed (SQL chưa kịp mount DB)
+                ex.Number == 1205    // Deadlock victim
+            )
+            .Or<InvalidOperationException>() // EF Core exceptions
+            .Or<Exception>(ex => 
+                ex.Message.Contains("already exists") || 
+                ex.Message.Contains("Cannot open database") ||
+                ex.Message.Contains("login failed", StringComparison.OrdinalIgnoreCase)
+            )
+            .WaitAndRetryAsync(
+                retryCount: 5,
+                sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)), // 2s, 4s, 8s, 16s, 32s
+                onRetry: (exception, timeSpan, retryCount, context) =>
+                {
+                    logger.LogWarning(
+                        "⚠️ Migration attempt {RetryCount} failed: {Message}. Waiting {Seconds}s before retry...",
+                        retryCount, 
+                        exception.Message, 
+                        timeSpan.TotalSeconds
+                    );
+                }
+            );
+
+        // 3. Thực thi Migration với Retry Policy
+        await retryPolicy.ExecuteAsync(async () =>
+        {
+            logger.LogInformation("🚀 Starting database migration...");
+            
+            // Check if using in-memory database (for tests)
+            if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                logger.LogInformation("ℹ️ In-memory database detected, skipping migrations.");
+            }
+            else
+            {
+                // MigrateAsync tự động check bảng __EFMigrationsHistory
+                // Nếu DB đã tồn tại và migrations đã chạy, nó sẽ skip
+                await context.Database.MigrateAsync();
+                logger.LogInformation("✅ Database migration completed successfully!");
+            }
+        });
+
+        // 4. Seed data (DataSeeder có lock riêng nên an toàn với 2 instances)
+        // Skip seeding for in-memory databases (used in tests)
+        if (context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            var seeder = services.GetRequiredService<DataSeeder>();
+            await seeder.SeedAsync();
+        }
     }
     catch (Exception ex)
     {
-        // Log lỗi ra nhưng KHÔNG làm crash app
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        // Log lỗi nhưng KHÔNG crash app (để container không bị restart loop)
+        logger.LogError(ex, "❌ Failed to initialize database after multiple retry attempts.");
+        logger.LogWarning("⚠️ Application will continue running, but may not function correctly without database.");
         
-        // Mẹo: Nếu lỗi "Already exists" thì coi như thành công, cho chạy tiếp
+        // Tùy chọn: Throw để container restart, hoặc để chạy tiếp (API sẽ lỗi khi query DB)
+        // throw; // Uncomment nếu muốn container restart khi migration fail
     }
 }
 

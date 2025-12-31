@@ -1,15 +1,23 @@
 using HealthSync.Infrastructure.Persistence;
+using HealthSync.Domain.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Configuration;
+using Moq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HealthSync.IntegrationTests;
 
 public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
+    private readonly string _dbName = Guid.NewGuid().ToString();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Set JWT secret as environment variable (highest priority)
@@ -26,6 +34,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 ["Jwt:Issuer"] = "TestIssuer",
                 ["Jwt:Audience"] = "TestAudience",
                 ["Jwt:ExpirationMinutes"] = "60",
+                ["Jwt:SecretKey"] = "ThisIsATestSecretKeyForIntegrationTestingPurposesOnly123456",
                 ["ConnectionStrings:DefaultConnection"] = "InMemoryDatabase",
                 ["MinIO:Endpoint"] = "localhost:9000",
                 ["MinIO:AccessKey"] = "test",
@@ -36,7 +45,11 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 ["Email:SmtpPort"] = "587",
                 ["Email:SenderEmail"] = "test@test.com",
                 ["Email:SenderPassword"] = "testpassword",
-                ["Gemini:ApiKey"] = "test-api-key"
+                ["Gemini:ApiKey"] = "test-api-key",
+                ["SkipEmailVerification"] = "true",
+                ["Google:ClientId"] = "test-client-id-for-integration-tests",
+                ["Google:ClientSecret"] = "test-client-secret-for-integration-tests",
+                ["Google:RedirectUri"] = "http://localhost/api/auth/google-callback"
             });
         });
 
@@ -51,11 +64,28 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 services.Remove(descriptor);
             }
 
-            // Add in-memory database for testing
+            // Add in-memory database for testing with fixed name for consistency
             services.AddDbContext<HealthSyncDbContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryTestDb");
+                options.UseInMemoryDatabase(_dbName);
             });
+
+            // Mock IGoogleAuthService to prevent Google OAuth configuration errors
+            var mockGoogleAuthService = new Mock<IGoogleAuthService>();
+            mockGoogleAuthService
+                .Setup(x => x.GetAuthorizationUrl(It.IsAny<string>()))
+                .ReturnsAsync("http://localhost/mock-google-auth");
+            mockGoogleAuthService
+                .Setup(x => x.ProcessCallbackAsync(It.IsAny<string>()))
+                .ReturnsAsync((HealthSync.Domain.Interfaces.GoogleUserInfo?)null);
+            mockGoogleAuthService
+                .Setup(x => x.VerifyIdTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync((HealthSync.Domain.Interfaces.GoogleUserInfo?)null);
+            mockGoogleAuthService
+                .Setup(x => x.GetAndroidClientIdAsync())
+                .ReturnsAsync("mock-android-client-id");
+            services.RemoveAll<IGoogleAuthService>();
+            services.AddSingleton(mockGoogleAuthService.Object);
 
             // Build the service provider
             var sp = services.BuildServiceProvider();
@@ -69,7 +99,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 // Ensure the database is created
                 db.Database.EnsureCreated();
 
-                // Seed test data if needed
+                // Seed test data for this database instance
                 SeedTestData(db);
             }
         });
@@ -79,9 +109,11 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
     private void SeedTestData(HealthSyncDbContext context)
     {
-        // Clear existing data
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        // Check if data is already seeded
+        if (context.Roles.Any(r => r.RoleName == "Admin"))
+        {
+            return; // Data already seeded
+        }
 
         // Seed Roles
         var customerRole = new HealthSync.Domain.Entities.Role
@@ -124,6 +156,8 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             new() { PermissionCode = "GOAL_CREATE", Description = "Create Goal" },
             new() { PermissionCode = "GOAL_UPDATE", Description = "Update Goal" },
             new() { PermissionCode = "GOAL_DELETE", Description = "Delete Goal" },
+            new() { PermissionCode = "CHAT_VIEW", Description = "View Chat" },
+            new() { PermissionCode = "CHAT_ASK", Description = "Ask Chatbot" },
             new() { PermissionCode = "DASHBOARD_VIEW", Description = "View Dashboard" },
             new() { PermissionCode = "DASHBOARD_ADMIN", Description = "Admin Dashboard" }
         };
@@ -149,6 +183,8 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             p.PermissionCode == "GOAL_CREATE" ||
             p.PermissionCode == "GOAL_UPDATE" ||
             p.PermissionCode == "GOAL_DELETE" ||
+            p.PermissionCode == "CHAT_VIEW" ||
+            p.PermissionCode == "CHAT_ASK" ||
             p.PermissionCode == "DASHBOARD_VIEW"
         ).ToList();
 

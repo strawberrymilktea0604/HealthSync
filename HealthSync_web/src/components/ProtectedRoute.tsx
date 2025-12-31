@@ -20,12 +20,15 @@ export default function ProtectedRoute({
   requiredPermissions = [],
   requireAllPermissions = true,
 }: Readonly<ProtectedRouteProps>) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { hasPermission, hasAllPermissions, hasAnyPermission, isAdmin } = usePermissions();
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (isLoading) return;
+
     // If not logged in, redirect to login
     if (!user) {
       toast({
@@ -80,7 +83,12 @@ export default function ProtectedRoute({
     if (!requireAdmin && !isAdmin() && !user.isProfileComplete) {
       navigate("/complete-profile");
     }
-  }, [user, requireAdmin, requiredPermission, requiredPermissions, requireAllPermissions, navigate, toast, hasPermission, hasAllPermissions, hasAnyPermission, isAdmin]);
+  }, [user, isLoading, requireAdmin, requiredPermission, requiredPermissions, requireAllPermissions, navigate, toast, hasPermission, hasAllPermissions, hasAnyPermission, isAdmin]);
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return null;
+  }
 
   // If no user, show nothing (will redirect)
   if (!user) {

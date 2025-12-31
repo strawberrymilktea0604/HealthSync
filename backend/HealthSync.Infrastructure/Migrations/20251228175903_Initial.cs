@@ -19,11 +19,13 @@ namespace HealthSync.Infrastructure.Migrations
                 {
                     UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -40,7 +42,8 @@ namespace HealthSync.Infrastructure.Migrations
                     MuscleGroup = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Difficulty = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Equipment = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,7 +62,8 @@ namespace HealthSync.Infrastructure.Migrations
                     CaloriesKcal = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: false),
                     ProteinG = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: false),
                     CarbsG = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: false),
-                    FatG = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: false)
+                    FatG = table.Column<decimal>(type: "decimal(8,2)", precision: 8, scale: 2, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -354,41 +358,41 @@ namespace HealthSync.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Exercises",
-                columns: new[] { "ExerciseId", "Description", "Difficulty", "Equipment", "MuscleGroup", "Name" },
+                columns: new[] { "ExerciseId", "Description", "Difficulty", "Equipment", "ImageUrl", "MuscleGroup", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Classic bodyweight chest exercise", "Beginner", "None", "Chest", "Push-ups" },
-                    { 2, "Compound chest exercise with barbell", "Intermediate", "Barbell", "Chest", "Bench Press" },
-                    { 3, "Isolation exercise for chest", "Intermediate", "Dumbbells", "Chest", "Dumbbell Fly" },
-                    { 4, "Bodyweight back exercise", "Intermediate", "Pull-up Bar", "Back", "Pull-ups" },
-                    { 5, "Compound full-body exercise", "Advanced", "Barbell", "Back", "Deadlift" },
-                    { 6, "Compound back exercise", "Intermediate", "Barbell", "Back", "Bent-over Row" },
-                    { 7, "Fundamental leg exercise", "Beginner", "None", "Legs", "Squats" },
-                    { 8, "Unilateral leg exercise", "Beginner", "None", "Legs", "Lunges" },
-                    { 9, "Machine-based leg exercise", "Intermediate", "Machine", "Legs", "Leg Press" },
-                    { 10, "Overhead pressing movement", "Intermediate", "Dumbbells", "Shoulders", "Shoulder Press" },
-                    { 11, "Isolation shoulder exercise", "Beginner", "Dumbbells", "Shoulders", "Lateral Raise" },
-                    { 12, "Isolation bicep exercise", "Beginner", "Dumbbells", "Arms", "Bicep Curls" },
-                    { 13, "Bodyweight tricep exercise", "Intermediate", "Parallel Bars", "Arms", "Tricep Dips" },
-                    { 14, "Isometric core exercise", "Beginner", "None", "Core", "Plank" },
-                    { 15, "Basic abdominal exercise", "Beginner", "None", "Core", "Crunches" }
+                    { 1, "Classic bodyweight chest exercise", "Beginner", "None", null, "Chest", "Push-ups" },
+                    { 2, "Compound chest exercise with barbell", "Intermediate", "Barbell", null, "Chest", "Bench Press" },
+                    { 3, "Isolation exercise for chest", "Intermediate", "Dumbbells", null, "Chest", "Dumbbell Fly" },
+                    { 4, "Bodyweight back exercise", "Intermediate", "Pull-up Bar", null, "Back", "Pull-ups" },
+                    { 5, "Compound full-body exercise", "Advanced", "Barbell", null, "Back", "Deadlift" },
+                    { 6, "Compound back exercise", "Intermediate", "Barbell", null, "Back", "Bent-over Row" },
+                    { 7, "Fundamental leg exercise", "Beginner", "None", null, "Legs", "Squats" },
+                    { 8, "Unilateral leg exercise", "Beginner", "None", null, "Legs", "Lunges" },
+                    { 9, "Machine-based leg exercise", "Intermediate", "Machine", null, "Legs", "Leg Press" },
+                    { 10, "Overhead pressing movement", "Intermediate", "Dumbbells", null, "Shoulders", "Shoulder Press" },
+                    { 11, "Isolation shoulder exercise", "Beginner", "Dumbbells", null, "Shoulders", "Lateral Raise" },
+                    { 12, "Isolation bicep exercise", "Beginner", "Dumbbells", null, "Arms", "Bicep Curls" },
+                    { 13, "Bodyweight tricep exercise", "Intermediate", "Parallel Bars", null, "Arms", "Tricep Dips" },
+                    { 14, "Isometric core exercise", "Beginner", "None", null, "Core", "Plank" },
+                    { 15, "Basic abdominal exercise", "Beginner", "None", null, "Core", "Crunches" }
                 });
 
             migrationBuilder.InsertData(
                 table: "FoodItems",
-                columns: new[] { "FoodItemId", "CaloriesKcal", "CarbsG", "FatG", "Name", "ProteinG", "ServingSize", "ServingUnit" },
+                columns: new[] { "FoodItemId", "CaloriesKcal", "CarbsG", "FatG", "ImageUrl", "Name", "ProteinG", "ServingSize", "ServingUnit" },
                 values: new object[,]
                 {
-                    { 1, 165m, 0m, 3.6m, "Chicken Breast", 31m, 100m, "g" },
-                    { 2, 111m, 23m, 0.9m, "Brown Rice", 2.6m, 100m, "g" },
-                    { 3, 105m, 27m, 0.4m, "Banana", 1.3m, 118m, "g" },
-                    { 4, 100m, 6m, 0m, "Greek Yogurt", 17m, 170m, "g" },
-                    { 5, 7m, 1.1m, 0.1m, "Spinach", 0.9m, 30m, "g" },
-                    { 6, 208m, 0m, 13m, "Salmon", 20m, 100m, "g" },
-                    { 7, 112m, 26m, 0.1m, "Sweet Potato", 2.1m, 130m, "g" },
-                    { 8, 72m, 0.4m, 4.8m, "Eggs", 6.3m, 50m, "g" },
-                    { 9, 150m, 27m, 2.8m, "Oatmeal", 5.3m, 40m, "g" },
-                    { 10, 31m, 6m, 0.3m, "Broccoli", 2.5m, 91m, "g" }
+                    { 1, 165m, 0m, 3.6m, null, "Chicken Breast", 31m, 100m, "g" },
+                    { 2, 111m, 23m, 0.9m, null, "Brown Rice", 2.6m, 100m, "g" },
+                    { 3, 105m, 27m, 0.4m, null, "Banana", 1.3m, 118m, "g" },
+                    { 4, 100m, 6m, 0m, null, "Greek Yogurt", 17m, 170m, "g" },
+                    { 5, 7m, 1.1m, 0.1m, null, "Spinach", 0.9m, 30m, "g" },
+                    { 6, 208m, 0m, 13m, null, "Salmon", 20m, 100m, "g" },
+                    { 7, 112m, 26m, 0.1m, null, "Sweet Potato", 2.1m, 130m, "g" },
+                    { 8, 72m, 0.4m, 4.8m, null, "Eggs", 6.3m, 50m, "g" },
+                    { 9, 150m, 27m, 2.8m, null, "Oatmeal", 5.3m, 40m, "g" },
+                    { 10, 31m, 6m, 0.3m, null, "Broccoli", 2.5m, 91m, "g" }
                 });
 
             migrationBuilder.InsertData(
@@ -396,32 +400,32 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "Id", "Category", "CreatedAt", "Description", "PermissionCode" },
                 values: new object[,]
                 {
-                    { 101, "User", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3918), "Xem danh sách người dùng", "USER_READ" },
-                    { 102, "User", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3926), "Khóa tài khoản người dùng", "USER_BAN" },
-                    { 103, "User", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3930), "Cập nhật vai trò người dùng", "USER_UPDATE_ROLE" },
-                    { 104, "User", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3933), "Xóa người dùng", "USER_DELETE" },
-                    { 201, "Exercise", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3935), "Xem thư viện bài tập", "EXERCISE_READ" },
-                    { 202, "Exercise", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3938), "Thêm bài tập mới", "EXERCISE_CREATE" },
-                    { 203, "Exercise", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3941), "Cập nhật bài tập", "EXERCISE_UPDATE" },
-                    { 204, "Exercise", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3943), "Xóa bài tập", "EXERCISE_DELETE" },
-                    { 301, "Food", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3946), "Xem thư viện thực phẩm", "FOOD_READ" },
-                    { 302, "Food", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3948), "Thêm thực phẩm mới", "FOOD_CREATE" },
-                    { 303, "Food", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3950), "Cập nhật thực phẩm", "FOOD_UPDATE" },
-                    { 304, "Food", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3953), "Xóa thực phẩm", "FOOD_DELETE" },
-                    { 401, "WorkoutLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3955), "Xem nhật ký tập luyện", "WORKOUT_LOG_READ" },
-                    { 402, "WorkoutLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3958), "Tạo nhật ký tập luyện", "WORKOUT_LOG_CREATE" },
-                    { 403, "WorkoutLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3960), "Cập nhật nhật ký tập luyện", "WORKOUT_LOG_UPDATE" },
-                    { 404, "WorkoutLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3962), "Xóa nhật ký tập luyện", "WORKOUT_LOG_DELETE" },
-                    { 501, "NutritionLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3965), "Xem nhật ký dinh dưỡng", "NUTRITION_LOG_READ" },
-                    { 502, "NutritionLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3967), "Tạo nhật ký dinh dưỡng", "NUTRITION_LOG_CREATE" },
-                    { 503, "NutritionLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3970), "Cập nhật nhật ký dinh dưỡng", "NUTRITION_LOG_UPDATE" },
-                    { 504, "NutritionLog", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3972), "Xóa nhật ký dinh dưỡng", "NUTRITION_LOG_DELETE" },
-                    { 601, "Goal", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3974), "Xem mục tiêu", "GOAL_READ" },
-                    { 602, "Goal", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3977), "Tạo mục tiêu", "GOAL_CREATE" },
-                    { 603, "Goal", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3979), "Cập nhật mục tiêu", "GOAL_UPDATE" },
-                    { 604, "Goal", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3981), "Xóa mục tiêu", "GOAL_DELETE" },
-                    { 701, "Dashboard", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4073), "Xem dashboard cá nhân", "DASHBOARD_VIEW" },
-                    { 702, "Dashboard", new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4076), "Xem dashboard admin", "DASHBOARD_ADMIN" }
+                    { 101, "User", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2116), "Xem danh sách người dùng", "USER_READ" },
+                    { 102, "User", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2121), "Khóa tài khoản người dùng", "USER_BAN" },
+                    { 103, "User", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2122), "Cập nhật vai trò người dùng", "USER_UPDATE_ROLE" },
+                    { 104, "User", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2124), "Xóa người dùng", "USER_DELETE" },
+                    { 201, "Exercise", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2125), "Xem thư viện bài tập", "EXERCISE_READ" },
+                    { 202, "Exercise", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2126), "Thêm bài tập mới", "EXERCISE_CREATE" },
+                    { 203, "Exercise", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2128), "Cập nhật bài tập", "EXERCISE_UPDATE" },
+                    { 204, "Exercise", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2129), "Xóa bài tập", "EXERCISE_DELETE" },
+                    { 301, "Food", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2131), "Xem thư viện thực phẩm", "FOOD_READ" },
+                    { 302, "Food", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2132), "Thêm thực phẩm mới", "FOOD_CREATE" },
+                    { 303, "Food", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2134), "Cập nhật thực phẩm", "FOOD_UPDATE" },
+                    { 304, "Food", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2135), "Xóa thực phẩm", "FOOD_DELETE" },
+                    { 401, "WorkoutLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2136), "Xem nhật ký tập luyện", "WORKOUT_LOG_READ" },
+                    { 402, "WorkoutLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2137), "Tạo nhật ký tập luyện", "WORKOUT_LOG_CREATE" },
+                    { 403, "WorkoutLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2138), "Cập nhật nhật ký tập luyện", "WORKOUT_LOG_UPDATE" },
+                    { 404, "WorkoutLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2139), "Xóa nhật ký tập luyện", "WORKOUT_LOG_DELETE" },
+                    { 501, "NutritionLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2140), "Xem nhật ký dinh dưỡng", "NUTRITION_LOG_READ" },
+                    { 502, "NutritionLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2181), "Tạo nhật ký dinh dưỡng", "NUTRITION_LOG_CREATE" },
+                    { 503, "NutritionLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2182), "Cập nhật nhật ký dinh dưỡng", "NUTRITION_LOG_UPDATE" },
+                    { 504, "NutritionLog", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2183), "Xóa nhật ký dinh dưỡng", "NUTRITION_LOG_DELETE" },
+                    { 601, "Goal", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2184), "Xem mục tiêu", "GOAL_READ" },
+                    { 602, "Goal", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2185), "Tạo mục tiêu", "GOAL_CREATE" },
+                    { 603, "Goal", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2187), "Cập nhật mục tiêu", "GOAL_UPDATE" },
+                    { 604, "Goal", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2188), "Xóa mục tiêu", "GOAL_DELETE" },
+                    { 701, "Dashboard", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2189), "Xem dashboard cá nhân", "DASHBOARD_VIEW" },
+                    { 702, "Dashboard", new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2190), "Xem dashboard admin", "DASHBOARD_ADMIN" }
                 });
 
             migrationBuilder.InsertData(
@@ -429,8 +433,8 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "RoleName" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3856), "Quản trị viên hệ thống, có toàn quyền", "Admin" },
-                    { 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(3864), "Người dùng cuối sử dụng app", "Customer" }
+                    { 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2067), "Quản trị viên hệ thống, có toàn quyền", "Admin" },
+                    { 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2077), "Người dùng cuối sử dụng app", "Customer" }
                 });
 
             migrationBuilder.InsertData(
@@ -438,47 +442,47 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "PermissionId", "RoleId", "GrantedAt" },
                 values: new object[,]
                 {
-                    { 101, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4165) },
-                    { 102, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4169) },
-                    { 103, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4171) },
-                    { 104, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4173) },
-                    { 201, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4176) },
-                    { 202, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4178) },
-                    { 203, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4180) },
-                    { 204, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4182) },
-                    { 301, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4183) },
-                    { 302, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4185) },
-                    { 303, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4187) },
-                    { 304, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4188) },
-                    { 401, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4190) },
-                    { 402, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4192) },
-                    { 403, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4194) },
-                    { 404, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4195) },
-                    { 501, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4197) },
-                    { 502, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4199) },
-                    { 503, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4200) },
-                    { 504, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4202) },
-                    { 601, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4204) },
-                    { 602, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4206) },
-                    { 603, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4207) },
-                    { 604, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4209) },
-                    { 701, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4210) },
-                    { 702, 1, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4212) },
-                    { 201, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4214) },
-                    { 301, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4215) },
-                    { 401, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4217) },
-                    { 402, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4219) },
-                    { 403, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4220) },
-                    { 404, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4222) },
-                    { 501, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4224) },
-                    { 502, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4226) },
-                    { 503, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4227) },
-                    { 504, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4229) },
-                    { 601, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4231) },
-                    { 602, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4232) },
-                    { 603, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4234) },
-                    { 604, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4236) },
-                    { 701, 2, new DateTime(2025, 12, 24, 22, 49, 53, 137, DateTimeKind.Utc).AddTicks(4238) }
+                    { 101, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2247) },
+                    { 102, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2249) },
+                    { 103, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2250) },
+                    { 104, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2251) },
+                    { 201, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2252) },
+                    { 202, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2252) },
+                    { 203, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2253) },
+                    { 204, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2255) },
+                    { 301, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2256) },
+                    { 302, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2257) },
+                    { 303, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2258) },
+                    { 304, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2259) },
+                    { 401, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2259) },
+                    { 402, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2260) },
+                    { 403, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2261) },
+                    { 404, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2261) },
+                    { 501, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2262) },
+                    { 502, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2263) },
+                    { 503, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2264) },
+                    { 504, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2264) },
+                    { 601, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2265) },
+                    { 602, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2266) },
+                    { 603, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2266) },
+                    { 604, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2267) },
+                    { 701, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2268) },
+                    { 702, 1, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2269) },
+                    { 201, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2269) },
+                    { 301, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2272) },
+                    { 401, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2273) },
+                    { 402, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2273) },
+                    { 403, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2276) },
+                    { 404, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2277) },
+                    { 501, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2278) },
+                    { 502, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2278) },
+                    { 503, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2279) },
+                    { 504, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2280) },
+                    { 601, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2281) },
+                    { 602, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2281) },
+                    { 603, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2282) },
+                    { 604, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2283) },
+                    { 701, 2, new DateTime(2025, 12, 28, 17, 59, 2, 668, DateTimeKind.Utc).AddTicks(2284) }
                 });
 
             migrationBuilder.CreateIndex(

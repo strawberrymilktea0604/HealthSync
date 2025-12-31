@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import { motion } from "framer-motion";
+import authService from "../services/authService";
 
 export default function CompleteProfile() {
   const [fullName, setFullName] = useState("");
@@ -85,25 +86,14 @@ export default function CompleteProfile() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:5274/api/user/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({
-          fullName: fullName.trim(),
-          dob: dateOfBirth,
-          gender,
-          heightCm: height,
-          weightKg: weight,
-          activityLevel,
-        }),
+      await authService.updateProfile({
+        fullName: fullName.trim(),
+        dob: dateOfBirth,
+        gender,
+        heightCm: parseFloat(heightCm),
+        weightKg: parseFloat(weightKg),
+        activityLevel,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
 
       // Update user context
       const updatedUser = { ...user, isProfileComplete: true, fullName: fullName.trim() };

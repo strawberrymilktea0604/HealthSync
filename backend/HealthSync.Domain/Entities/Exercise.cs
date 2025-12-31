@@ -8,6 +8,7 @@ public class Exercise
     public string Difficulty { get; set; } = "Beginner";
     public string? Equipment { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 
     // Navigation property
     public ICollection<ExerciseSession> ExerciseSessions { get; set; } = new List<ExerciseSession>();

@@ -9,6 +9,7 @@ export interface FoodItem {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  imageUrl?: string;
 }
 
 export interface CreateFoodItemDto {
@@ -61,5 +62,17 @@ export const foodItemService = {
   // Xóa món ăn
   async deleteFoodItem(id: number): Promise<void> {
     await api.delete(`/FoodItems/${id}`);
+  },
+
+  // Upload ảnh món ăn
+  async uploadFoodItemImage(id: number, file: File): Promise<{ imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.put(`/FoodItems/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
 };

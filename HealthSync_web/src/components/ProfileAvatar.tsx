@@ -96,7 +96,7 @@ const ProfileAvatar: React.FC = () => {
       <CardContent className="flex flex-col items-center space-y-4">
         <div className="relative">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={avatarUrl} alt={user?.fullName || 'User'} />
+            <AvatarImage src={avatarUrl ? `${avatarUrl}?t=${new Date().getTime()}` : avatarUrl} alt={user?.fullName || 'User'} />
             <AvatarFallback className="text-3xl">
               {getInitials()}
             </AvatarFallback>

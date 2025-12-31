@@ -28,7 +28,8 @@ public class GetFoodItemByIdQueryHandler : IRequestHandler<GetFoodItemByIdQuery,
                 CaloriesKcal = f.CaloriesKcal,
                 ProteinG = f.ProteinG,
                 CarbsG = f.CarbsG,
-                FatG = f.FatG
+                FatG = f.FatG,
+                ImageUrl = f.ImageUrl // FIX: Thêm mapping ImageUrl
             })
             .FirstOrDefaultAsync(cancellationToken);
 

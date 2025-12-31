@@ -10,6 +10,7 @@ public class MinioStorageService : IStorageService
     private readonly IMinioClient _minioClient;
     private readonly string _bucketName;
     private readonly string _endpoint;
+    private readonly string _publicUrl;
 
     public MinioStorageService(IConfiguration configuration)
     {
@@ -18,9 +19,11 @@ public class MinioStorageService : IStorageService
         var secretKey = configuration["MinIO:SecretKey"] ?? "minioadmin";
         var useSSL = bool.Parse(configuration["MinIO:UseSSL"] ?? "false");
         
-        _bucketName = configuration["MinIO:BucketName"] ?? "healthsync";
+        _bucketName = configuration["MinIO:BucketName"] ?? "healthsync-files";
         // Note: http is used for local development; in production, useSSL should be true for https
         _endpoint = useSSL ? $"https://{minioEndpoint}" : $"http://{minioEndpoint}";
+        // Public URL for frontend access (e.g., http://localhost:9002 when MinIO is accessed from browser)
+        _publicUrl = configuration["MinIO:PublicUrl"] ?? _endpoint;
 
         _minioClient = new MinioClient()
             .WithEndpoint(minioEndpoint)
@@ -46,6 +49,23 @@ public class MinioStorageService : IStorageService
                     .WithBucket(_bucketName);
                 
                 await _minioClient.MakeBucketAsync(mbArgs);
+                
+                // Set public read policy for the bucket
+                var policyJson = @"{
+                    ""Version"": ""2012-10-17"",
+                    ""Statement"": [{
+                        ""Effect"": ""Allow"",
+                        ""Principal"": { ""AWS"": [""*""] },
+                        ""Action"": [""s3:GetObject""],
+                        ""Resource"": [""arn:aws:s3:::" + _bucketName + @"/*""]
+                    }]
+                }";
+                
+                var setPolicyArgs = new SetPolicyArgs()
+                    .WithBucket(_bucketName)
+                    .WithPolicy(policyJson);
+                    
+                await _minioClient.SetPolicyAsync(setPolicyArgs);
             }
         }
         catch (Exception ex)
@@ -58,19 +78,20 @@ public class MinioStorageService : IStorageService
     {
         try
         {
-            var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+            // Don't add GUID for files that already include folder paths (e.g., "exercises/1_image.jpg")
+            var objectName = fileName.Contains("/") ? fileName : $"{Guid.NewGuid()}_{fileName}";
             
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(_bucketName)
-                .WithObject(uniqueFileName)
+                .WithObject(objectName)
                 .WithStreamData(fileStream)
                 .WithObjectSize(fileStream.Length)
                 .WithContentType(contentType);
 
             await _minioClient.PutObjectAsync(putObjectArgs);
 
-            // Return the public URL
-            return $"{_endpoint}/{_bucketName}/{uniqueFileName}";
+            // Return the public URL (use publicUrl for frontend access)
+            return $"{_publicUrl}/{_bucketName}/{objectName}";
         }
         catch (Exception ex)
         {

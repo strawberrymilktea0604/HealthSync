@@ -25,7 +25,7 @@ public class ChatController : ControllerBase
     /// Chat với AI HealthBot - Chỉ Customer được sử dụng
     /// </summary>
     [HttpPost("ask")]
-    [Authorize(Roles = "Customer,Admin")] // Cả Customer và Admin đều có thể dùng
+    [Authorize] // Authentication required
     public async Task<ActionResult<ChatResponseDto>> AskHealthBot([FromBody] ChatRequestDto request)
     {
         try
@@ -61,7 +61,7 @@ public class ChatController : ControllerBase
     /// Lấy lịch sử chat của user
     /// </summary>
     [HttpGet("history")]
-    [Authorize(Roles = "Customer,Admin")]
+    [Authorize] // Authentication required
     public async Task<ActionResult<List<ChatHistoryDto>>> GetChatHistory(
         [FromQuery] int pageSize = 20,
         [FromQuery] int pageNumber = 1)

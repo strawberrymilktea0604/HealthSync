@@ -1,23 +1,29 @@
 using HealthSync.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthSync.Application.Commands;
 
 public class UploadAvatarHandler : IRequestHandler<UploadAvatarCommand, string>
 {
-    private readonly IStorageService _storageService;
+    private readonly IAvatarStorageService _avatarStorageService;
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IApplicationDbContext _context;
 
-    public UploadAvatarHandler(IStorageService storageService, IUserProfileRepository userProfileRepository)
+    public UploadAvatarHandler(
+        IAvatarStorageService avatarStorageService, 
+        IUserProfileRepository userProfileRepository,
+        IApplicationDbContext context)
     {
-        _storageService = storageService;
+        _avatarStorageService = avatarStorageService;
         _userProfileRepository = userProfileRepository;
+        _context = context;
     }
 
     public async Task<string> Handle(UploadAvatarCommand request, CancellationToken cancellationToken)
     {
-        // Upload file to MinIO
-        var avatarUrl = await _storageService.UploadFileAsync(request.FileStream, request.FileName, request.ContentType);
+        // Upload file to avatars bucket
+        var avatarUrl = await _avatarStorageService.UploadAvatarAsync(request.FileStream, request.FileName, request.ContentType);
 
         // Update user profile with new avatar URL
         var profile = await _userProfileRepository.GetByUserIdAsync(request.UserId);
@@ -29,7 +35,7 @@ public class UploadAvatarHandler : IRequestHandler<UploadAvatarCommand, string>
                 try
                 {
                     var oldFileName = profile.AvatarUrl.Split('/')[^1];
-                    await _storageService.DeleteFileAsync(oldFileName);
+                    await _avatarStorageService.DeleteAvatarAsync(oldFileName);
                 }
                 catch
                 {
@@ -39,6 +45,15 @@ public class UploadAvatarHandler : IRequestHandler<UploadAvatarCommand, string>
 
             profile.AvatarUrl = avatarUrl;
             await _userProfileRepository.UpdateAsync(profile);
+            
+            // FIX: Cập nhật luôn ApplicationUser.AvatarUrl để đồng bộ 2 bảng
+            var user = await _context.ApplicationUsers
+                .FirstOrDefaultAsync(u => u.UserId == request.UserId, cancellationToken);
+            if (user != null)
+            {
+                user.AvatarUrl = avatarUrl;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
 
         return avatarUrl;

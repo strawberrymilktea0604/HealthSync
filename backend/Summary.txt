@@ -1,46 +1,24 @@
 Summary
-  Generated on: 12/26/2025 - 4:39:28 PM
+  Generated on: 12/31/2025 - 6:21:51 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
-  Classes: 125
-  Files: 123
-  Line coverage: 81.3%
-  Covered lines: 1133
-  Uncovered lines: 259
-  Coverable lines: 1392
-  Total lines: 7527
-  Branch coverage: 37.1% (119 of 320)
-  Covered branches: 119
-  Total branches: 320
-  Method coverage: 76.7% (142 of 185)
-  Full method coverage: 75.6% (140 of 185)
-  Covered methods: 142
-  Fully covered methods: 140
-  Total methods: 185
+  Classes: 101
+  Files: 99
+  Line coverage: 95.8%
+  Covered lines: 1247
+  Uncovered lines: 54
+  Coverable lines: 1301
+  Total lines: 7561
+  Branch coverage: 71.2% (235 of 330)
+  Covered branches: 235
+  Total branches: 330
+  Method coverage: 93.6% (147 of 157)
+  Full method coverage: 92.9% (146 of 157)
+  Covered methods: 147
+  Fully covered methods: 146
+  Total methods: 157
 
-HealthSync.Application                                                     91.4%
-  HealthSync.Application.Commands.AddFoodEntryCommand                         0%
-  HealthSync.Application.Commands.AddFoodEntryHandler                       100%
-  HealthSync.Application.Commands.CreateExerciseCommand                     100%
-  HealthSync.Application.Commands.CreateFoodItemCommand                       0%
-  HealthSync.Application.Commands.CreateGoalCommand                           0%
-  HealthSync.Application.Commands.DeleteFoodEntryHandler                    100%
-  HealthSync.Application.Commands.ForgotPasswordCommand                       0%
-  HealthSync.Application.Commands.GoogleLoginMobileCommand                    0%
-  HealthSync.Application.Commands.GoogleLoginWebCommand                       0%
-  HealthSync.Application.Commands.RegisterAdminCommand                        0%
-  HealthSync.Application.Commands.RegisterUserCommand                       100%
-  HealthSync.Application.Commands.ResendResetOtpCommand                       0%
-  HealthSync.Application.Commands.ResetPasswordCommand                        0%
-  HealthSync.Application.Commands.SendVerificationCodeCommand               100%
-  HealthSync.Application.Commands.SetPasswordCommand                          0%
-  HealthSync.Application.Commands.UpdateExerciseCommand                     100%
-  HealthSync.Application.Commands.UpdateFoodItemCommand                       0%
-  HealthSync.Application.Commands.UpdateUserRoleCommand                       0%
-  HealthSync.Application.Commands.UploadAvatarCommand                         0%
-  HealthSync.Application.Commands.UploadAvatarHandler                       100%
-  HealthSync.Application.Commands.VerifyEmailCodeCommand                    100%
-  HealthSync.Application.Commands.VerifyResetOtpCommand                       0%
+HealthSync.Application                                                     98.8%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
   HealthSync.Application.Handlers.AddProgressCommandHandler                 100%
   HealthSync.Application.Handlers.AssignRoleToUserCommandHandler            100%
@@ -49,6 +27,7 @@ HealthSync.Application                                                     91.4%
   HealthSync.Application.Handlers.CreateFoodItemCommandHandler              100%
   HealthSync.Application.Handlers.CreateGoalCommandHandler                  100%
   HealthSync.Application.Handlers.CreateNutritionLogCommandHandler          100%
+  HealthSync.Application.Handlers.CreateUserCommandHandler                  100%
   HealthSync.Application.Handlers.CreateWorkoutLogCommandHandler            100%
   HealthSync.Application.Handlers.DeleteExerciseCommandHandler              100%
   HealthSync.Application.Handlers.DeleteFoodItemCommandHandler              100%
@@ -82,34 +61,31 @@ HealthSync.Application                                                     91.4%
   HealthSync.Application.Handlers.SendVerificationCodeCommandHandler        100%
   HealthSync.Application.Handlers.SetPasswordCommandHandler                 100%
   HealthSync.Application.Handlers.UpdateExerciseCommandHandler              100%
+  HealthSync.Application.Handlers.UpdateExerciseImageCommandHandler         100%
   HealthSync.Application.Handlers.UpdateFoodItemCommandHandler              100%
+  HealthSync.Application.Handlers.UpdateFoodItemImageCommandHandler         100%
+  HealthSync.Application.Handlers.UpdateUserCommandHandler                  100%
+  HealthSync.Application.Handlers.UpdateUserPasswordCommandHandler          100%
   HealthSync.Application.Handlers.UpdateUserRoleCommandHandler              100%
   HealthSync.Application.Handlers.VerifyEmailCodeCommandHandler             100%
   HealthSync.Application.Handlers.VerifyResetOtpCommandHandler              100%
-  HealthSync.Application.Queries.ChatWithBotQuery                             0%
-  HealthSync.Application.Queries.GetAllUsersQuery                           100%
-  HealthSync.Application.Queries.GetChatHistoryQuery                          0%
-  HealthSync.Application.Queries.GetGoogleAuthUrlQuery                        0%
-  HealthSync.Application.Queries.GetNutritionLogByDateHandler               100%
-  HealthSync.Application.Queries.LoginQuery                                 100%
   HealthSync.Application.ServiceCollectionExtensions                        100%
   HealthSync.Application.Services.ApplicationUserService                    100%
   HealthSync.Application.Services.OtpService                                100%
-  HealthSync.Application.Services.VerificationCodeStore                    84.6%
+  HealthSync.Application.Services.VerificationCodeStore                    89.7%
   HealthSync.Application.Validators.CreateExerciseSessionDtoValidator       100%
   HealthSync.Application.Validators.CreateFoodEntryDtoValidator             100%
   HealthSync.Application.Validators.CreateNutritionLogCommandValidator      100%
   HealthSync.Application.Validators.CreateWorkoutLogCommandValidator        100%
   HealthSync.Application.Validators.RegisterUserCommandValidator            100%
 
-HealthSync.Domain                                                          28.4%
-  HealthSync.Domain.Constants.RolePermissions                                 0%
+HealthSync.Domain                                                           100%
   HealthSync.Domain.Entities.ApplicationUser                                100%
-  HealthSync.Domain.Entities.ChatMessage                                      0%
+  HealthSync.Domain.Entities.ChatMessage                                    100%
   HealthSync.Domain.Entities.Exercise                                       100%
   HealthSync.Domain.Entities.FoodEntry                                      100%
   HealthSync.Domain.Entities.FoodItem                                       100%
-  HealthSync.Domain.Entities.Goal                                             0%
+  HealthSync.Domain.Entities.Goal                                           100%
   HealthSync.Domain.Entities.NutritionLog                                   100%
   HealthSync.Domain.Entities.Permission                                     100%
   HealthSync.Domain.Entities.Role                                           100%
@@ -117,19 +93,19 @@ HealthSync.Domain                                                          28.4%
   HealthSync.Domain.Entities.UserProfile                                    100%
   HealthSync.Domain.Entities.UserRole                                       100%
   HealthSync.Domain.Entities.WorkoutLog                                     100%
-  HealthSync.Domain.Interfaces.GoogleUserInfo                                 0%
 
-HealthSync.Infrastructure                                                  83.4%
+HealthSync.Infrastructure                                                    94%
   HealthSync.Infrastructure.Authorization.PermissionAuthorizationHandler    100%
-  HealthSync.Infrastructure.Authorization.PermissionPolicyProvider         12.6%
+  HealthSync.Infrastructure.Authorization.PermissionPolicyProvider         75.6%
   HealthSync.Infrastructure.Authorization.PermissionRequirement             100%
   HealthSync.Infrastructure.Authorization.RequirePermissionAttribute        100%
   HealthSync.Infrastructure.Authorization.RolePermissionMapping            81.5%
-  HealthSync.Infrastructure.Persistence.ApplicationUserRepository             0%
-  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                97.4%
-  HealthSync.Infrastructure.Persistence.UserProfileRepository                 0%
+  HealthSync.Infrastructure.Persistence.ApplicationUserRepository           100%
+  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                98.3%
+  HealthSync.Infrastructure.Persistence.UserProfileRepository               100%
   HealthSync.Infrastructure.ServiceCollectionExtensions                     100%
   HealthSync.Infrastructure.Services.AuthService                            100%
+  HealthSync.Infrastructure.Services.AvatarStorageService                   100%
   HealthSync.Infrastructure.Services.EmailService                           100%
   HealthSync.Infrastructure.Services.GeminiAiChatService                    100%
   HealthSync.Infrastructure.Services.GoogleAuthService                     88.8%

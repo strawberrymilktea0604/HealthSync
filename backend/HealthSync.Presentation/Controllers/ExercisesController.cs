@@ -1,6 +1,7 @@
 using HealthSync.Application.Commands;
 using HealthSync.Application.Queries;
 using HealthSync.Domain.Constants;
+using HealthSync.Domain.Interfaces;
 using HealthSync.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,14 @@ namespace HealthSync.Presentation.Controllers;
 public class ExercisesController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IStorageService _storageService;
+    private readonly IConfiguration _configuration;
 
-    public ExercisesController(IMediator mediator)
+    public ExercisesController(IMediator mediator, IStorageService storageService, IConfiguration configuration)
     {
         _mediator = mediator;
+        _storageService = storageService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -127,4 +132,43 @@ public class ExercisesController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
-}
+
+    /// <summary>
+    /// Upload ảnh cho bài tập
+    /// </summary>
+    [HttpPut("{id}/image")]
+    [RequirePermission(PermissionCodes.EXERCISE_UPDATE)]
+    public async Task<IActionResult> UploadExerciseImage(int id, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "File không hợp lệ" });
+        }
+
+        // Kiểm tra xem exercise có tồn tại không
+        var query = new GetExerciseByIdQuery { ExerciseId = id };
+        var exercise = await _mediator.Send(query);
+
+        if (exercise == null)
+        {
+            return NotFound(new { message = "Không tìm thấy bài tập" });
+        }
+
+        // Upload file lên MinIO (vào folder exercises trong bucket healthsync-files)
+        var extension = Path.GetExtension(file.FileName);
+        var fileName = $"exercises/{id}_{Guid.NewGuid()}{extension}";
+
+        using var stream = file.OpenReadStream();
+        var imageUrl = await _storageService.UploadFileAsync(stream, fileName, file.ContentType);
+
+        // Cập nhật ImageUrl vào database
+        var updateCommand = new UpdateExerciseImageCommand
+        {
+            ExerciseId = id,
+            ImageUrl = imageUrl
+        };
+
+        await _mediator.Send(updateCommand);
+
+        return Ok(new { imageUrl });
+    }}

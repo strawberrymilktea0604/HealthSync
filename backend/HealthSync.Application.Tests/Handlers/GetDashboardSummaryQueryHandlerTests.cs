@@ -25,9 +25,9 @@ public class GetDashboardSummaryQueryHandlerTests
         // Arrange
         var users = new List<ApplicationUser>
         {
-            new() { UserId = 1, Email = "user1@test.com", CreatedAt = DateTime.UtcNow.AddDays(-30) },
-            new() { UserId = 2, Email = "user2@test.com", CreatedAt = DateTime.UtcNow.AddDays(-5) },
-            new() { UserId = 3, Email = "user3@test.com", CreatedAt = DateTime.UtcNow.AddDays(-2) }
+            new() { UserId = 1, Email = "user1@test.com", CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new() { UserId = 2, Email = "user2@test.com", CreatedAt = new DateTime(2025, 12, 26, 0, 0, 0, DateTimeKind.Utc) },
+            new() { UserId = 3, Email = "user3@test.com", CreatedAt = new DateTime(2025, 12, 29, 0, 0, 0, DateTimeKind.Utc) }
         };
 
         var workoutLogs = new List<WorkoutLog>

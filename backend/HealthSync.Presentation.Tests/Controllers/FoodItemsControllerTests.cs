@@ -2,10 +2,12 @@ using System.Security.Claims;
 using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
+using HealthSync.Domain.Interfaces;
 using HealthSync.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 
 namespace HealthSync.Presentation.Tests.Controllers;
@@ -13,12 +15,16 @@ namespace HealthSync.Presentation.Tests.Controllers;
 public class FoodItemsControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IStorageService> _storageServiceMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly FoodItemsController _controller;
 
     public FoodItemsControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
-        _controller = new FoodItemsController(_mediatorMock.Object);
+        _storageServiceMock = new Mock<IStorageService>();
+        _configurationMock = new Mock<IConfiguration>();
+        _controller = new FoodItemsController(_mediatorMock.Object, _storageServiceMock.Object, _configurationMock.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {

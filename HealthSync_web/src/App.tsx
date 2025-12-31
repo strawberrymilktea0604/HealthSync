@@ -23,7 +23,8 @@ import CompleteProfile from "./pages/CompleteProfile";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
-import ContentLibrary from "./pages/admin/ContentLibrary";
+import ExerciseManagement from "./pages/admin/ExerciseManagement";
+import FoodManagement from "./pages/admin/FoodManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GoalsPage from "./pages/GoalsPage";
 import CreateGoalPage from "./pages/CreateGoalPage";
@@ -210,11 +211,11 @@ function AppContent() {
             </motion.div>
           </ProtectedRoute>
         } />
-        <Route path="/admin/content" element={
+
+        <Route path="/admin/exercises" element={
           <ProtectedRoute 
             requireAdmin={true}
-            requiredPermissions={[Permission.VIEW_EXERCISES, Permission.VIEW_FOODS]}
-            requireAllPermissions={false}
+            requiredPermission={Permission.VIEW_EXERCISES}
           >
             <motion.div
               initial={{ opacity: 0, x: -100 }}
@@ -222,7 +223,22 @@ function AppContent() {
               exit={{ opacity: 0, x: 100 }}
               transition={{ duration: 0.6 }}
             >
-              <ContentLibrary />
+              <ExerciseManagement />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/foods" element={
+          <ProtectedRoute 
+            requireAdmin={true}
+            requiredPermission={Permission.VIEW_FOODS}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.6 }}
+            >
+              <FoodManagement />
             </motion.div>
           </ProtectedRoute>
         } />

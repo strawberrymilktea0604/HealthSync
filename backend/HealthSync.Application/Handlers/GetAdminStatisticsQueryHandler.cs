@@ -21,15 +21,71 @@ namespace HealthSync.Application.Handlers
             var days = request.Days ?? 365; // Default to 1 year
             var startDate = DateTime.UtcNow.AddDays(-days);
 
-            var statistics = new AdminStatisticsDto
+            try
             {
-                UserStatistics = await GetUserStatistics(startDate, cancellationToken),
-                WorkoutStatistics = await GetWorkoutStatistics(startDate, cancellationToken),
-                NutritionStatistics = await GetNutritionStatistics(startDate, cancellationToken),
-                GoalStatistics = await GetGoalStatistics(cancellationToken)
-            };
+                var statistics = new AdminStatisticsDto
+                {
+                    UserStatistics = await GetUserStatistics(startDate, cancellationToken),
+                    WorkoutStatistics = await GetWorkoutStatistics(startDate, cancellationToken),
+                    NutritionStatistics = await GetNutritionStatistics(startDate, cancellationToken),
+                    GoalStatistics = await GetGoalStatistics(cancellationToken)
+                };
 
-            return statistics;
+                return statistics;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and return empty statistics to prevent crashes
+                Console.WriteLine($"Error in GetAdminStatisticsQueryHandler: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return empty statistics instead of throwing
+                return new AdminStatisticsDto
+                {
+                    UserStatistics = new UserStatisticsDto
+                    {
+                        TotalUsers = 0,
+                        ActiveUsers = 0,
+                        NewUsersThisWeek = 0,
+                        NewUsersThisMonth = 0,
+                        UserGrowthData = new List<UserGrowthDto>(),
+                        UserRoleDistribution = new List<UserRoleDistributionDto>()
+                    },
+                    WorkoutStatistics = new WorkoutStatisticsDto
+                    {
+                        TotalWorkoutLogs = 0,
+                        WorkoutLogsThisMonth = 0,
+                        TotalExercises = 0,
+                        TopExercises = new List<PopularExerciseDto>(),
+                        WorkoutActivityData = new List<WorkoutActivityDto>(),
+                        MuscleGroupDistribution = new List<MuscleGroupDistributionDto>()
+                    },
+                    NutritionStatistics = new NutritionStatisticsDto
+                    {
+                        TotalNutritionLogs = 0,
+                        NutritionLogsThisMonth = 0,
+                        TotalFoodItems = 0,
+                        TopFoods = new List<PopularFoodDto>(),
+                        NutritionActivityData = new List<NutritionActivityDto>(),
+                        AverageDailyNutrition = new AverageNutritionDto
+                        {
+                            AverageCalories = 0,
+                            AverageProtein = 0,
+                            AverageCarbs = 0,
+                            AverageFat = 0
+                        }
+                    },
+                    GoalStatistics = new GoalStatisticsDto
+                    {
+                        TotalGoals = 0,
+                        ActiveGoals = 0,
+                        CompletedGoals = 0,
+                        GoalTypeDistribution = new List<GoalTypeDistributionDto>(),
+                        GoalStatusDistribution = new List<GoalStatusDistributionDto>(),
+                        GoalCompletionRate = 0
+                    }
+                };
+            }
         }
 
         private async Task<UserStatisticsDto> GetUserStatistics(DateTime startDate, CancellationToken cancellationToken)
@@ -97,7 +153,7 @@ namespace HealthSync.Application.Handlers
             // Top exercises
             var topExercises = workoutLogs
                 .SelectMany(w => w.ExerciseSessions)
-                .Where(es => es.Exercise != null)
+                .Where(es => es.Exercise != null && !string.IsNullOrEmpty(es.Exercise.Name) && !string.IsNullOrEmpty(es.Exercise.MuscleGroup))
                 .GroupBy(es => new { es.ExerciseId, es.Exercise.Name, es.Exercise.MuscleGroup })
                 .Select(g => new PopularExerciseDto
                 {

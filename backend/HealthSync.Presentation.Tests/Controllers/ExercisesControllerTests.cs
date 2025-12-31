@@ -1,9 +1,11 @@
 using HealthSync.Application.Commands;
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
+using HealthSync.Domain.Interfaces;
 using HealthSync.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
@@ -12,12 +14,16 @@ namespace HealthSync.Presentation.Tests.Controllers;
 public class ExercisesControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IStorageService> _storageServiceMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly ExercisesController _controller;
 
     public ExercisesControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
-        _controller = new ExercisesController(_mediatorMock.Object);
+        _storageServiceMock = new Mock<IStorageService>();
+        _configurationMock = new Mock<IConfiguration>();
+        _controller = new ExercisesController(_mediatorMock.Object, _storageServiceMock.Object, _configurationMock.Object);
     }
 
     [Fact]

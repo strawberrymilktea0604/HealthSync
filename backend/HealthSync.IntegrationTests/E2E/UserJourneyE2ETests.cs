@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using HealthSync.Application.DTOs;
+using HealthSync.Domain.Constants;
 using HealthSync.Domain.Entities;
 using HealthSync.Infrastructure.Persistence;
 using HealthSync.Presentation;
@@ -78,9 +79,10 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new { Email = email, Password = password });
 
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(authResponse);
-        var token = authResponse!.Token;
+        var token = authResponse.Token;
 
         // Step 3: Get dashboard (authenticated request)
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -121,6 +123,21 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
 
             Assert.NotNull(adminRole);
 
+            // Remove existing user if exists
+            var existingUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == adminEmail);
+            if (existingUser != null)
+            {
+                var existingProfile = await dbContext.UserProfiles.FirstOrDefaultAsync(p => p.UserId == existingUser.UserId);
+                if (existingProfile != null)
+                {
+                    dbContext.UserProfiles.Remove(existingProfile);
+                }
+                var existingUserRoles = dbContext.UserRoles.Where(ur => ur.UserId == existingUser.UserId);
+                dbContext.UserRoles.RemoveRange(existingUserRoles);
+                dbContext.ApplicationUsers.Remove(existingUser);
+                await dbContext.SaveChangesAsync();
+            }
+
             var admin = new ApplicationUser
             {
                 Email = adminEmail,
@@ -140,21 +157,42 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
             
-            var adminRole = new Role { RoleName = "Admin", Description = "Administrator" };
+            // Use pre-seeded Admin role that already has all permissions
+            var adminRole = await dbContext.Roles
+                .Include(r => r.RolePermissions)
+                    .ThenInclude(rp => rp.Permission)
+                .FirstOrDefaultAsync(r => r.RoleName == "Admin");
+
+            Assert.NotNull(adminRole); // Ensure Admin role exists from seeding
+
+            // Remove existing user if exists
+            var existingUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == "admin@example.com");
+            if (existingUser != null)
+            {
+                var existingProfile = await dbContext.UserProfiles.FirstOrDefaultAsync(p => p.UserId == existingUser.UserId);
+                if (existingProfile != null)
+                {
+                    dbContext.UserProfiles.Remove(existingProfile);
+                }
+                var existingUserRoles = dbContext.UserRoles.Where(ur => ur.UserId == existingUser.UserId);
+                dbContext.UserRoles.RemoveRange(existingUserRoles);
+                dbContext.ApplicationUsers.Remove(existingUser);
+                await dbContext.SaveChangesAsync();
+            }
+
             var adminUser = new ApplicationUser
             {
                 Email = "admin@example.com",
                 PasswordHash = HashPassword("Admin@123"), // Use SHA256 hash
-                IsActive = true,
-                UserRoles = new List<UserRole>
-                {
-                    new UserRole { Role = adminRole }
-                }
+                IsActive = true
             };
 
             dbContext.ApplicationUsers.Add(adminUser);
             await dbContext.SaveChangesAsync();
             adminUserId = adminUser.UserId;
+
+            dbContext.UserRoles.Add(new UserRole { UserId = adminUser.UserId, RoleId = adminRole.Id });
+            await dbContext.SaveChangesAsync();
         }
 
         // Step 1: Admin login
@@ -165,6 +203,7 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
         });
 
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
         var adminToken = authResponse!.Token;
 
@@ -190,30 +229,21 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
         var email = $"nutrition_{Guid.NewGuid()}@example.com";
         var password = "Test@123";
 
-        // Step 1: Create user and seed food items directly in database
+        // Step 1: Register user
+        var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", new
+        {
+            Email = email,
+            Password = password,
+            FullName = "Test User"
+        });
+        registerResponse.EnsureSuccessStatusCode();
+
+        // Seed food items for nutrition logging
         int oatmealId, bananaId;
         using (var userScope = _factory.Services.CreateScope())
         {
             var userDbContext = userScope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
-            var customerRole = await userDbContext.Roles
-                .Include(r => r.RolePermissions)
-                    .ThenInclude(rp => rp.Permission)
-                .FirstOrDefaultAsync(r => r.RoleName == "Customer");
-
-            Assert.NotNull(customerRole);
-
-            var user = new ApplicationUser
-            {
-                Email = email,
-                PasswordHash = HashPassword(password),
-                IsActive = true
-            };
-            userDbContext.ApplicationUsers.Add(user);
-            await userDbContext.SaveChangesAsync();
-
-            userDbContext.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
             
-            // Seed food items for nutrition logging
             var oatmeal = new HealthSync.Domain.Entities.FoodItem
             {
                 Name = "Oatmeal",
@@ -308,6 +338,18 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
         using (var scope = _factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
+            var email = "exercise_admin@example.com";
+            
+            // Clean up existing user and roles
+            var existingUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == email);
+            if (existingUser != null)
+            {
+                var existingUserRoles = dbContext.UserRoles.Where(ur => ur.UserId == existingUser.UserId);
+                dbContext.UserRoles.RemoveRange(existingUserRoles);
+                dbContext.ApplicationUsers.Remove(existingUser);
+                await dbContext.SaveChangesAsync();
+            }
+            
             var adminRole = await dbContext.Roles
                 .Include(r => r.RolePermissions)
                     .ThenInclude(rp => rp.Permission)
@@ -315,9 +357,35 @@ public class UserJourneyE2ETests : IClassFixture<CustomWebApplicationFactory<Pro
 
             Assert.NotNull(adminRole); // Ensure Admin role exists from seeding
 
+            // Ensure Admin role has Exercise permissions
+            var requiredPermissions = new[] 
+            { 
+                PermissionCodes.EXERCISE_READ, 
+                PermissionCodes.EXERCISE_CREATE, 
+                PermissionCodes.EXERCISE_UPDATE, 
+                PermissionCodes.EXERCISE_DELETE 
+            };
+
+            foreach (var code in requiredPermissions)
+            {
+                if (!adminRole.RolePermissions.Any(rp => rp.Permission.PermissionCode == code))
+                {
+                    var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.PermissionCode == code);
+                    if (permission == null)
+                    {
+                        permission = new Permission { PermissionCode = code, Description = $"Permission {code}" };
+                        dbContext.Permissions.Add(permission);
+                        await dbContext.SaveChangesAsync();
+                    }
+
+                    dbContext.RolePermissions.Add(new RolePermission { RoleId = adminRole.Id, PermissionId = permission.Id });
+                }
+            }
+            await dbContext.SaveChangesAsync();
+
             var admin = new ApplicationUser
             {
-                Email = "exercise_admin@example.com",
+                Email = email,
                 PasswordHash = HashPassword("Admin@123"), // Use SHA256 hash
                 IsActive = true
             };

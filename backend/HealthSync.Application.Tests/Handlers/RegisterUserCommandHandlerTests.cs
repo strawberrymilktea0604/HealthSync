@@ -6,6 +6,7 @@ using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using MockQueryable.Moq;
 using System.Linq.Expressions;
@@ -20,6 +21,7 @@ public class RegisterUserCommandHandlerTests
     private readonly Mock<IAuthService> _authServiceMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IJwtTokenService> _jwtTokenServiceMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly RegisterUserCommandHandler _handler;
 
     public RegisterUserCommandHandlerTests()
@@ -28,17 +30,20 @@ public class RegisterUserCommandHandlerTests
         _authServiceMock = new Mock<IAuthService>();
         _mediatorMock = new Mock<IMediator>();
         _jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        _configurationMock = new Mock<IConfiguration>();
         _handler = new RegisterUserCommandHandler(
             _contextMock.Object,
             _authServiceMock.Object,
             _mediatorMock.Object,
-            _jwtTokenServiceMock.Object);
+            _jwtTokenServiceMock.Object,
+            _configurationMock.Object);
     }
 
     [Fact]
     public async Task Handle_ShouldThrowInvalidOperation_WhenVerificationCodeInvalid()
     {
         // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
@@ -59,6 +64,7 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_ShouldThrowInvalidOperation_WhenEmailAlreadyExists()
     {
         // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -92,6 +98,7 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_ShouldThrowInvalidOperation_WhenEmailAlreadyExistsAsAdmin()
     {
         // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -124,6 +131,8 @@ public class RegisterUserCommandHandlerTests
     [Fact]
     public async Task Handle_ShouldCreateUserSuccessfully_WhenDataValid()
     {
+        // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         // Setup verification code validation to return true
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
@@ -252,6 +261,7 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_ShouldThrowException_WhenRoleNotFound()
     {
         // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -327,6 +337,7 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_ShouldThrowException_WhenUserReloadFails()
     {
         // Arrange
+        _configurationMock.Setup(c => c["SkipEmailVerification"]).Returns("false");
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyEmailCodeCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 

@@ -13,7 +13,10 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  Dumbbell,
+  Apple,
 } from "lucide-react";
+import logoHeader from "@/assets/logoheader.png";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -49,10 +52,16 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       permission: Permission.VIEW_USERS,
     },
     {
-      path: "/admin/content",
-      label: "Content Library",
-      icon: BookOpen,
+      path: "/admin/exercises",
+      label: "Exercise Management",
+      icon: Dumbbell,
       permission: Permission.VIEW_EXERCISES,
+    },
+    {
+      path: "/admin/foods",
+      label: "Food Management",
+      icon: Apple,
+      permission: Permission.VIEW_FOODS,
     },
   ];
 
@@ -97,11 +106,9 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
         {/* Logo Section */}
         <div className="p-6 flex items-center justify-between border-b border-[#5A7F7F]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#E8E4D9] rounded-lg flex items-center justify-center text-[#4A6F6F] font-bold text-xl">
-              H
-            </div>
+            <img src={logoHeader} alt="HealthSync Logo" className="w-10 h-10 rounded-lg" />
             {!isSidebarCollapsed && (
-              <span className="text-xl font-semibold">HealthSync</span>
+              <span className="text-xl font-semibold">HealthSync Admin</span>
             )}
           </div>
           {/* Mobile Close Button */}

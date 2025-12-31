@@ -10,6 +10,7 @@ public class FoodItem
     public decimal ProteinG { get; set; }
     public decimal CarbsG { get; set; }
     public decimal FatG { get; set; }
+    public string? ImageUrl { get; set; }
 
     // Navigation property
     public ICollection<FoodEntry> FoodEntries { get; set; } = new List<FoodEntry>();

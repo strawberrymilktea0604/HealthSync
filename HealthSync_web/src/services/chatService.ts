@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ChatMessage, ChatResponse, ChatRequest } from '../types/chat';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const chatApi = axios.create({
   baseURL: `${API_BASE_URL}/api/Chat`,

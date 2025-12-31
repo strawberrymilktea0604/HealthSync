@@ -35,7 +35,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
 
         if (!string.IsNullOrWhiteSpace(request.Role) && request.Role != "All Roles")
         {
-            query = query.Where(u => u.GetRoleName() == request.Role);
+            query = query.Where(u => u.UserRoles.Any(ur => ur.Role.RoleName == request.Role));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -49,9 +49,11 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
                 UserId = u.UserId,
                 Email = u.Email,
                 FullName = u.Profile != null ? u.Profile.FullName : "",
-                Role = u.GetRoleName(),
+                Role = u.UserRoles.Select(ur => ur.Role.RoleName).FirstOrDefault() ?? "Customer",
                 IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt
+                CreatedAt = u.CreatedAt,
+                // FIX: Lấy AvatarUrl từ UserProfiles thay vì ApplicationUsers
+                AvatarUrl = u.Profile != null ? u.Profile.AvatarUrl : u.AvatarUrl
             })
             .ToListAsync(cancellationToken);
 

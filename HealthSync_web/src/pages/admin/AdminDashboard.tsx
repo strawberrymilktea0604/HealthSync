@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange] = useState<number>(365);
+  const [exerciseSearch, setExerciseSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,7 +23,10 @@ export default function AdminDashboard() {
   const fetchStatistics = async () => {
     try {
       setLoading(true);
+      console.log('Fetching statistics...');
       const data = await adminStatisticsService.getStatistics(timeRange);
+      console.log('Statistics data received:', data);
+      console.log('Top exercises:', data.workoutStatistics?.topExercises);
       setStatistics(data);
     } catch (error: unknown) {
       console.error('Error fetching statistics:', error);
@@ -58,28 +62,48 @@ export default function AdminDashboard() {
     );
   }
 
-  const { userStatistics, workoutStatistics } = statistics;
+  // Ensure statistics has the required structure and valid data
+  if (!statistics.userStatistics || !statistics.workoutStatistics || !statistics.nutritionStatistics || !statistics.goalStatistics) {
+    return (
+      <AdminLayout>
+        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+          <p className="text-500">Dữ liệu thống kê không đầy đủ</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
-  // Prepare chart data for New User Registrations (Bar Chart)
-  const registrationData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [
-      {
-        data: [45, 52, 48, 78, 65, 89, 82],
-        backgroundColor: '#4A6C6F',
-        borderRadius: 4,
-      }
-    ]
+  // Check for required numeric fields
+  if (typeof statistics.userStatistics.totalUsers !== 'number' ||
+      typeof statistics.userStatistics.activeUsers !== 'number' ||
+      typeof statistics.userStatistics.newUsersThisMonth !== 'number' ||
+      typeof statistics.workoutStatistics.totalWorkoutLogs !== 'number') {
+    console.error('Statistics data contains invalid numeric values:', statistics);
+    return (
+      <AdminLayout>
+        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+          <p className="text-500">Dữ liệu thống kê không hợp lệ</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  const { userStatistics, workoutStatistics, nutritionStatistics, goalStatistics } = statistics;
+
+  // User Role Distribution Chart
+  const userRoleData = {
+    labels: userStatistics.userRoleDistribution?.map(r => r.role) || [],
+    datasets: [{
+      data: userStatistics.userRoleDistribution?.map(r => r.count) || [],
+      backgroundColor: ['#4A6C6F', '#6B8E23', '#8B7355'],
+    }]
   };
 
-  const registrationOptions = {
-    maintainAspectRatio: false,
+  const userRoleOptions = {
     plugins: {
-      legend: { display: false }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: { grid: { color: '#F5F5F5' }, ticks: { display: false } }
+      legend: {
+        position: 'bottom' as const
+      }
     }
   };
 
@@ -96,9 +120,9 @@ export default function AdminDashboard() {
                   <i className="pi pi-users text-white text-xl"></i>
                 </div>
               </div>
-              <div className="text-900 font-bold text-4xl mb-2">{userStatistics.totalUsers.toLocaleString()}</div>
-              <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i> +12% from last month
+              <div className="text-900 font-bold text-4xl mb-2">{(userStatistics.totalUsers || 0).toLocaleString()}</div>
+              <div className="text-500 text-sm font-medium">
+                Tổng số người dùng trong hệ thống
               </div>
             </Card>
           </div>
@@ -111,9 +135,9 @@ export default function AdminDashboard() {
                   <i className="pi pi-user-plus text-white text-xl"></i>
                 </div>
               </div>
-              <div className="text-900 font-bold text-4xl mb-2">{userStatistics.newUsersThisMonth}</div>
-              <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i> +8% from last month
+              <div className="text-900 font-bold text-4xl mb-2">{userStatistics.newUsersThisMonth || 0}</div>
+              <div className="text-500 text-sm font-medium">
+                Người dùng mới tháng này
               </div>
             </Card>
           </div>
@@ -126,9 +150,9 @@ export default function AdminDashboard() {
                   <i className="pi pi-chart-line text-white text-xl"></i>
                 </div>
               </div>
-              <div className="text-900 font-bold text-4xl mb-2">{userStatistics.activeUsers.toLocaleString()}</div>
-              <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i> +15% from last month
+              <div className="text-900 font-bold text-4xl mb-2">{(userStatistics.activeUsers || 0).toLocaleString()}</div>
+              <div className="text-500 text-sm font-medium">
+                Người dùng hoạt động
               </div>
             </Card>
           </div>
@@ -141,9 +165,9 @@ export default function AdminDashboard() {
                   <i className="pi pi-chart-bar text-white text-xl"></i>
                 </div>
               </div>
-              <div className="text-900 font-bold text-4xl mb-2">{workoutStatistics.totalWorkoutLogs.toLocaleString()}</div>
-              <div className="text-green-500 text-sm font-medium">
-                <i className="pi pi-arrow-up text-xs mr-1"></i> This month
+              <div className="text-900 font-bold text-4xl mb-2">{(workoutStatistics.totalWorkoutLogs || 0).toLocaleString()}</div>
+              <div className="text-500 text-sm font-medium">
+                Tổng số lượt tập luyện
               </div>
             </Card>
           </div>
@@ -153,30 +177,53 @@ export default function AdminDashboard() {
         <div className="grid mt-4">
           <div className="col-12 lg:col-6">
             <Card className="border-round-xl shadow-2">
-              <h3 className="text-xl font-semibold mb-4 text-900">New User Registrations</h3>
-              <Chart type="bar" data={registrationData} options={registrationOptions} style={{ height: '300px' }} />
+              <h3 className="text-xl font-semibold mb-4 text-900">Phân bổ vai trò người dùng</h3>
+              {userStatistics.userRoleDistribution && userStatistics.userRoleDistribution.length > 0 ? (
+                <Chart type="pie" data={userRoleData} options={userRoleOptions} style={{ height: '300px' }} />
+              ) : (
+                <p className="text-500 text-center">Chưa có dữ liệu phân bổ vai trò</p>
+              )}
             </Card>
           </div>
 
           <div className="col-12 lg:col-6">
             <Card className="border-round-xl shadow-2">
               <h3 className="text-xl font-semibold mb-4 text-900">Most Popular Exercises</h3>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  placeholder="Search exercises..."
+                  value={exerciseSearch}
+                  onChange={(e) => setExerciseSearch(e.target.value)}
+                  className="w-full p-2 border-1 border-200 border-round"
+                />
+              </div>
               <div className="flex flex-column gap-3">
-                {workoutStatistics.topExercises.slice(0, 5).map((exercise) => (
+                {(workoutStatistics.topExercises || [])
+                  .filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()))
+                  .slice(0, 5)
+                  .map((exercise) => (
                   <div key={exercise.exerciseId} className="flex align-items-center gap-3">
                     <div className="w-1rem h-1rem border-circle" style={{ backgroundColor: '#4A6C6F' }}></div>
-                    <span className="font-medium text-900">{exercise.exerciseName}</span>
+                    <span className="font-medium text-900">{exercise.exerciseName || 'Unknown Exercise'}</span>
                     <div className="flex-1 mx-3">
                       <div className="w-full h-0-5rem bg-gray-200 border-round">
                         <div 
                           className="h-full bg-primary border-round" 
-                          style={{ width: `${(exercise.usageCount / Math.max(...workoutStatistics.topExercises.map(e => e.usageCount))) * 100}%` }}
+                          style={{ width: `${(() => {
+                            const filteredExercises = (workoutStatistics.topExercises || []).filter(e => e && typeof e.exerciseName === 'string' && e.exerciseName.trim() !== '' && e.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()));
+                            const maxUsage = filteredExercises.length > 0 ? Math.max(...filteredExercises.map(e => e.usageCount)) : 1;
+                            return (exercise.usageCount / maxUsage) * 100;
+                          })()}%` }}
                         ></div>
                       </div>
                     </div>
                     <span className="text-500 text-sm">{exercise.usageCount.toLocaleString()}</span>
                   </div>
                 ))}
+                {(workoutStatistics.topExercises || []).filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase())).length === 0 && (
+                  <p className="text-500 text-center">Chưa có dữ liệu bài tập</p>
+                )}
               </div>
             </Card>
           </div>

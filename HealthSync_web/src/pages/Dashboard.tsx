@@ -69,7 +69,7 @@ export default function Dashboard() {
 
           <div className="flex align-items-center gap-3">
             <Avatar 
-              image={userInfo.avatarUrl || "https://placehold.co/100x100"} 
+              image={userInfo.avatarUrl ? `${userInfo.avatarUrl}?t=${Date.now()}` : "https://placehold.co/100x100"}
               size="large" 
               shape="circle" 
             />

@@ -26,7 +26,8 @@ public class GetExerciseByIdQueryHandler : IRequestHandler<GetExerciseByIdQuery,
                 MuscleGroup = e.MuscleGroup,
                 Difficulty = e.Difficulty,
                 Equipment = e.Equipment,
-                Description = e.Description
+                Description = e.Description,
+                ImageUrl = e.ImageUrl // FIX: Thêm mapping ImageUrl
             })
             .FirstOrDefaultAsync(cancellationToken);
 

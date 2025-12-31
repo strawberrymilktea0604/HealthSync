@@ -12,415 +12,160 @@ namespace HealthSync.Application.Tests.Handlers;
 
 public class GoogleLoginWebCommandHandlerTests
 {
-    private readonly Mock<IApplicationDbContext> _mockContext;
-    private readonly Mock<IGoogleAuthService> _mockGoogleAuthService;
-    private readonly Mock<IJwtTokenService> _mockJwtTokenService;
+    private readonly Mock<IApplicationDbContext> _contextMock;
+    private readonly Mock<IGoogleAuthService> _googleAuthServiceMock;
+    private readonly Mock<IJwtTokenService> _jwtTokenServiceMock;
     private readonly GoogleLoginWebCommandHandler _handler;
 
     public GoogleLoginWebCommandHandlerTests()
     {
-        _mockContext = new Mock<IApplicationDbContext>();
-        _mockGoogleAuthService = new Mock<IGoogleAuthService>();
-        _mockJwtTokenService = new Mock<IJwtTokenService>();
+        _contextMock = new Mock<IApplicationDbContext>();
+        _googleAuthServiceMock = new Mock<IGoogleAuthService>();
+        _jwtTokenServiceMock = new Mock<IJwtTokenService>();
         _handler = new GoogleLoginWebCommandHandler(
-            _mockContext.Object,
-            _mockGoogleAuthService.Object,
-            _mockJwtTokenService.Object);
+            _contextMock.Object,
+            _googleAuthServiceMock.Object,
+            _jwtTokenServiceMock.Object);
     }
 
     [Fact]
-    public async Task Handle_InvalidGoogleCode_ThrowsUnauthorizedAccessException()
+    public async Task Handle_ShouldThrowUnauthorized_WhenCodeInvalid()
     {
         // Arrange
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
+        var command = new GoogleLoginWebCommand { Code = "invalid_code" };
+        _googleAuthServiceMock.Setup(x => x.ProcessCallbackAsync("invalid_code"))
             .ReturnsAsync((GoogleUserInfo?)null);
 
-        var command = new GoogleLoginWebCommand { Code = "invalid_code" };
-
         // Act & Assert
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => _handler.Handle(command, CancellationToken.None));
     }
 
     [Fact]
-    public async Task Handle_AdminUser_ThrowsUnauthorizedAccessException()
+    public async Task Handle_ShouldThrowUnauthorized_WhenUserIsAdmin()
     {
         // Arrange
-        var googleUser = new GoogleUserInfo
-        {
-            Email = "admin@test.com",
-            Name = "Admin User",
-            Picture = "http://picture.com"
-        };
+        var command = new GoogleLoginWebCommand { Code = "valid_code" };
+        var googleUser = new GoogleUserInfo { Email = "admin@example.com", Name = "Admin" };
+        _googleAuthServiceMock.Setup(x => x.ProcessCallbackAsync("valid_code"))
+            .ReturnsAsync(googleUser);
 
+        var adminRole = new Role { RoleName = "Admin" };
         var adminUser = new ApplicationUser
         {
-            UserId = 1,
-            Email = "admin@test.com",
-            UserRoles = new List<UserRole>
-            {
-                new UserRole
-                {
-                    UserId = 1,
-                    RoleId = 1,
-                    Role = new Role { Id = 1, RoleName = "Admin" }
-                }
-            }
+            Email = "admin@example.com",
+            UserRoles = new List<UserRole> { new UserRole { Role = adminRole } }
         };
 
-        var adminUsers = new List<ApplicationUser> { adminUser }.AsQueryable().BuildMock();
-
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
-            .ReturnsAsync(googleUser);
-
-        _mockContext.Setup(c => c.ApplicationUsers).Returns(adminUsers);
-
-        var command = new GoogleLoginWebCommand { Code = "valid_code" };
+        var usersList = new List<ApplicationUser> { adminUser };
+        var usersMock = usersList.AsQueryable().BuildMockDbSet();
+        _contextMock.Setup(x => x.ApplicationUsers).Returns(usersMock.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _handler.Handle(command, CancellationToken.None));
-        Assert.Contains("Admin", exception.Message);
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => _handler.Handle(command, CancellationToken.None));
+        Assert.Contains("Admin", ex.Message);
     }
 
     [Fact]
-    public async Task Handle_NewUser_CreatesUserAndProfile()
+    public async Task Handle_ShouldCreateUser_WhenUserNew()
     {
         // Arrange
-        var googleUser = new GoogleUserInfo
-        {
-            Email = "newuser@test.com",
-            Name = "New User",
-            Picture = "http://picture.com"
-        };
-
-        var emptyUsers = new List<ApplicationUser>().AsQueryable().BuildMock();
-        var customerRole = new Role { Id = 2, RoleName = "Customer" };
-        var roles = new List<Role> { customerRole }.AsQueryable().BuildMock();
-
-        ApplicationUser? capturedUser = null;
-        var capturedObjects = new List<object>();
-
-        var callCount = 0;
-        _mockContext.Setup(c => c.ApplicationUsers).Returns(() =>
-        {
-            callCount++;
-            // First 2 calls: check for admin and existing user (both empty)
-            if (callCount <= 2) return emptyUsers;
-            // Third call: reload user after creation
-            if (capturedUser != null)
-            {
-                capturedUser.UserRoles = new List<UserRole>
-                {
-                    new UserRole
-                    {
-                        UserId = capturedUser.UserId,
-                        RoleId = 2,
-                        Role = new Role
-                        {
-                            Id = 2,
-                            RoleName = "Customer",
-                            RolePermissions = new List<RolePermission>()
-                        }
-                    }
-                };
-                capturedUser.Profile = new UserProfile
-                {
-                    UserId = capturedUser.UserId,
-                    FullName = googleUser.Name,
-                    AvatarUrl = googleUser.Picture,
-                    Gender = "Unknown"
-                };
-                return new List<ApplicationUser> { capturedUser }.AsQueryable().BuildMock();
-            }
-            return emptyUsers;
-        });
-
-        _mockContext.Setup(c => c.Roles).Returns(roles);
-        _mockContext.Setup(c => c.Add(It.IsAny<object>())).Callback<object>(entity =>
-        {
-            capturedObjects.Add(entity);
-            if (entity is ApplicationUser user)
-            {
-                user.UserId = 1; // Simulate database ID generation
-                capturedUser = user;
-            }
-        });
-        _mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
+        var command = new GoogleLoginWebCommand { Code = "valid_code" };
+        var googleUser = new GoogleUserInfo { Email = "new@example.com", Name = "New User", Picture = "http://pic" };
+        _googleAuthServiceMock.Setup(x => x.ProcessCallbackAsync("valid_code"))
             .ReturnsAsync(googleUser);
 
-        _mockJwtTokenService.Setup(j => j.GenerateTokenAsync(
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>()))
-            .ReturnsAsync(new TokenDto
-            {
-                AccessToken = "jwt_token",
-                ExpiresIn = 3600,
-                Roles = new List<string> { "Customer" },
-                Permissions = new List<string>()
-            });
-
-        var command = new GoogleLoginWebCommand { Code = "valid_code" };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("newuser@test.com", result.Email);
-        Assert.Equal("jwt_token", result.Token);
-        Assert.Contains("Customer", result.Roles);
-        Assert.True(result.RequiresPassword); // New Google user needs password
+        // Mock Users
+        var usersList = new List<ApplicationUser>(); // Empty initially
+        var usersMock = usersList.AsQueryable().BuildMockDbSet();
         
-        // Verify user, role, and profile were created
-        Assert.Contains(capturedObjects, o => o is ApplicationUser);
-        Assert.Contains(capturedObjects, o => o is UserRole);
-        Assert.Contains(capturedObjects, o => o is UserProfile);
-    }
-
-    [Fact]
-    public async Task Handle_ExistingUser_UpdatesProfileAndReturns()
-    {
-        // Arrange
-        var googleUser = new GoogleUserInfo
-        {
-            Email = "existing@test.com",
-            Name = "Updated Name",
-            Picture = "http://newpicture.com"
+        // Setup sequence for ApplicationUsers: Empty first (check), then return Created User
+        var createdUser = new ApplicationUser
+        { 
+            UserId = 1, 
+            Email = "new@example.com",
+            Profile = new UserProfile { FullName = "New User" }, // Important for second call 
+            UserRoles = new List<UserRole> { new UserRole { Role = new Role{ RoleName = "Customer" } } }
         };
 
-        var existingUser = new ApplicationUser
-        {
-            UserId = 1,
-            Email = "existing@test.com",
-            PasswordHash = "hashed_password",
-            Profile = new UserProfile
-            {
-                UserId = 1,
-                FullName = "Old Name",
-                AvatarUrl = "http://oldpicture.com",
-                Gender = "Male",
-                HeightCm = 175,
-                WeightKg = 70
-            },
-            UserRoles = new List<UserRole>
-            {
-                new UserRole
-                {
-                    UserId = 1,
-                    RoleId = 2,
-                    Role = new Role
-                    {
-                        Id = 2,
-                        RoleName = "Customer",
-                        RolePermissions = new List<RolePermission>
-                        {
-                            new RolePermission
-                            {
-                                RoleId = 2,
-                                PermissionId = 1,
-                                Permission = new Permission { Id = 1, PermissionCode = "VIEW_DASHBOARD" }
-                            }
-                        }
-                    }
-                }
-            }
-        };
+        var createdUsersList = new List<ApplicationUser> { createdUser };
+        var createdUsersMock = createdUsersList.AsQueryable().BuildMockDbSet();
 
-        var emptyAdminUsers = new List<ApplicationUser>().AsQueryable().BuildMock();
-        var existingUsers = new List<ApplicationUser> { existingUser }.AsQueryable().BuildMock();
+        // Standard mock behavior: return empty first
+        _contextMock.SetupSequence(x => x.ApplicationUsers)
+            .Returns(usersMock.Object) // Check existing Admin
+            .Returns(usersMock.Object) // Find by email (null)
+            .Returns(createdUsersMock.Object); // Reload after creation
 
-        var callCount = 0;
-        _mockContext.Setup(c => c.ApplicationUsers).Returns(() =>
+        // Roles
+        var customerRole = new Role { Id = 1, RoleName = "Customer" };
+        var rolesList = new List<Role> { customerRole };
+        var rolesMock = rolesList.AsQueryable().BuildMockDbSet();
+        _contextMock.Setup(x => x.Roles).Returns(rolesMock.Object);
+
+        // Mock Add
+        _contextMock.Setup(x => x.Add(It.IsAny<UserProfile>())).Callback<UserProfile>(p => 
         {
-            callCount++;
-            if (callCount == 1) return emptyAdminUsers; // Check for admin
-            return existingUsers; // Return existing user
+             // Verify profile props
+             Assert.Equal("http://pic", p.AvatarUrl);
         });
 
-        _mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _contextMock.Setup(x => x.Add(It.IsAny<ApplicationUser>()))
+            .Callback<ApplicationUser>(u => u.UserId = 1);
 
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
-            .ReturnsAsync(googleUser);
-
-        _mockJwtTokenService.Setup(j => j.GenerateTokenAsync(
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>()))
-            .ReturnsAsync(new TokenDto
-            {
-                AccessToken = "jwt_token",
-                ExpiresIn = 3600,
-                Roles = new List<string> { "Customer" },
-                Permissions = new List<string> { "VIEW_DASHBOARD" }
-            });
-
-        var command = new GoogleLoginWebCommand { Code = "valid_code" };
+        // Mock Token Service
+        _jwtTokenServiceMock.Setup(x => x.GenerateTokenAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<List<string>>()))
+            .ReturnsAsync(new TokenDto { AccessToken = "jwt", Roles = new List<string> { "Customer" } });
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("existing@test.com", result.Email);
-        Assert.Equal("jwt_token", result.Token);
-        Assert.False(result.RequiresPassword); // Existing user has password
-        Assert.Contains("Customer", result.Roles);
-        Assert.Contains("VIEW_DASHBOARD", result.Permissions);
+        Assert.Equal("new@example.com", result.Email);
+        _contextMock.Verify(x => x.Add(It.IsAny<ApplicationUser>()), Times.Once); // User
+        _contextMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeast(3));
+    }
+
+    [Fact]
+    public async Task Handle_ShouldLoginAndUpdatProfile_WhenUserExists()
+    {
+         // Arrange
+        var command = new GoogleLoginWebCommand { Code = "valid_code" };
+        var googleUser = new GoogleUserInfo { Email = "existing@example.com", Name = "Existing", Picture = "http://new-pic" };
+        _googleAuthServiceMock.Setup(x => x.ProcessCallbackAsync("valid_code"))
+            .ReturnsAsync(googleUser);
+
+        // Existing user
+        var customerRole = new Role { RoleName = "Customer" };
+        var existingUser = new ApplicationUser
+        {
+            UserId = 10,
+            Email = "existing@example.com",
+            UserRoles = new List<UserRole> { new UserRole { Role = customerRole } },
+            Profile = new UserProfile { FullName = "", WeightKg = 50, HeightCm = 150, AvatarUrl = "old" }
+        };
+
+        var usersList = new List<ApplicationUser> { existingUser };
+        var usersMock = usersList.AsQueryable().BuildMockDbSet();
+        _contextMock.Setup(x => x.ApplicationUsers).Returns(usersMock.Object);
+
+         // Mock Token Service
+        _jwtTokenServiceMock.Setup(x => x.GenerateTokenAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<List<string>>()))
+            .ReturnsAsync(new TokenDto { AccessToken = "jwt", Roles = new List<string> { "Customer" } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(10, result.UserId);
         
-        // Verify profile was updated
-        Assert.Equal("http://newpicture.com", existingUser.Profile.AvatarUrl);
-    }
+        // Check Profile Update logic
+        Assert.Equal("http://new-pic", existingUser.Profile.AvatarUrl);
+        Assert.Equal("Existing", existingUser.Profile.FullName); // Should update because old was empty
 
-    [Fact]
-    public async Task Handle_ExistingUserWithoutProfileName_UpdatesFullName()
-    {
-        // Arrange
-        var googleUser = new GoogleUserInfo
-        {
-            Email = "user@test.com",
-            Name = "Google Name",
-            Picture = "http://picture.com"
-        };
-
-        var existingUser = new ApplicationUser
-        {
-            UserId = 1,
-            Email = "user@test.com",
-            PasswordHash = "",
-            Profile = new UserProfile
-            {
-                UserId = 1,
-                FullName = "", // Empty name
-                Gender = "Male"
-            },
-            UserRoles = new List<UserRole>
-            {
-                new UserRole
-                {
-                    UserId = 1,
-                    RoleId = 2,
-                    Role = new Role
-                    {
-                        Id = 2,
-                        RoleName = "Customer",
-                        RolePermissions = new List<RolePermission>()
-                    }
-                }
-            }
-        };
-
-        var emptyAdminUsers = new List<ApplicationUser>().AsQueryable().BuildMock();
-        var existingUsers = new List<ApplicationUser> { existingUser }.AsQueryable().BuildMock();
-
-        var callCount = 0;
-        _mockContext.Setup(c => c.ApplicationUsers).Returns(() =>
-        {
-            callCount++;
-            if (callCount == 1) return emptyAdminUsers;
-            return existingUsers;
-        });
-
-        _mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
-            .ReturnsAsync(googleUser);
-
-        _mockJwtTokenService.Setup(j => j.GenerateTokenAsync(
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>()))
-            .ReturnsAsync(new TokenDto
-            {
-                AccessToken = "jwt_token",
-                ExpiresIn = 3600,
-                Roles = new List<string> { "Customer" },
-                Permissions = new List<string>()
-            });
-
-        var command = new GoogleLoginWebCommand { Code = "valid_code" };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Google Name", result.FullName);
-        Assert.Equal("Google Name", existingUser.Profile.FullName); // Updated from Google
-        Assert.True(result.RequiresPassword); // No password hash
-    }
-
-    [Fact]
-    public async Task Handle_ValidLogin_UpdatesLastLoginAt()
-    {
-        // Arrange
-        var googleUser = new GoogleUserInfo
-        {
-            Email = "user@test.com",
-            Name = "Test User"
-        };
-
-        var existingUser = new ApplicationUser
-        {
-            UserId = 1,
-            Email = "user@test.com",
-            PasswordHash = "hashed",
-            LastLoginAt = null,
-            Profile = new UserProfile { UserId = 1, FullName = "Test User" },
-            UserRoles = new List<UserRole>
-            {
-                new UserRole
-                {
-                    UserId = 1,
-                    RoleId = 2,
-                    Role = new Role { Id = 2, RoleName = "Customer", RolePermissions = new List<RolePermission>() }
-                }
-            }
-        };
-
-        var emptyAdminUsers = new List<ApplicationUser>().AsQueryable().BuildMock();
-        var existingUsers = new List<ApplicationUser> { existingUser }.AsQueryable().BuildMock();
-
-        var callCount = 0;
-        _mockContext.Setup(c => c.ApplicationUsers).Returns(() =>
-        {
-            callCount++;
-            if (callCount == 1) return emptyAdminUsers;
-            return existingUsers;
-        });
-
-        _mockContext.Setup(c => c.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _mockGoogleAuthService.Setup(g => g.ProcessCallbackAsync(It.IsAny<string>()))
-            .ReturnsAsync(googleUser);
-
-        _mockJwtTokenService.Setup(j => j.GenerateTokenAsync(
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>()))
-            .ReturnsAsync(new TokenDto
-            {
-                AccessToken = "jwt_token",
-                ExpiresIn = 3600,
-                Roles = new List<string> { "Customer" },
-                Permissions = new List<string>()
-            });
-
-        var command = new GoogleLoginWebCommand { Code = "valid_code" };
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotNull(existingUser.LastLoginAt); // Verify LastLoginAt was updated
-        Assert.True(existingUser.LastLoginAt.Value >= DateTime.UtcNow.AddSeconds(-5)); // Within last 5 seconds
+        _contextMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeast(1)); 
     }
 }

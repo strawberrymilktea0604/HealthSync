@@ -4,8 +4,11 @@ using HealthSync.Application.Queries;
 using HealthSync.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Minio;
 using Moq;
+using System.Net.Http;
 using Xunit;
 
 namespace HealthSync.Presentation.Tests.Controllers;
@@ -14,13 +17,20 @@ public class AdminControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<ILogger<AdminController>> _loggerMock;
+    private readonly Mock<IMinioClient> _minioClientMock;
+    private readonly Mock<IConfiguration> _configurationMock;
+    private readonly HttpClient _httpClient;
     private readonly AdminController _controller;
 
     public AdminControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
         _loggerMock = new Mock<ILogger<AdminController>>();
-        _controller = new AdminController(_mediatorMock.Object, _loggerMock.Object);
+        _minioClientMock = new Mock<IMinioClient>();
+        _configurationMock = new Mock<IConfiguration>();
+        _configurationMock.Setup(c => c["MinIO:PublicUrl"]).Returns("http://localhost:9002");
+        _httpClient = new HttpClient();
+        _controller = new AdminController(_mediatorMock.Object, _loggerMock.Object, _minioClientMock.Object, _httpClient, _configurationMock.Object);
     }
 
     [Fact]

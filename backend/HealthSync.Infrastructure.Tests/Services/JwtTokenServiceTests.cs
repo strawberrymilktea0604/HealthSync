@@ -255,21 +255,35 @@ public class JwtTokenServiceTests
     [Fact]
     public void Constructor_MissingSecretKey_ThrowsException()
     {
-        // Arrange
-        var invalidConfig = new Dictionary<string, string>
+        // 1. Lưu lại key hiện tại (đang có giá trị từ .env)
+        var originalKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+        
+        try 
         {
-            {"Jwt:Issuer", "HealthSyncTest"},
-            {"Jwt:Audience", "HealthSyncTestUsers"},
-            {"Jwt:ExpirationMinutes", "60"}
-            // Missing SecretKey
-        };
+            // 2. Xóa tạm key đi để giả lập trường hợp thiếu cấu hình
+            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", null);
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(invalidConfig!)
-            .Build();
+            // Arrange
+            var invalidConfig = new Dictionary<string, string>
+            {
+                {"Jwt:Issuer", "HealthSyncTest"},
+                {"Jwt:Audience", "HealthSyncTestUsers"},
+                {"Jwt:ExpirationMinutes", "60"}
+                // Missing SecretKey
+            };
 
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => new JwtTokenService(config));
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(invalidConfig!)
+                .Build();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => new JwtTokenService(config));
+        }
+        finally
+        {
+            // 4. Khôi phục lại key để không ảnh hưởng các test khác
+            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", originalKey);
+        }
     }
 
     [Fact]

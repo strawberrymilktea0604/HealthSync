@@ -15,8 +15,8 @@ export default defineConfig({
     proxy: {
       // Bất kỳ request nào bắt đầu bằng /api sẽ được chuyển hướng tới backend
       '/api': {
-        target: 'http://localhost:5274', // Địa chỉ backend Kestrel
-        changeOrigin: true, // Quan trọng: thay đổi header Origin để Kestrel nghĩ request đến từ 5274
+        target: 'http://localhost:8080', // Địa chỉ nginx (proxy tới backend)
+        changeOrigin: true, // Quan trọng: thay đổi header Origin
         secure: false, // Dùng cho HTTP
         // rewrite: (path) => path.replace(/^\/api/, ''), // Có thể không cần nếu API của bạn bắt đầu bằng /api
       },

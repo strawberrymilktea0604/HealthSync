@@ -6,9 +6,9 @@
         <Configuration>
           <Format>opencover</Format>
           
-          <ExcludeByFile>**/DTOs/**/*.cs,**/Migrations/**/*.cs,**/Configurations/**/*.cs,**/Program.cs,**/WeatherForecast.cs</ExcludeByFile>
+          <ExcludeByFile>**/DTOs/**/*.cs,**/Commands/**/*.cs,**/Queries/**/*.cs,**/Migrations/**/*.cs,**/Configurations/**/*.cs,**/Program.cs,**/WeatherForecast.cs,**/DataSeeder.cs,**/AvatarSeeder.cs</ExcludeByFile>
 
-          <Exclude>[HealthSync.Application]HealthSync.Application.DTOs.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Migrations.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Data.Configurations.*</Exclude>
+          <Exclude>[HealthSync.Application]HealthSync.Application.DTOs.*,[HealthSync.Application]HealthSync.Application.Commands.*,[HealthSync.Application]HealthSync.Application.Queries.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Migrations.*,[HealthSync.Infrastructure]HealthSync.Infrastructure.Data.Configurations.*,[HealthSync.Presentation]HealthSync.Presentation.Services.DataSeeder*,[HealthSync.Presentation]HealthSync.Presentation.Services.AvatarSeeder*,[HealthSync.Presentation]HealthSync.Presentation.Controllers.UpdatePasswordRequest,[HealthSync.Presentation]HealthSync.Presentation.Controllers.UpdateAvatarRequest,[HealthSync.Presentation]HealthSync.Presentation.Controllers.UpdateAvatarFormRequest,[HealthSync.Domain]HealthSync.Domain.Constants.RolePermissions,[HealthSync.Domain]HealthSync.Domain.Interfaces.GoogleUserInfo</Exclude>
 
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
           

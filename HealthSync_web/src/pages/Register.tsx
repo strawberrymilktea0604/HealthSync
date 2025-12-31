@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import AuthLayout from "@/layouts/AuthLayout";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import PasswordInput from "@/components/PasswordInput";
+import authService from "../services/authService";
 
 export default function Register() {
   const [step, setStep] = useState<"email" | "verify">("email");
@@ -44,16 +45,7 @@ export default function Register() {
 
     setIsSendingCode(true);
     try {
-      const response = await fetch('http://localhost:5274/api/auth/send-verification-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.Error || 'Failed to send verification code');
-      }
+      await authService.sendVerificationCode({ email });
 
       toast({
         title: "Thành công!",
@@ -78,40 +70,11 @@ export default function Register() {
     setIsLoading(true);
     try {
       // Register user (backend will verify code automatically)
-      const registerResponse = await fetch('http://localhost:5274/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          verificationCode,
-        }),
+      await authService.register({
+        email,
+        password,
+        verificationCode,
       });
-
-      if (!registerResponse.ok) {
-        let errorMessage = 'Đăng ký thất bại';
-        try {
-          const error = await registerResponse.json();
-          errorMessage = error.Error || errorMessage;
-        } catch (parseError) {
-          console.error('Failed to parse register error response:', parseError);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await registerResponse.json();
-      
-      // Update AuthContext with user data
-      const userData = {
-        userId: data.UserId,
-        email: data.Email,
-        fullName: data.FullName,
-        role: data.Role,
-        token: data.Token,
-        expiresAt: new Date(data.ExpiresAt),
-      };
-      
-      setUser(userData);
 
       toast({
         title: "Đăng ký thành công!",

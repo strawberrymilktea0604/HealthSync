@@ -46,9 +46,9 @@ public class AuthenticationIntegrationTests : IClassFixture<CustomWebApplication
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var responseBody = await response.Content.ReadAsStringAsync();
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
-        // Check if response has "Message" property (capital M - matches C# model)
-        var hasMessage = content.TryGetProperty("Message", out var messageValue);
-        Assert.True(hasMessage, $"Response should have 'Message' property. Actual response: {responseBody}");
+        // Check if response has "message" property (lowercase m - matches actual response)
+        var hasMessage = content.TryGetProperty("message", out var messageValue);
+        Assert.True(hasMessage, $"Response should have 'message' property. Actual response: {responseBody}");
         Assert.False(string.IsNullOrEmpty(messageValue.GetString()), "Message value should not be empty");
     }
 
@@ -71,36 +71,42 @@ public class AuthenticationIntegrationTests : IClassFixture<CustomWebApplication
         // Arrange
         var email = $"logintest_{Guid.NewGuid()}@example.com";
         var password = "Test@123456";
-        var passwordHash = HashPassword(password); // Use SHA256 hash (same as AuthService)
 
-        // Seed user with Customer role
+        // Check initial user count
         using (var scope = _factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
-            var customerRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
-            if (customerRole == null)
-            {
-                customerRole = new Role { RoleName = "Customer", Description = "Customer role" };
-                dbContext.Roles.Add(customerRole);
-                await dbContext.SaveChangesAsync();
-            }
+            var initialCount = await dbContext.ApplicationUsers.CountAsync();
+            Console.WriteLine($"Initial user count: {initialCount}");
+        }
 
-            var user = new ApplicationUser
-            {
-                Email = email,
-                PasswordHash = passwordHash,
-                IsActive = true
-            };
-            dbContext.ApplicationUsers.Add(user);
-            await dbContext.SaveChangesAsync();
+        // Register user via API (this ensures proper user creation)
+        var registerRequest = new
+        {
+            Email = email,
+            Password = password,
+            VerificationCode = "" // Not needed due to SkipEmailVerification=true
+        };
+        var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+        Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
 
-            dbContext.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
-            await dbContext.SaveChangesAsync();
-            
-            // Verify user was saved
-            var savedUser = await dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == email);
-            Assert.NotNull(savedUser);
-            Assert.Equal(passwordHash, savedUser.PasswordHash);
+        // Check user count after register
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
+            var afterRegisterCount = await dbContext.ApplicationUsers.CountAsync();
+            Console.WriteLine($"User count after register: {afterRegisterCount}");
+        }
+
+        // Verify user was created
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<HealthSyncDbContext>();
+            var user = await dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == email);
+            Console.WriteLine($"User found: {user != null}, Email: {user?.Email}, IsActive: {user?.IsActive}, EmailConfirmed: {user?.EmailConfirmed}");
+            Assert.NotNull(user);
+            Assert.True(user.IsActive);
+            Assert.True(user.EmailConfirmed);
         }
 
         // Act - Try to login
@@ -124,11 +130,7 @@ public class AuthenticationIntegrationTests : IClassFixture<CustomWebApplication
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var content = await response.Content.ReadAsStringAsync();
-        var authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
 
         Assert.NotNull(authResponse);
         Assert.NotEmpty(authResponse.Token);

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import authService, { AuthResponse } from '../services/authService';
 
 interface User {
   userId: number;
@@ -48,7 +49,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with true to check stored token
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,15 +58,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        if (new Date(parsedUser.expiresAt) > new Date()) {
+        // Check if token is still valid
+        const expiresAt = new Date(parsedUser.expiresAt);
+        const now = new Date();
+        
+        if (expiresAt > now) {
           setUser(parsedUser);
         } else {
+          // Token expired, clear storage
           localStorage.removeItem('user');
         }
-      } catch {
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
         localStorage.removeItem('user');
       }
     }
+    setIsLoading(false); // Finished checking
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -77,34 +85,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5274/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.Error || 'Login failed');
-      }
-
-      const data = await response.json();
+      const data: AuthResponse = await authService.login({ email, password });
       console.log("Backend response data:", data);
-      
+
       const userData: User = {
-        userId: data.UserId || data.userId,
-        email: data.Email || data.email,
-        fullName: data.FullName || data.fullName,
-        role: data.Role || data.role,
-        token: data.Token || data.token,
-        expiresAt: new Date(data.ExpiresAt || data.expiresAt),
-        isProfileComplete: data.IsProfileComplete || data.isProfileComplete || false,
+        userId: data.userId,
+        email: data.email,
+        fullName: data.fullName,
+        role: data.role,
+        token: data.token,
+        expiresAt: new Date(data.expiresAt),
+        isProfileComplete: data.role === 'Admin' ? true : data.isProfileComplete, // Admin không cần complete profile
       };
 
       console.log("Mapped userData:", userData);
-      
+
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return userData;
@@ -125,18 +120,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5274/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      await authService.register({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.Error || 'Registration failed');
-      }
 
       // Registration successful, but user needs to verify email
     } catch (err) {

@@ -35,18 +35,20 @@ public class AuthService : IAuthService
 
     public string GenerateJwtToken(ApplicationUser user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"] ?? "your-secret-key-here";
-        var issuer = jwtSettings["Issuer"] ?? "HealthSync";
-        var audience = jwtSettings["Audience"] ?? "HealthSyncUsers";
-        var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");
+        var jwtSettings = _configuration?.GetSection("Jwt");
+        // Default key must be at least 256 bits (32 characters) for HS256
+        var secretKey = jwtSettings?["SecretKey"] ?? "your-default-secret-key-min-32-chars-for-hs256-algorithm";
+        var issuer = jwtSettings?["Issuer"] ?? "HealthSync";
+        var audience = jwtSettings?["Audience"] ?? "HealthSyncUsers";
+        var expiryMinutesStr = jwtSettings?["ExpiryMinutes"] ?? "60";
+        var expiryMinutes = int.TryParse(expiryMinutesStr, out var minutes) ? minutes : 60;
 
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim("fullName", user.Profile?.FullName ?? user.Email),
-            new Claim(ClaimTypes.Role, user.GetRoleName()),
+            new Claim("role", user.GetRoleName()), // Use short "role" instead of full URL
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

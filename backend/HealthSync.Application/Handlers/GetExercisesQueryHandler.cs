@@ -42,7 +42,8 @@ public class GetExercisesQueryHandler : IRequestHandler<GetExercisesQuery, List<
                 MuscleGroup = e.MuscleGroup,
                 Difficulty = e.Difficulty,
                 Equipment = e.Equipment,
-                Description = e.Description
+                Description = e.Description,
+                ImageUrl = e.ImageUrl // FIX: Thêm mapping ImageUrl
             })
             .ToListAsync(cancellationToken);
 

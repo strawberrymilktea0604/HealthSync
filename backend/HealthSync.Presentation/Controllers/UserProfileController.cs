@@ -5,6 +5,7 @@ using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace HealthSync.Presentation.Controllers;
@@ -96,7 +97,7 @@ public class UserProfileController : ControllerBase
     [HttpPost("upload-avatar")]
     public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequest request)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();

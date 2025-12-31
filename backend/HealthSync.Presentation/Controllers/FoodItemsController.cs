@@ -1,6 +1,7 @@
 using HealthSync.Application.Commands;
 using HealthSync.Application.Queries;
 using HealthSync.Domain.Constants;
+using HealthSync.Domain.Interfaces;
 using HealthSync.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,14 @@ namespace HealthSync.Presentation.Controllers;
 public class FoodItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IStorageService _storageService;
+    private readonly IConfiguration _configuration;
 
-    public FoodItemsController(IMediator mediator)
+    public FoodItemsController(IMediator mediator, IStorageService storageService, IConfiguration configuration)
     {
         _mediator = mediator;
+        _storageService = storageService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -117,5 +122,45 @@ public class FoodItemsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Upload ảnh cho món ăn
+    /// </summary>
+    [HttpPut("{id}/image")]
+    [RequirePermission(PermissionCodes.FOOD_UPDATE)]
+    public async Task<IActionResult> UploadFoodItemImage(int id, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "File không hợp lệ" });
+        }
+
+        // Kiểm tra xem food item có tồn tại không
+        var query = new GetFoodItemByIdQuery { FoodItemId = id };
+        var foodItem = await _mediator.Send(query);
+
+        if (foodItem == null)
+        {
+            return NotFound(new { message = "Không tìm thấy món ăn" });
+        }
+
+        // Upload file lên MinIO (vào folder foods trong bucket healthsync-files)
+        var extension = Path.GetExtension(file.FileName);
+        var fileName = $"foods/{id}_{Guid.NewGuid()}{extension}";
+
+        using var stream = file.OpenReadStream();
+        var imageUrl = await _storageService.UploadFileAsync(stream, fileName, file.ContentType);
+
+        // Cập nhật ImageUrl vào database
+        var updateCommand = new UpdateFoodItemImageCommand
+        {
+            FoodItemId = id,
+            ImageUrl = imageUrl
+        };
+
+        await _mediator.Send(updateCommand);
+
+        return Ok(new { imageUrl });
     }
 }

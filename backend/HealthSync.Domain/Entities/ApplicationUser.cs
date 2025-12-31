@@ -6,11 +6,14 @@ namespace HealthSync.Domain.Entities;
 public class ApplicationUser
 {
     public int UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
+    public bool EmailConfirmed { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
+    public string? AvatarUrl { get; set; }
 
     // Navigation properties
     public UserProfile? Profile { get; set; }

@@ -1,0 +1,30 @@
+using HealthSync.Application.Commands;
+using HealthSync.Domain.Entities;
+using HealthSync.Infrastructure.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace HealthSync.Application.Handlers;
+
+public class UpdateUserAvatarCommandHandler : IRequestHandler<UpdateUserAvatarCommand, bool>
+{
+    private readonly HealthSyncDbContext _dbContext;
+
+    public UpdateUserAvatarCommandHandler(HealthSyncDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<bool> Handle(UpdateUserAvatarCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _dbContext.ApplicationUsers.FindAsync(request.UserId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.AvatarUrl = request.AvatarUrl;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+}
