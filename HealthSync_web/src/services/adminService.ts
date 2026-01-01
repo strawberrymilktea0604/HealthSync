@@ -61,7 +61,9 @@ export const adminService = {
     page: number = 1,
     pageSize: number = 50,
     searchTerm?: string,
-    role?: string
+    role?: string,
+    sortBy?: string,
+    sortOrder?: string
   ): Promise<AdminUsersResponse> => {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -76,14 +78,22 @@ export const adminService = {
       params.append('role', role);
     }
 
+    if (sortBy) {
+      params.append('sortBy', sortBy);
+    }
+
+    if (sortOrder) {
+      params.append('sortOrder', sortOrder);
+    }
+
     const response = await api.get<Record<string, unknown>>(`/admin/users?${params.toString()}`);
     const data = response.data;
 
     return {
-      users: (data.Users || data.users || []).map(mapUserData),
-      totalCount: data.TotalCount || data.totalCount || 0,
-      page: data.Page || data.page || 1,
-      pageSize: data.PageSize || data.pageSize || 50,
+      users: ((data.Users || data.users || []) as any[]).map(mapUserData),
+      totalCount: (data.TotalCount || data.totalCount || 0) as number,
+      page: (data.Page || data.page || 1) as number,
+      pageSize: (data.PageSize || data.pageSize || 50) as number,
     };
   },
 
@@ -138,6 +148,14 @@ export const adminService = {
     return {
       message: data.Message || data.message || 'Avatar updated successfully',
       avatarUrl: data.AvatarUrl || data.avatarUrl || '',
+    };
+  },
+
+  toggleUserStatus: async (userId: number, isActive: boolean): Promise<{ message: string }> => {
+    const response = await api.put<Record<string, unknown>>(`/admin/users/${userId}/status`, { isActive });
+    const data = response.data;
+    return {
+      message: data.Message || data.message || 'User status updated successfully',
     };
   },
 };

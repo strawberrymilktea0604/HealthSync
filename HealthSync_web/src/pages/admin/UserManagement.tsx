@@ -27,6 +27,7 @@ export default function UserManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   const [page, setPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -34,6 +35,10 @@ export default function UserManagement() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
+
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<0 | 1 | -1 | null | undefined>(null);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -46,7 +51,11 @@ export default function UserManagement() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllUsers(page, 10, searchTerm, selectedRole);
+      let orderStr: string | undefined = undefined;
+      if (sortOrder === 1) orderStr = "asc";
+      else if (sortOrder === -1) orderStr = "desc";
+
+      const response = await adminService.getAllUsers(page, pageSize, searchTerm, selectedRole, sortField, orderStr);
       setUsers(response.users);
       setTotalRecords(response.totalCount);
     } catch (error: any) {
@@ -55,7 +64,7 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, selectedRole]);
+  }, [page, pageSize, searchTerm, selectedRole, sortField, sortOrder]);
 
   useEffect(() => {
     fetchUsers();
@@ -64,7 +73,7 @@ export default function UserManagement() {
   useEffect(() => {
     // Reset to page 1 when search or filter changes
     setPage(1);
-  }, [searchTerm, selectedRole]);
+  }, [searchTerm, selectedRole, pageSize]);
 
   const handleCreate = async () => {
     if (!formData.email || !formData.fullName || !formData.password) {
@@ -215,13 +224,34 @@ export default function UserManagement() {
     }
   };
 
+  const handleToggleStatus = async () => {
+    if (!selectedUser) return;
+
+    // Check if trying to lock own account
+    // We need current user info here. For now, we can check basic logic or rely on backend error
+    // Ideally we should decode token or get user info from context
+
+    try {
+      await adminService.toggleUserStatus(selectedUser.userId, !selectedUser.isActive);
+      toast.success(`Đã ${!selectedUser.isActive ? 'mở khóa' : 'khóa'} tài khoản thành công`);
+      setShowDeleteModal(false); // Reuse or create new modal if needed, but for toggle usually direct action or simple confirm. 
+      // Let's create a specific modal for this or just use confirm dialog?
+      // Since we don't have a confirm dialog for status, let's add one.
+      setShowStatusModal(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Không thể cập nhật trạng thái");
+    }
+  };
+
   const userIdBodyTemplate = (rowData: AdminUserListDto) => {
     return `USR${rowData.userId.toString().padStart(3, "0")}`;
   };
 
   const nameBodyTemplate = (rowData: AdminUserListDto) => {
     const initials = rowData.fullName
-      ? rowData.fullName.split(" ").map((n) => n[0]).join("")
+      ? rowData.fullName.split(" ").map((n: string) => n[0]).join("")
       : rowData.email[0].toUpperCase();
 
     return (
@@ -319,6 +349,18 @@ export default function UserManagement() {
             }}
           />
         </Can>
+        <Can permission={Permission.UPDATE_USERS}>
+          <Button
+            icon={rowData.isActive ? "pi pi-lock" : "pi pi-lock-open"}
+            className={`p-button-rounded p-button-text ${rowData.isActive ? 'p-button-danger' : 'p-button-success'}`}
+            tooltip={rowData.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => {
+              setSelectedUser(rowData);
+              setShowStatusModal(true);
+            }}
+          />
+        </Can>
       </div>
     );
   };
@@ -336,6 +378,12 @@ export default function UserManagement() {
 
   const onPage = (event: any) => {
     setPage(event.page + 1); // PrimeReact pages are 0-based
+    setPageSize(event.rows);
+  };
+
+  const onSort = (event: any) => {
+    setSortField(event.sortField);
+    setSortOrder(event.sortOrder);
   };
 
   return (
@@ -373,12 +421,16 @@ export default function UserManagement() {
             value={users}
             loading={loading}
             paginator
-            rows={10}
+            rows={pageSize}
+            rowsPerPageOptions={[10, 15, 25, 50]}
             totalRecords={totalRecords}
             onPage={onPage}
             lazy
             dataKey="userId"
             emptyMessage="Không có người dùng nào"
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSort={onSort}
           >
             <Column
               field="userId"
@@ -387,6 +439,7 @@ export default function UserManagement() {
               sortable
             />
             <Column
+              field="fullname"
               header="NAME"
               body={nameBodyTemplate}
               sortable
@@ -397,16 +450,19 @@ export default function UserManagement() {
               sortable
             />
             <Column
+              field="role"
               header="ROLE"
               body={roleBodyTemplate}
               sortable
             />
             <Column
+              field="isActive"
               header="STATUS"
               body={statusBodyTemplate}
               sortable
             />
             <Column
+              field="createdAt"
               header="JOIN DATE"
               body={joinDateBodyTemplate}
               sortable
@@ -414,11 +470,45 @@ export default function UserManagement() {
             <Column
               header="THAO TÁC"
               body={actionsBodyTemplate}
-              style={{ width: '120px' }}
+              style={{ width: '160px' }}
             />
           </DataTable>
         </Card>
       </div>
+
+      {/* Status Confirmation Dialog */}
+      <Dialog
+        header="Xác nhận thay đổi trạng thái"
+        visible={showStatusModal}
+        onHide={() => {
+          setShowStatusModal(false);
+          setSelectedUser(null);
+        }}
+        footer={
+          <div>
+            <Button
+              label="Hủy"
+              icon="pi pi-times"
+              onClick={() => {
+                setShowStatusModal(false);
+                setSelectedUser(null);
+              }}
+              className="p-button-text"
+            />
+            <Button
+              label={selectedUser?.isActive ? "Khóa" : "Mở khóa"}
+              icon="pi pi-check"
+              severity={selectedUser?.isActive ? "danger" : "success"}
+              onClick={handleToggleStatus}
+            />
+          </div>
+        }
+      >
+        <p>
+          Bạn có chắc muốn {selectedUser?.isActive ? "khóa" : "mở khóa"} tài khoản
+          <strong> {selectedUser?.fullName || selectedUser?.email}</strong>?
+        </p>
+      </Dialog>
 
       {/* Create User Dialog */}
       <Dialog
