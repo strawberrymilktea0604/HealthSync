@@ -46,6 +46,57 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | TC-AUTH-010 | Đăng xuất thành công | 1. Đăng nhập với tài khoản Admin<br>2. Nhấn vào avatar/menu góc phải<br>3. Nhấn nút "Đăng xuất" | N/A | Hệ thống chuyển hướng về trang đăng nhập, session được xóa | | | |
 | TC-AUTH-011 | Truy cập trang Admin sau khi đăng xuất | 1. Đăng xuất thành công<br>2. Nhập trực tiếp URL trang Admin Dashboard vào trình duyệt | URL: /admin/dashboard | Hệ thống chuyển hướng về trang đăng nhập | | | |
 
+### Chức năng 1.3: Đăng Ký Admin qua API (Postman)
+
+> **Lưu ý quan trọng**: Việc đăng ký tài khoản Admin **KHÔNG** được thực hiện qua giao diện Frontend mà phải thực hiện qua **API trực tiếp** (sử dụng Postman hoặc công cụ tương đương). Đây là biện pháp bảo mật để ngăn chặn việc tạo Admin trái phép.
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-API-001 | Gửi mã xác thực đến email Admin | 1. Mở Postman<br>2. Tạo request POST đến `{{BASE_URL}}/api/auth/send-verification-code`<br>3. Trong Body (JSON) nhập email Admin<br>4. Gửi request | **URL:** `POST /api/auth/send-verification-code`<br>**Headers:** `Content-Type: application/json`<br>**Body:**<br>`{"email": "newadmin@healthsync.com"}` | Status: 200 OK<br>Response: `{"Message": "Mã xác thực đã được gửi đến email của bạn!"}` | | | Kiểm tra email để lấy mã 6 số |
+| TC-API-002 | Đăng ký Admin với thông tin hợp lệ | 1. Mở Postman<br>2. Tạo request POST đến `{{BASE_URL}}/api/auth/register-admin`<br>3. Trong Body (JSON) nhập email, password, verificationCode, fullName<br>4. Gửi request | **URL:** `POST /api/auth/register-admin`<br>**Headers:** `Content-Type: application/json`<br>**Body:**<br>`{"email": "newadmin@healthsync.com", "password": "Admin@123456", "verificationCode": "123456", "fullName": "Admin User"}` | Status: 200 OK<br>Response chứa: `token`, `userId`, `email`, `role: "Admin"`, `expiresAt` | | | |
+| TC-API-003 | Đăng ký Admin với email đã tồn tại | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Sử dụng email đã đăng ký trước đó | **Body:**<br>`{"email": "admin@healthsync.com", "password": "Admin@123", "verificationCode": "123456", "fullName": "Duplicate Admin"}` | Status: 400 Bad Request<br>Response: `{"Error": "Email đã được sử dụng"}` | | | |
+| TC-API-004 | Đăng ký Admin với mã xác thực sai | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Nhập mã xác thực không đúng | **Body:**<br>`{"email": "newadmin@test.com", "password": "Admin@123", "verificationCode": "000000", "fullName": "Test Admin"}` | Status: 400 Bad Request<br>Response: `{"Error": "Mã xác thực không hợp lệ hoặc đã hết hạn"}` | | | |
+| TC-API-005 | Đăng ký Admin với mã xác thực hết hạn | 1. Gửi mã xác thực<br>2. Đợi quá thời gian hết hạn (thường 5-10 phút)<br>3. Gửi request đăng ký | **Body:**<br>`{"email": "test@test.com", "password": "Admin@123", "verificationCode": "123456", "fullName": "Expired Code"}` | Status: 400 Bad Request<br>Response: `{"Error": "Mã xác thực không hợp lệ hoặc đã hết hạn"}` | | | |
+| TC-API-006 | Đăng ký Admin với mật khẩu yếu | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Sử dụng mật khẩu đơn giản | **Body:**<br>`{"email": "weakpass@test.com", "password": "123456", "verificationCode": "123456", "fullName": "Weak Password"}` | Status: 400 Bad Request<br>Response chứa thông báo về yêu cầu mật khẩu | | | Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt |
+| TC-API-007 | Đăng ký Admin thiếu trường email | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Không bao gồm trường email | **Body:**<br>`{"password": "Admin@123", "verificationCode": "123456", "fullName": "No Email"}` | Status: 400 Bad Request<br>Response chứa lỗi validation | | | |
+| TC-API-008 | Đăng ký Admin thiếu trường password | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Không bao gồm trường password | **Body:**<br>`{"email": "nopass@test.com", "verificationCode": "123456", "fullName": "No Password"}` | Status: 400 Bad Request<br>Response chứa lỗi validation | | | |
+| TC-API-009 | Đăng ký Admin thiếu trường verificationCode | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Không bao gồm trường verificationCode | **Body:**<br>`{"email": "nocode@test.com", "password": "Admin@123", "fullName": "No Code"}` | Status: 400 Bad Request<br>Response chứa lỗi | | | |
+| TC-API-010 | Đăng ký Admin không có fullName (tùy chọn) | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Không bao gồm trường fullName | **Body:**<br>`{"email": "nofullname@test.com", "password": "Admin@123456", "verificationCode": "123456"}` | Status: 200 OK (nếu fullName là optional)<br>Admin được tạo thành công | | | fullName có thể là trường tùy chọn |
+| TC-API-011 | Đăng ký Admin với email format sai | 1. Gửi request POST đến `/api/auth/register-admin`<br>2. Sử dụng email không đúng format | **Body:**<br>`{"email": "invalid-email", "password": "Admin@123", "verificationCode": "123456", "fullName": "Invalid Email"}` | Status: 400 Bad Request<br>Response chứa lỗi email validation | | | |
+| TC-API-012 | Xác minh tài khoản Admin vừa tạo có thể đăng nhập | 1. Sau khi đăng ký Admin thành công (TC-API-002)<br>2. Gửi request POST đến `/api/auth/login`<br>3. Sử dụng email và password vừa tạo | **URL:** `POST /api/auth/login`<br>**Body:**<br>`{"email": "newadmin@healthsync.com", "password": "Admin@123456"}` | Status: 200 OK<br>Response chứa token và `role: "Admin"` | | | |
+| TC-API-013 | Xác minh Admin mới có thể truy cập Dashboard Admin trên Web | 1. Sử dụng token từ TC-API-012<br>2. Mở trình duyệt, đăng nhập với tài khoản Admin mới<br>3. Truy cập /admin/dashboard | N/A | Trang Admin Dashboard hiển thị đầy đủ chức năng | | | |
+
+#### Hướng Dẫn Sử Dụng Postman
+
+**Bước 1: Cấu hình Environment**
+```
+Variable: BASE_URL
+Value: http://localhost:5000 (hoặc URL của API server)
+```
+
+**Bước 2: Gửi mã xác thực**
+```http
+POST {{BASE_URL}}/api/auth/send-verification-code
+Content-Type: application/json
+
+{
+    "email": "newadmin@healthsync.com"
+}
+```
+
+**Bước 3: Đăng ký Admin**
+```http
+POST {{BASE_URL}}/api/auth/register-admin
+Content-Type: application/json
+
+{
+    "email": "newadmin@healthsync.com",
+    "password": "Admin@123456",
+    "verificationCode": "123456",
+    "fullName": "Admin User"
+}
+```
+
 ---
 
 ## Module 2: Admin Dashboard
@@ -219,14 +270,15 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 
 | Module | Số lượng Test Case | Pass | Fail | Pending |
 |--------|-------------------|------|------|---------|
-| Xác thực Admin | 11 | | | |
+| Xác thực Admin (Đăng nhập, Đăng xuất) | 11 | | | |
+| Đăng ký Admin qua API (Postman) | 13 | | | |
 | Admin Dashboard | 7 | | | |
 | Quản lý Người dùng | 18 | | | |
 | Quản lý Bài tập | 9 | | | |
 | Quản lý Món ăn | 9 | | | |
 | Content Library | 2 | | | |
 | Phân quyền | 3 | | | |
-| **TỔNG** | **59** | | | |
+| **TỔNG** | **72** | | | |
 
 ---
 
