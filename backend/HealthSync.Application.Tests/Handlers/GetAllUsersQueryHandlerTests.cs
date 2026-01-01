@@ -1,4 +1,4 @@
-using HealthSync.Application.DTOs;
+﻿using HealthSync.Application.DTOs;
 using HealthSync.Application.Handlers;
 using HealthSync.Application.Queries;
 using HealthSync.Domain.Entities;
@@ -429,4 +429,254 @@ public class GetAllUsersQueryHandlerTests
         Assert.Equal("profile_avatar.png", user1.AvatarUrl); // Prioritize Profile
         Assert.Equal("user_avatar_2.png", user2.AvatarUrl);  // Fallback to User
     }
+
+    [Fact]
+    public async Task Handle_ShouldUseDefaultSorting_WhenSortByIsNull()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var oldDate = DateTime.UtcNow.AddDays(-10);
+        var newDate = DateTime.UtcNow;
+        
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "old@test.com",
+                CreatedAt = oldDate,
+                Profile = new UserProfile { FullName = "Old User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "new@test.com",
+                CreatedAt = newDate,
+                Profile = new UserProfile { FullName = "New User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            SortBy = null,
+            SortOrder = null
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert - Should sort by CreatedAt descending by default
+        Assert.Equal(2, result.Users[0].UserId); // Newest first
+        Assert.Equal(1, result.Users[1].UserId);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUseDefaultSorting_WhenSortByIsEmpty()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var oldDate = DateTime.UtcNow.AddDays(-5);
+        var newDate = DateTime.UtcNow;
+        
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "old@test.com",
+                CreatedAt = oldDate,
+                Profile = new UserProfile { FullName = "Old User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "new@test.com",
+                CreatedAt = newDate,
+                Profile = new UserProfile { FullName = "New User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            SortBy = "",
+            SortOrder = "asc"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert - Should sort by CreatedAt descending by default
+        Assert.Equal(2, result.Users[0].UserId);
+        Assert.Equal(1, result.Users[1].UserId);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldUseDefaultSorting_WhenSortByIsUnknown()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var oldDate = DateTime.UtcNow.AddDays(-3);
+        var newDate = DateTime.UtcNow;
+        
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "old@test.com",
+                CreatedAt = oldDate,
+                Profile = new UserProfile { FullName = "Old User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "new@test.com",
+                CreatedAt = newDate,
+                Profile = new UserProfile { FullName = "New User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            SortBy = "unknownfield",
+            SortOrder = "asc"
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert - Should sort by CreatedAt descending when unknown field
+        Assert.Equal(2, result.Users[0].UserId);
+        Assert.Equal(1, result.Users[1].UserId);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldHandleNullProfile_InSorting()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "a@test.com",
+                CreatedAt = DateTime.UtcNow,
+                Profile = null,
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "b@test.com",
+                CreatedAt = DateTime.UtcNow,
+                Profile = new UserProfile { FullName = "User B" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            SortBy = "fullname",
+            SortOrder = "asc"
+        };
+
+        // Act &amp; Assert - Should not throw exception
+        var result = await _handler.Handle(query, CancellationToken.None);
+        Assert.Equal(2, result.Users.Count);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldHandleNullRole_InFiltering()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "test@example.com",
+                Profile = new UserProfile { FullName = "Test User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            Role = null
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert - Should not filter when role is null
+        Assert.Equal(1, result.TotalCount);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldHandleEmptyRole_InFiltering()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "test@example.com",
+                Profile = new UserProfile { FullName = "Test User" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            Role = ""
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert - Should not filter when role is empty
+        Assert.Equal(1, result.TotalCount);
+    }
 }
+
+

@@ -244,7 +244,8 @@ await app.RunAsync();
 namespace HealthSync.Presentation
 {
     // Make Program class accessible to integration tests
-    public partial class Program { protected Program() { } }
+    // Program class removed from here
+
 
     public class FileUploadOperationFilter : IOperationFilter
     {
@@ -277,3 +278,5 @@ namespace HealthSync.Presentation
         }
     }
 }
+
+public partial class Program { }

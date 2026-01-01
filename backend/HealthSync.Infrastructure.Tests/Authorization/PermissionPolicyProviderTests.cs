@@ -1,4 +1,4 @@
-using HealthSync.Domain.Constants;
+﻿using HealthSync.Domain.Constants;
 using HealthSync.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -154,4 +154,107 @@ public class PermissionPolicyProviderTests
         // By default, fallback policy is null unless configured otherwise
         Assert.Null(policy);
     }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithCustomerOnlyPolicy_ReturnsCorrectPolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CUSTOMER_ONLY);
+
+        // Assert
+        Assert.NotNull(policy);
+        Assert.Contains(policy.Requirements, r => r is Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement);
+        var roleRequirement = policy.Requirements.OfType<Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement>().Single();
+        Assert.Contains(RoleNames.CUSTOMER, roleRequirement.AllowedRoles);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithAdminOrCustomerPolicy_ReturnsCorrectPolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.ADMIN_OR_CUSTOMER);
+
+        // Assert
+        Assert.NotNull(policy);
+        var roleRequirement = policy.Requirements.OfType<Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement>().Single();
+        Assert.Contains(RoleNames.ADMIN, roleRequirement.AllowedRoles);
+        Assert.Contains(RoleNames.CUSTOMER, roleRequirement.AllowedRoles);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithManageExercisesPolicy_ReturnsCompositePolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CAN_MANAGE_EXERCISES);
+
+        // Assert
+        Assert.NotNull(policy);
+        var requirements = policy.Requirements.OfType<PermissionRequirement>().Select(r => r.PermissionCode).ToList();
+        Assert.Contains(PermissionCodes.EXERCISE_CREATE, requirements);
+        Assert.Contains(PermissionCodes.EXERCISE_UPDATE, requirements);
+        Assert.Contains(PermissionCodes.EXERCISE_DELETE, requirements);
+        Assert.Equal(3, requirements.Count);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithManageFoodsPolicy_ReturnsCompositePolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CAN_MANAGE_FOODS);
+
+        // Assert
+        Assert.NotNull(policy);
+        var requirements = policy.Requirements.OfType<PermissionRequirement>().Select(r => r.PermissionCode).ToList();
+        Assert.Contains(PermissionCodes.FOOD_CREATE, requirements);
+        Assert.Contains(PermissionCodes.FOOD_UPDATE, requirements);
+        Assert.Contains(PermissionCodes.FOOD_DELETE, requirements);
+        Assert.Equal(3, requirements.Count);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithManageOwnWorkoutLogsPolicy_ReturnsCompositePolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CAN_MANAGE_OWN_WORKOUT_LOGS);
+
+        // Assert
+        Assert.NotNull(policy);
+        var requirements = policy.Requirements.OfType<PermissionRequirement>().Select(r => r.PermissionCode).ToList();
+        Assert.Contains(PermissionCodes.WORKOUT_LOG_CREATE, requirements);
+        Assert.Contains(PermissionCodes.WORKOUT_LOG_UPDATE, requirements);
+        Assert.Contains(PermissionCodes.WORKOUT_LOG_DELETE, requirements);
+        Assert.Equal(3, requirements.Count);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithManageOwnNutritionLogsPolicy_ReturnsCompositePolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CAN_MANAGE_OWN_NUTRITION_LOGS);
+
+        // Assert
+        Assert.NotNull(policy);
+        var requirements = policy.Requirements.OfType<PermissionRequirement>().Select(r => r.PermissionCode).ToList();
+        Assert.Contains(PermissionCodes.NUTRITION_LOG_CREATE, requirements);
+        Assert.Contains(PermissionCodes.NUTRITION_LOG_UPDATE, requirements);
+        Assert.Contains(PermissionCodes.NUTRITION_LOG_DELETE, requirements);
+        Assert.Equal(3, requirements.Count);
+    }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithManageOwnGoalsPolicy_ReturnsCompositePolicy()
+    {
+        // Act
+        var policy = await _provider.GetPolicyAsync(Policies.CAN_MANAGE_OWN_GOALS);
+
+        // Assert
+        Assert.NotNull(policy);
+        var requirements = policy.Requirements.OfType<PermissionRequirement>().Select(r => r.PermissionCode).ToList();
+        Assert.Contains(PermissionCodes.GOAL_CREATE, requirements);
+        Assert.Contains(PermissionCodes.GOAL_UPDATE, requirements);
+        Assert.Contains(PermissionCodes.GOAL_DELETE, requirements);
+        Assert.Equal(3, requirements.Count);
+    }
 }
+
+

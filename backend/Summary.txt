@@ -1,24 +1,24 @@
 Summary
-  Generated on: 1/1/2026 - 6:03:26 PM
+  Generated on: 1/1/2026 - 10:46:42 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
-  Classes: 102
-  Files: 100
-  Line coverage: 95.8%
-  Covered lines: 1270
-  Uncovered lines: 55
-  Coverable lines: 1325
-  Total lines: 7684
-  Branch coverage: 72.5% (257 of 354)
-  Covered branches: 257
+  Classes: 103
+  Files: 101
+  Line coverage: 99.9%
+  Covered lines: 1336
+  Uncovered lines: 1
+  Coverable lines: 1337
+  Total lines: 7763
+  Branch coverage: 80.2% (284 of 354)
+  Covered branches: 284
   Total branches: 354
-  Method coverage: 93.7% (151 of 161)
-  Full method coverage: 92.5% (149 of 161)
-  Covered methods: 151
-  Fully covered methods: 149
-  Total methods: 161
+  Method coverage: 100% (162 of 162)
+  Full method coverage: 99.3% (161 of 162)
+  Covered methods: 162
+  Fully covered methods: 161
+  Total methods: 162
 
-HealthSync.Application                                                     98.6%
+HealthSync.Application                                                      100%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
   HealthSync.Application.Handlers.AddProgressCommandHandler                 100%
   HealthSync.Application.Handlers.AssignRoleToUserCommandHandler            100%
@@ -32,9 +32,10 @@ HealthSync.Application                                                     98.6%
   HealthSync.Application.Handlers.DeleteExerciseCommandHandler              100%
   HealthSync.Application.Handlers.DeleteFoodItemCommandHandler              100%
   HealthSync.Application.Handlers.DeleteUserCommandHandler                  100%
+  HealthSync.Application.Handlers.DeleteWorkoutLogCommandHandler            100%
   HealthSync.Application.Handlers.ForgotPasswordCommandHandler              100%
   HealthSync.Application.Handlers.GetAdminStatisticsQueryHandler            100%
-  HealthSync.Application.Handlers.GetAllUsersQueryHandler                  96.1%
+  HealthSync.Application.Handlers.GetAllUsersQueryHandler                   100%
   HealthSync.Application.Handlers.GetChatHistoryQueryHandler                100%
   HealthSync.Application.Handlers.GetCustomerDashboardQueryHandler          100%
   HealthSync.Application.Handlers.GetDashboardSummaryQueryHandler           100%
@@ -73,7 +74,7 @@ HealthSync.Application                                                     98.6%
   HealthSync.Application.ServiceCollectionExtensions                        100%
   HealthSync.Application.Services.ApplicationUserService                    100%
   HealthSync.Application.Services.OtpService                                100%
-  HealthSync.Application.Services.VerificationCodeStore                    89.7%
+  HealthSync.Application.Services.VerificationCodeStore                     100%
   HealthSync.Application.Validators.CreateExerciseSessionDtoValidator       100%
   HealthSync.Application.Validators.CreateFoodEntryDtoValidator             100%
   HealthSync.Application.Validators.CreateNutritionLogCommandValidator      100%
@@ -95,21 +96,21 @@ HealthSync.Domain                                                           100%
   HealthSync.Domain.Entities.UserRole                                       100%
   HealthSync.Domain.Entities.WorkoutLog                                     100%
 
-HealthSync.Infrastructure                                                    94%
+HealthSync.Infrastructure                                                  99.8%
   HealthSync.Infrastructure.Authorization.PermissionAuthorizationHandler    100%
-  HealthSync.Infrastructure.Authorization.PermissionPolicyProvider         75.6%
+  HealthSync.Infrastructure.Authorization.PermissionPolicyProvider         99.1%
   HealthSync.Infrastructure.Authorization.PermissionRequirement             100%
   HealthSync.Infrastructure.Authorization.RequirePermissionAttribute        100%
-  HealthSync.Infrastructure.Authorization.RolePermissionMapping            81.5%
+  HealthSync.Infrastructure.Authorization.RolePermissionMapping             100%
   HealthSync.Infrastructure.Persistence.ApplicationUserRepository           100%
-  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                98.3%
+  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                 100%
   HealthSync.Infrastructure.Persistence.UserProfileRepository               100%
   HealthSync.Infrastructure.ServiceCollectionExtensions                     100%
   HealthSync.Infrastructure.Services.AuthService                            100%
   HealthSync.Infrastructure.Services.AvatarStorageService                   100%
   HealthSync.Infrastructure.Services.EmailService                           100%
   HealthSync.Infrastructure.Services.GeminiAiChatService                    100%
-  HealthSync.Infrastructure.Services.GoogleAuthService                     88.8%
+  HealthSync.Infrastructure.Services.GoogleAuthService                      100%
   HealthSync.Infrastructure.Services.JwtTokenService                        100%
   HealthSync.Infrastructure.Services.MinioStorageService                    100%
 

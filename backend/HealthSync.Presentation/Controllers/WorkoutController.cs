@@ -78,4 +78,34 @@ public class WorkoutController : ControllerBase
         var workoutLogId = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetWorkoutLogs), new { id = workoutLogId }, new { WorkoutLogId = workoutLogId });
     }
+    [HttpDelete("workout-logs/{id}")]
+    public async Task<IActionResult> DeleteWorkoutLog(int id)
+    {
+        // Get UserId from JWT token
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new DeleteWorkoutLogCommand
+        {
+            WorkoutLogId = id,
+            UserId = userId
+        };
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
 }

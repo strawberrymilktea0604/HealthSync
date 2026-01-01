@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthSync.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06f0c0c6b8cbf15e5f908fab49a68787da17aa51")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f1a49e9e019f8c4cc27aa1d9e508cf659d1cd06a")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthSync.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthSync.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

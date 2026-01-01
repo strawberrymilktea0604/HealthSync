@@ -30,7 +30,7 @@ C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Application\obj\Debug
 C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\refint\HealthSync.Application.dll
 C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.pdb
 C:\Users\popop\Desktop\Trash\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\ref\HealthSync.Application.dll
-c:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\bin\Debug\net8.0\HealthSync.Application.deps.json
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\bin\Debug\net8.0\HealthSync.Application.deps.json
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\bin\Debug\net8.0\HealthSync.Application.dll
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\bin\Debug\net8.0\HealthSync.Application.pdb
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\bin\Debug\net8.0\HealthSync.Domain.dll
@@ -41,8 +41,8 @@ C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.AssemblyInfo.cs
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.csproj.CoreCompileInputs.cache
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.sourcelink.json
-c:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSy.C380AB2D.Up2Date
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSy.C380AB2D.Up2Date
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.dll
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\refint\HealthSync.Application.dll
 C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\HealthSync.Application.pdb
-c:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\ref\HealthSync.Application.dll
+C:\Users\minhk\Downloads\HealthSync\backend\HealthSync.Application\obj\Debug\net8.0\ref\HealthSync.Application.dll

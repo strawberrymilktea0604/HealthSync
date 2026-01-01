@@ -32,12 +32,21 @@ public static class RolePermissionMapping
         
         // Workout Logs - Read All
         PermissionCodes.WORKOUT_LOG_READ,
+        PermissionCodes.WORKOUT_LOG_CREATE,
+        PermissionCodes.WORKOUT_LOG_UPDATE,
+        PermissionCodes.WORKOUT_LOG_DELETE,
         
         // Nutrition Logs - Read All
         PermissionCodes.NUTRITION_LOG_READ,
+        PermissionCodes.NUTRITION_LOG_CREATE,
+        PermissionCodes.NUTRITION_LOG_UPDATE,
+        PermissionCodes.NUTRITION_LOG_DELETE,
         
         // Goals - Read All
         PermissionCodes.GOAL_READ,
+        PermissionCodes.GOAL_CREATE,
+        PermissionCodes.GOAL_UPDATE,
+        PermissionCodes.GOAL_DELETE,
         
         // Dashboard - Admin Access
         PermissionCodes.DASHBOARD_VIEW,
