@@ -279,4 +279,7 @@ namespace HealthSync.Presentation
     }
 }
 
-public partial class Program { }
+public partial class Program 
+{ 
+    protected Program() { }
+}

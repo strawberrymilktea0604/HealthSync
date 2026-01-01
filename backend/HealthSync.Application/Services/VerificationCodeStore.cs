@@ -9,11 +9,14 @@ public static class VerificationCodeStore
     private static readonly Dictionary<string, VerificationEntry> _codes = new();
     private static readonly object _lock = new();
 
+    // Allow time mocking in tests
+    public static Func<DateTime> UtcNowProvider { get; set; } = () => DateTime.UtcNow;
+
     public static void Store(string email, string code, TimeSpan? expiration = null)
     {
         lock (_lock)
         {
-            var expiresAt = DateTime.UtcNow.Add(expiration ?? TimeSpan.FromMinutes(5));
+            var expiresAt = UtcNowProvider().Add(expiration ?? TimeSpan.FromMinutes(5));
             _codes[email.ToLowerInvariant()] = new VerificationEntry
             {
                 Code = code,
@@ -32,7 +35,7 @@ public static class VerificationCodeStore
             if (_codes.TryGetValue(normalizedEmail, out var entry))
             {
                 // Check if expired
-                if (DateTime.UtcNow > entry.ExpiresAt)
+                if (UtcNowProvider() > entry.ExpiresAt)
                 {
                     _codes.Remove(normalizedEmail);
                     return false;

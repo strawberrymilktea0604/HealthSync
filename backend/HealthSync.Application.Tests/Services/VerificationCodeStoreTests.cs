@@ -1,10 +1,23 @@
+using System;
 using HealthSync.Application.Services;
 using Xunit;
 
 namespace HealthSync.Application.Tests.Services;
 
-public class VerificationCodeStoreTests
+public class VerificationCodeStoreTests : IDisposable
 {
+    public VerificationCodeStoreTests()
+    {
+        // Ensure strictly clean state and time
+        VerificationCodeStore.UtcNowProvider = () => DateTime.UtcNow;
+    }
+
+    public void Dispose()
+    {
+        // Reset time provider after consistency
+        VerificationCodeStore.UtcNowProvider = () => DateTime.UtcNow;
+    }
+
     [Fact]
     public void Store_ShouldStoreVerificationCode()
     {
@@ -94,18 +107,22 @@ public class VerificationCodeStoreTests
         // Arrange
         var email = "expired@example.com";
         var code = "999999";
-        var expiration = TimeSpan.FromMilliseconds(100); // Very short expiration
+        var expiration = TimeSpan.FromMinutes(5);
+        
+        var now = DateTime.UtcNow;
+        VerificationCodeStore.UtcNowProvider = () => now;
 
         VerificationCodeStore.Store(email, code, expiration);
 
-        // Wait for code to expire
-        Thread.Sleep(200);
-
-        // Act
+        // Act: Advance time beyond expiration
+        VerificationCodeStore.UtcNowProvider = () => now.Add(expiration).AddSeconds(1);
         var result = VerificationCodeStore.Verify(email, code);
 
         // Assert
         Assert.False(result);
+        
+        // Cleanup
+        VerificationCodeStore.Remove(email);
     }
 
     [Fact]
@@ -119,15 +136,15 @@ public class VerificationCodeStoreTests
         // Act - First verification should succeed
         var firstResult = VerificationCodeStore.Verify(email, code, markAsUsed: true);
         
-        // Wait briefly for async cleanup to start
-        Thread.Sleep(100);
-        
         // Second verification should fail because code is marked as used
+        // IsUsed flag is set synchronously, so no need to sleep
         var secondResult = VerificationCodeStore.Verify(email, code, markAsUsed: false);
 
         // Assert
         Assert.True(firstResult);
         Assert.False(secondResult);
+        
+        VerificationCodeStore.Remove(email);
     }
 
     [Fact]
@@ -161,14 +178,14 @@ public class VerificationCodeStoreTests
         // Mark as used first
         VerificationCodeStore.Verify(email, code, markAsUsed: true);
 
-        // Wait briefly for state to update
-        Thread.Sleep(100);
-
         // Act - Try to use the same code again
+        // IsUsed is set synchronously
         var result = VerificationCodeStore.Verify(email, code, markAsUsed: false);
 
         // Assert
         Assert.False(result);
+        
+        VerificationCodeStore.Remove(email);
     }
 
     [Fact]
@@ -216,14 +233,17 @@ public class VerificationCodeStoreTests
         // Arrange
         var email = "autoremove@example.com";
         var code = "333333";
-        var expiration = TimeSpan.FromMilliseconds(100);
+        var expiration = TimeSpan.FromMinutes(10); // Standard expiration
+        
+        var now = DateTime.UtcNow;
+        VerificationCodeStore.UtcNowProvider = () => now;
 
         VerificationCodeStore.Store(email, code, expiration);
 
-        // Wait for expiration
-        Thread.Sleep(200);
+        // Act - Time travel to expiration
+        VerificationCodeStore.UtcNowProvider = () => now.Add(expiration).AddSeconds(1);
 
-        // Act - First call should remove the expired code
+        // First call should remove the expired code
         var firstResult = VerificationCodeStore.Verify(email, code);
         
         // Try again to ensure it was removed
@@ -232,11 +252,18 @@ public class VerificationCodeStoreTests
         // Assert
         Assert.False(firstResult);
         Assert.False(secondResult);
+        
+        VerificationCodeStore.Remove(email);
     }
 
     [Fact]
     public void Verify_ShouldAutoRemoveUsedCodeAfterDelay()
     {
+        // Note: The actual removal happens nicely in background (Task.Delay) which we can't easily mock 
+        // without refactoring VerificationCodeStore to use a testable scheduler.
+        // For this test, we verify the IsUsed flag is functioning, as attempting to test 
+        // background 30s removal with Thread.Sleep is bad practice and slow.
+        
         // Arrange
         var email = "autoremoveused@example.com";
         var code = "444444";
@@ -245,13 +272,12 @@ public class VerificationCodeStoreTests
         // Act
         VerificationCodeStore.Verify(email, code, markAsUsed: true);
         
-        // Wait for async removal (30 seconds in production, but we test the mechanism)
-        // The code is marked as used, so subsequent verifications should fail
-        Thread.Sleep(100);
-        
+        // The code is marked as used, so subsequent verifications should fail immediately
         var result = VerificationCodeStore.Verify(email, code, markAsUsed: false);
 
         // Assert
         Assert.False(result);
+        
+        VerificationCodeStore.Remove(email);
     }
 }
