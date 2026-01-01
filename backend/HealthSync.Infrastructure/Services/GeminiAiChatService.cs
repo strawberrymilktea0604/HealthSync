@@ -19,7 +19,7 @@ public class GeminiAiChatService : IAiChatService
         var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") 
                      ?? configuration["Gemini:ApiKey"] 
                      ?? throw new InvalidOperationException("Gemini API Key is not configured. Set GEMINI_API_KEY environment variable or Gemini:ApiKey in appsettings.json");
-        var modelId = configuration["Gemini:ModelId"] ?? "gemini-2.0-flash-lite";
+        var modelId = configuration["Gemini:ModelId"] ?? "gemini-1.5-flash";
 
         var builder = Kernel.CreateBuilder();
         

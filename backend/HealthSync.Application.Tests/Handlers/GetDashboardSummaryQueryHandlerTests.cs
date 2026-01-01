@@ -23,11 +23,14 @@ public class GetDashboardSummaryQueryHandlerTests
     public async Task Handle_ShouldReturnCorrectCounts()
     {
         // Arrange
+        var now = DateTime.UtcNow;
+        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
         var users = new List<ApplicationUser>
         {
-            new() { UserId = 1, Email = "user1@test.com", CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new() { UserId = 2, Email = "user2@test.com", CreatedAt = new DateTime(2025, 12, 26, 0, 0, 0, DateTimeKind.Utc) },
-            new() { UserId = 3, Email = "user3@test.com", CreatedAt = new DateTime(2025, 12, 29, 0, 0, 0, DateTimeKind.Utc) }
+            new() { UserId = 1, Email = "user1@test.com", CreatedAt = startOfMonth.AddMonths(-1) },
+            new() { UserId = 2, Email = "user2@test.com", CreatedAt = startOfMonth.AddDays(1) },
+            new() { UserId = 3, Email = "user3@test.com", CreatedAt = startOfMonth.AddDays(2) }
         };
 
         var workoutLogs = new List<WorkoutLog>
@@ -96,11 +99,14 @@ public class GetDashboardSummaryQueryHandlerTests
     public async Task Handle_ShouldCountOnlyNewUsersFromCurrentMonth()
     {
         // Arrange
+        var now = DateTime.UtcNow;
+        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
         var users = new List<ApplicationUser>
         {
-            new() { UserId = 1, Email = "user1@test.com", CreatedAt = DateTime.UtcNow.AddMonths(-2) },
-            new() { UserId = 2, Email = "user2@test.com", CreatedAt = DateTime.UtcNow.AddDays(-5) },
-            new() { UserId = 3, Email = "user3@test.com", CreatedAt = DateTime.UtcNow }
+            new() { UserId = 1, Email = "user1@test.com", CreatedAt = startOfMonth.AddMonths(-1) },
+            new() { UserId = 2, Email = "user2@test.com", CreatedAt = startOfMonth }, // On the boundary
+            new() { UserId = 3, Email = "user3@test.com", CreatedAt = startOfMonth.AddMinutes(1) } // Inside
         };
 
         _contextMock.Setup(c => c.ApplicationUsers).Returns(users.AsQueryable().BuildMock());

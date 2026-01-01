@@ -37,7 +37,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, AdminUs
             Role = user.GetRoleName(),
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            AvatarUrl = user.Profile?.AvatarUrl
+            AvatarUrl = user.Profile?.AvatarUrl ?? user.AvatarUrl
         };
     }
 }

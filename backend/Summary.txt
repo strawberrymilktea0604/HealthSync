@@ -1,22 +1,22 @@
 Summary
-  Generated on: 12/31/2025 - 9:31:08 PM
+  Generated on: 1/1/2026 - 5:20:49 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
-  Classes: 101
-  Files: 99
+  Classes: 102
+  Files: 100
   Line coverage: 95.8%
-  Covered lines: 1245
+  Covered lines: 1248
   Uncovered lines: 54
-  Coverable lines: 1299
-  Total lines: 7563
+  Coverable lines: 1302
+  Total lines: 7691
   Branch coverage: 71.2% (235 of 330)
   Covered branches: 235
   Total branches: 330
-  Method coverage: 93.6% (147 of 157)
-  Full method coverage: 92.9% (146 of 157)
-  Covered methods: 147
-  Fully covered methods: 146
-  Total methods: 157
+  Method coverage: 93.6% (148 of 158)
+  Full method coverage: 93% (147 of 158)
+  Covered methods: 148
+  Fully covered methods: 147
+  Total methods: 158
 
 HealthSync.Application                                                     98.8%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
@@ -60,6 +60,7 @@ HealthSync.Application                                                     98.8%
   HealthSync.Application.Handlers.ResetPasswordCommandHandler               100%
   HealthSync.Application.Handlers.SendVerificationCodeCommandHandler        100%
   HealthSync.Application.Handlers.SetPasswordCommandHandler                 100%
+  HealthSync.Application.Handlers.ToggleUserStatusCommandHandler            100%
   HealthSync.Application.Handlers.UpdateExerciseCommandHandler              100%
   HealthSync.Application.Handlers.UpdateExerciseImageCommandHandler         100%
   HealthSync.Application.Handlers.UpdateFoodItemCommandHandler              100%

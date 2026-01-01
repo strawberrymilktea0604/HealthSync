@@ -9,4 +9,6 @@ public class GetAllUsersQuery : IRequest<AdminUsersResponse>
     public int PageSize { get; set; } = 50;
     public string? SearchTerm { get; set; }
     public string? Role { get; set; }
+    public string? SortBy { get; set; }
+    public string? SortOrder { get; set; } // "asc" or "desc"
 }

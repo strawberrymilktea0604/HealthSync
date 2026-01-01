@@ -40,7 +40,9 @@ public class AdminController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
         [FromQuery] string? searchTerm = null,
-        [FromQuery] string? role = null)
+        [FromQuery] string? role = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = null)
     {
         try
         {
@@ -49,7 +51,9 @@ public class AdminController : ControllerBase
                 Page = page,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Role = role
+                Role = role,
+                SortBy = sortBy,
+                SortOrder = sortOrder
             };
 
             var response = await _mediator.Send(query);
@@ -248,10 +252,53 @@ public class AdminController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating user password: {UserId}", userId);
             return BadRequest(new { Error = ex.Message });
         }
     }
+
+    [HttpPut("users/{userId}/status")]
+    [RequirePermission(PermissionCodes.USER_UPDATE_ROLE)]
+    public async Task<IActionResult> ToggleUserStatus(int userId, [FromBody] UpdateUserStatusRequest request)
+    {
+        try
+        {
+            // Get Current User ID from claims
+            var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(currentUserIdStr, out int currentUserId))
+            {
+                 return Unauthorized();
+            }
+
+            var command = new ToggleUserStatusCommand
+            {
+                UserId = userId,
+                IsActive = request.IsActive,
+                CurrentUserId = currentUserId
+            };
+
+            var result = await _mediator.Send(command);
+            
+            return Ok(new { Message = "Cập nhật trạng thái thành công" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { Error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user status: {UserId}", userId);
+            return StatusCode(500, new { Error = "Internal server error" });
+        }
+    }
+}
+
+public class UpdateUserStatusRequest
+{
+    public bool IsActive { get; set; }
 }
 
 public class UpdatePasswordRequest
