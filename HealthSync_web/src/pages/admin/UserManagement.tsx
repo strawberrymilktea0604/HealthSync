@@ -233,7 +233,7 @@ export default function UserManagement() {
 
     try {
       await adminService.toggleUserStatus(selectedUser.userId, !selectedUser.isActive);
-      toast.success(`Đã ${!selectedUser.isActive ? 'mở khóa' : 'khóa'} tài khoản thành công`);
+      toast.success(`Đã ${selectedUser.isActive ? 'khóa' : 'mở khóa'} tài khoản thành công`);
       setShowDeleteModal(false); // Reuse or create new modal if needed, but for toggle usually direct action or simple confirm. 
       // Let's create a specific modal for this or just use confirm dialog?
       // Since we don't have a confirm dialog for status, let's add one.
