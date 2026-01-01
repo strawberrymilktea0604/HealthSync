@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Minio;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations; // Add for [Required] or use System.Text.Json.Serialization for [JsonRequired]
 
 namespace HealthSync.Presentation.Controllers;
 
@@ -276,7 +277,7 @@ public class AdminController : ControllerBase
                 CurrentUserId = currentUserId
             };
 
-            var result = await _mediator.Send(command);
+            await _mediator.Send(command);
             
             return Ok(new { Message = "Cập nhật trạng thái thành công" });
         }
@@ -298,6 +299,7 @@ public class AdminController : ControllerBase
 
 public class UpdateUserStatusRequest
 {
+    [Required] // Using Required for validation
     public bool IsActive { get; set; }
 }
 

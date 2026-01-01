@@ -1,24 +1,24 @@
 Summary
-  Generated on: 1/1/2026 - 5:20:49 PM
+  Generated on: 1/1/2026 - 5:48:25 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
   Classes: 102
   Files: 100
   Line coverage: 95.8%
-  Covered lines: 1248
-  Uncovered lines: 54
-  Coverable lines: 1302
-  Total lines: 7691
-  Branch coverage: 71.2% (235 of 330)
-  Covered branches: 235
-  Total branches: 330
-  Method coverage: 93.6% (148 of 158)
-  Full method coverage: 93% (147 of 158)
-  Covered methods: 148
-  Fully covered methods: 147
-  Total methods: 158
+  Covered lines: 1273
+  Uncovered lines: 55
+  Coverable lines: 1328
+  Total lines: 7683
+  Branch coverage: 73.3% (267 of 364)
+  Covered branches: 267
+  Total branches: 364
+  Method coverage: 93.7% (150 of 160)
+  Full method coverage: 92.5% (148 of 160)
+  Covered methods: 150
+  Fully covered methods: 148
+  Total methods: 160
 
-HealthSync.Application                                                     98.8%
+HealthSync.Application                                                     98.6%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
   HealthSync.Application.Handlers.AddProgressCommandHandler                 100%
   HealthSync.Application.Handlers.AssignRoleToUserCommandHandler            100%
@@ -34,7 +34,7 @@ HealthSync.Application                                                     98.8%
   HealthSync.Application.Handlers.DeleteUserCommandHandler                  100%
   HealthSync.Application.Handlers.ForgotPasswordCommandHandler              100%
   HealthSync.Application.Handlers.GetAdminStatisticsQueryHandler            100%
-  HealthSync.Application.Handlers.GetAllUsersQueryHandler                   100%
+  HealthSync.Application.Handlers.GetAllUsersQueryHandler                  96.5%
   HealthSync.Application.Handlers.GetChatHistoryQueryHandler                100%
   HealthSync.Application.Handlers.GetCustomerDashboardQueryHandler          100%
   HealthSync.Application.Handlers.GetDashboardSummaryQueryHandler           100%

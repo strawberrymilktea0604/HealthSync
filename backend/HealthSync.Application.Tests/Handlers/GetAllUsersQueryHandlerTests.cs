@@ -294,4 +294,139 @@ public class GetAllUsersQueryHandlerTests
         Assert.Single(result.Users);
         Assert.Equal("", result.Users[0].FullName);
     }
+    [Fact]
+    public async Task Handle_ShouldFilterBySearchTerm_WhenSearchTermMatchesFullName()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "user1@test.com",
+                Profile = new UserProfile { FullName = "John Doe" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "user2@test.com",
+                Profile = new UserProfile { FullName = "Jane Smith" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        var query = new GetAllUsersQuery { SearchTerm = "Doe", Page = 1, PageSize = 10 };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.Single(result.Users);
+        Assert.Equal("John Doe", result.Users[0].FullName);
+    }
+
+    [Theory]
+    [InlineData("userid", "asc", 1)]
+    [InlineData("userid", "desc", 2)]
+    [InlineData("email", "asc", 1)] // a@test.com
+    [InlineData("email", "desc", 2)] // z@test.com
+    [InlineData("fullname", "asc", 2)] // Adam
+    [InlineData("fullname", "desc", 1)] // Zack
+    [InlineData("role", "asc", 1)] // Admin
+    [InlineData("role", "desc", 2)] // Customer
+    [InlineData("isactive", "asc", 2)] // False
+    [InlineData("isactive", "desc", 1)] // True
+    [InlineData("createdat", "asc", 1)] // Oldest first
+    [InlineData("createdat", "desc", 2)] // Newest first
+    public async Task Handle_ShouldSortCorrectly(string sortBy, string sortOrder, int expectedFirstUserId)
+    {
+        // Arrange
+        var adminRole = new Role { Id = 1, RoleName = "Admin" };
+        var customerRole = new Role { Id = 2, RoleName = "Customer" };
+        
+        var dateNow = DateTime.UtcNow;
+
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                Email = "a@test.com",
+                IsActive = true,
+                CreatedAt = dateNow.AddDays(-10), // Oldest
+                Profile = new UserProfile { FullName = "Zack" },
+                UserRoles = new List<UserRole> { new UserRole { Role = adminRole } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                Email = "z@test.com",
+                IsActive = false,
+                CreatedAt = dateNow, // Newest
+                Profile = new UserProfile { FullName = "Adam" },
+                UserRoles = new List<UserRole> { new UserRole { Role = customerRole } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+
+        var query = new GetAllUsersQuery 
+        { 
+            Page = 1, 
+            PageSize = 10,
+            SortBy = sortBy,
+            SortOrder = sortOrder
+        };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Users.Count);
+        Assert.Equal(expectedFirstUserId, result.Users[0].UserId);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldSelectCorrectAvatarUrl()
+    {
+        // Arrange
+        var role = new Role { Id = 1, RoleName = "Customer" };
+        var users = new List<ApplicationUser>
+        {
+            new ApplicationUser
+            {
+                UserId = 1,
+                AvatarUrl = "user_avatar.png",
+                Profile = new UserProfile { AvatarUrl = "profile_avatar.png", FullName = "User 1" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            },
+            new ApplicationUser
+            {
+                UserId = 2,
+                AvatarUrl = "user_avatar_2.png",
+                Profile = new UserProfile { AvatarUrl = null, FullName = "User 2" },
+                UserRoles = new List<UserRole> { new UserRole { Role = role } }
+            }
+        };
+
+        var mockUsers = users.AsQueryable().BuildMock();
+        _contextMock.Setup(c => c.ApplicationUsers).Returns(mockUsers);
+        var query = new GetAllUsersQuery { Page = 1, PageSize = 10 };
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        var user1 = result.Users.First(u => u.UserId == 1);
+        var user2 = result.Users.First(u => u.UserId == 2);
+
+        Assert.Equal("profile_avatar.png", user1.AvatarUrl); // Prioritize Profile
+        Assert.Equal("user_avatar_2.png", user2.AvatarUrl);  // Fallback to User
+    }
 }
