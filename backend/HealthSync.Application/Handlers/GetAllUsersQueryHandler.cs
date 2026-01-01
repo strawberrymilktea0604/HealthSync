@@ -86,17 +86,18 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
 
         return sortBy.ToLower() switch
         {
-            "userid" => isDesc ? query.OrderByDescending(u => u.UserId) : query.OrderBy(u => u.UserId),
-            "email" => isDesc ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
-            "fullname" => isDesc 
-                ? query.OrderByDescending(u => u.Profile != null ? u.Profile.FullName : "") 
-                : query.OrderBy(u => u.Profile != null ? u.Profile.FullName : ""),
-            "role" => isDesc 
-                ? query.OrderByDescending(u => u.UserRoles.Select(ur => ur.Role.RoleName).FirstOrDefault()) 
-                : query.OrderBy(u => u.UserRoles.Select(ur => ur.Role.RoleName).FirstOrDefault()),
-            "isactive" => isDesc ? query.OrderByDescending(u => u.IsActive) : query.OrderBy(u => u.IsActive),
-            "createdat" => isDesc ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt),
+            "userid" => ApplyOrder(query, u => u.UserId, isDesc),
+            "email" => ApplyOrder(query, u => u.Email, isDesc),
+            "fullname" => ApplyOrder(query, u => u.Profile != null ? u.Profile.FullName : "", isDesc),
+            "role" => ApplyOrder(query, u => u.UserRoles.Select(ur => ur.Role.RoleName).FirstOrDefault(), isDesc),
+            "isactive" => ApplyOrder(query, u => u.IsActive, isDesc),
+            "createdat" => ApplyOrder(query, u => u.CreatedAt, isDesc),
             _ => query.OrderByDescending(u => u.CreatedAt),
         };
+    }
+
+    private static IQueryable<ApplicationUser> ApplyOrder<TKey>(IQueryable<ApplicationUser> query, System.Linq.Expressions.Expression<Func<ApplicationUser, TKey>> keySelector, bool isDesc)
+    {
+        return isDesc ? query.OrderByDescending(keySelector) : query.OrderBy(keySelector);
     }
 }

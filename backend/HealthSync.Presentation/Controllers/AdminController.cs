@@ -273,7 +273,7 @@ public class AdminController : ControllerBase
             var command = new ToggleUserStatusCommand
             {
                 UserId = userId,
-                IsActive = request.IsActive,
+                IsActive = request.IsActive.GetValueOrDefault(),
                 CurrentUserId = currentUserId
             };
 
@@ -300,7 +300,7 @@ public class AdminController : ControllerBase
 public class UpdateUserStatusRequest
 {
     [Required] // Using Required for validation
-    public bool IsActive { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 public class UpdatePasswordRequest

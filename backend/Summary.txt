@@ -1,22 +1,22 @@
 Summary
-  Generated on: 1/1/2026 - 5:48:25 PM
+  Generated on: 1/1/2026 - 6:03:26 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
   Classes: 102
   Files: 100
   Line coverage: 95.8%
-  Covered lines: 1273
+  Covered lines: 1270
   Uncovered lines: 55
-  Coverable lines: 1328
-  Total lines: 7683
-  Branch coverage: 73.3% (267 of 364)
-  Covered branches: 267
-  Total branches: 364
-  Method coverage: 93.7% (150 of 160)
-  Full method coverage: 92.5% (148 of 160)
-  Covered methods: 150
-  Fully covered methods: 148
-  Total methods: 160
+  Coverable lines: 1325
+  Total lines: 7684
+  Branch coverage: 72.5% (257 of 354)
+  Covered branches: 257
+  Total branches: 354
+  Method coverage: 93.7% (151 of 161)
+  Full method coverage: 92.5% (149 of 161)
+  Covered methods: 151
+  Fully covered methods: 149
+  Total methods: 161
 
 HealthSync.Application                                                     98.6%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
@@ -34,7 +34,7 @@ HealthSync.Application                                                     98.6%
   HealthSync.Application.Handlers.DeleteUserCommandHandler                  100%
   HealthSync.Application.Handlers.ForgotPasswordCommandHandler              100%
   HealthSync.Application.Handlers.GetAdminStatisticsQueryHandler            100%
-  HealthSync.Application.Handlers.GetAllUsersQueryHandler                  96.5%
+  HealthSync.Application.Handlers.GetAllUsersQueryHandler                  96.1%
   HealthSync.Application.Handlers.GetChatHistoryQueryHandler                100%
   HealthSync.Application.Handlers.GetCustomerDashboardQueryHandler          100%
   HealthSync.Application.Handlers.GetDashboardSummaryQueryHandler           100%
