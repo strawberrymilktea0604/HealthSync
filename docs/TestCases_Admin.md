@@ -105,14 +105,19 @@ Content-Type: application/json
 
 | Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
 |--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
-| TC-DASH-001 | Hiển thị Dashboard Admin | 1. Đăng nhập với tài khoản Admin<br>2. Hệ thống tự động chuyển đến hoặc nhấn menu "Dashboard" | N/A | Trang Dashboard hiển thị với các thống kê: Tổng số người dùng, Tổng số bài tập, Tổng số món ăn, và các biểu đồ thống kê | | | |
-| TC-DASH-002 | Kiểm tra hiển thị số liệu thống kê người dùng | 1. Đăng nhập Admin<br>2. Xem Dashboard<br>3. Kiểm tra số "Tổng người dùng" | N/A | Số liệu "Tổng người dùng" hiển thị đúng với số lượng user trong database | | | |
-| TC-DASH-003 | Kiểm tra biểu đồ người dùng mới theo thời gian | 1. Đăng nhập Admin<br>2. Xem Dashboard<br>3. Kiểm tra biểu đồ "Người dùng mới" | N/A | Biểu đồ hiển thị đúng xu hướng đăng ký người dùng theo ngày/tuần/tháng | | | |
-| TC-DASH-004 | Responsive Dashboard trên mobile | 1. Đăng nhập Admin trên trình duyệt mobile<br>2. Xem Dashboard | Viewport: 375px width | Dashboard hiển thị responsive, các card thống kê xếp dọc, biểu đồ scale phù hợp | | | |
-| TC-DASH-005 | Kiểm tra thống kê Workout | 1. Đăng nhập Admin<br>2. Xem Dashboard<br>3. Kiểm tra section "Workout Statistics" | N/A | Hiển thị đúng số lượng bài tập đã hoàn thành, tổng thời gian tập luyện | | | |
-| TC-DASH-006 | Kiểm tra thống kê Dinh dưỡng | 1. Đăng nhập Admin<br>2. Xem Dashboard<br>3. Kiểm tra section "Nutrition Statistics" | N/A | Hiển thị đúng số bữa ăn đã ghi nhận, calo trung bình | | | |
-| TC-DASH-007 | Kiểm tra thống kê Mục tiêu | 1. Đăng nhập Admin<br>2. Xem Dashboard<br>3. Kiểm tra section "Goal Statistics" | N/A | Hiển thị đúng số mục tiêu đang hoạt động, đã hoàn thành | | | |
-
+| TC-DASH-001 | Hiển thị bố cục Dashboard Admin | 1. Đăng nhập với tài khoản Admin<br>2. Hệ thống chuyển đến trang Dashboard | N/A | Trang hiển thị đầy đủ 3 phần chính:<br>1. KPI Cards (4 cards)<br>2. Biểu đồ (User Growth, Goal Success)<br>3. Thông tin chi tiết (Heatmap, Top Content, System Health) | | | |
+| TC-DASH-002 | Kiểm tra KPI Card "Total Users" | 1. Quan sát card "Total Users" | N/A | Hiển thị tổng số user, tỷ lệ tăng trưởng (%) và icon xu hướng (tăng/giảm) | | | |
+| TC-DASH-003 | Kiểm tra KPI Card "Active Users" | 1. Quan sát card "Active Users" | N/A | Hiển thị số user hoạt động hàng tháng (Monthly), hàng ngày (Daily) và tỷ lệ tăng trưởng | | | |
+| TC-DASH-004 | Kiểm tra KPI Card "Content Library" | 1. Quan sát card "Content Library" | N/A | Hiển thị tổng số nội dung, chi tiết số lượng Bài tập (Exercises) và Món ăn (Foods) | | | |
+| TC-DASH-005 | Kiểm tra KPI Card "AI Usage" | 1. Quan sát card "AI Usage" | N/A | Hiển thị tổng số request AI và chi phí ước tính (Est. Cost) | | | |
+| TC-DASH-006 | Kiểm tra biểu đồ "User Growth" | 1. Quan sát biểu đồ "User Growth (6 Months)" | N/A | Biểu đồ đường hiển thị số lượng user mới trong 6 tháng gần nhất | | | |
+| TC-DASH-007 | Kiểm tra biểu đồ "Goal Success Rate" | 1. Quan sát biểu đồ tròn "Goal Success Rate" | N/A | Biểu đồ tròn hiển thị tỷ lệ các trạng thái mục tiêu (Thành công, Đang thực hiện, Thất bại) | | | |
+| TC-DASH-008 | Kiểm tra danh sách "Activity Peak Hours" | 1. Quan sát section "Activity Peak Hours" | N/A | Hiển thị danh sách 5 khung giờ hoạt động cao điểm nhất trong tuần (Thứ - Giờ - Số lượng logs) | | | |
+| TC-DASH-009 | Kiểm tra section "Top Content" | 1. Quan sát section "Top Content" | N/A | Hiển thị 2 danh sách:<br>- Top Exercises: Các bài tập được tập nhiều nhất<br>- Top Foods: Các món ăn được log nhiều nhất | | | |
+| TC-DASH-010 | Kiểm tra section "System Health" | 1. Quan sát section "System Health" | N/A | Hiển thị:<br>- Trạng thái tổng thể (Healthy/Unhealthy)<br>- Danh sách services kèm độ trễ (latency)<br>- Log lỗi gần đây (Recent Errors) nếu có | | | |
+| TC-DASH-011 | Responsive Dashboard trên mobile | 1. Mở công cụ Developer Tools (F12)<br>2. Chuyển sang chế độ thiết bị di động (ví dụ iPhone 12)<br>3. Tải lại trang | Viewport: 390px | Các card và biểu đồ xếp chồng dọc (stack), không bị vỡ giao diện, nội dung vẫn đọc được | | | |
+| TC-DASH-012 | Hiển thị khi API lỗi hoặc timeout | 1. Giả lập chặn request API Dashboard (Block URL)<br>2. Tải lại trang | N/A | Hiển thị thông báo lỗi text đỏ: "Error: Failed to fetch dashboard data" hoặc tương tự | | | |
+| TC-DASH-013 | Hiển thị trạng thái Loading | 1. Throttling network xuống "Slow 3G"<br>2. Tải lại trang | N/A | Hiển thị spinner loading ở giữa màn hình trước khi dữ liệu tải xong | | | |
 ---
 
 ## Module 3: Quản Lý Người Dùng (User Management)
@@ -272,13 +277,13 @@ Content-Type: application/json
 |--------|-------------------|------|------|---------|
 | Xác thực Admin (Đăng nhập, Đăng xuất) | 11 | | | |
 | Đăng ký Admin qua API (Postman) | 13 | | | |
-| Admin Dashboard | 7 | | | |
+| Admin Dashboard | 13 | | | |
 | Quản lý Người dùng | 18 | | | |
 | Quản lý Bài tập | 9 | | | |
 | Quản lý Món ăn | 9 | | | |
 | Content Library | 2 | | | |
 | Phân quyền | 3 | | | |
-| **TỔNG** | **72** | | | |
+| **TỔNG** | **78** | | | |
 
 ---
 
