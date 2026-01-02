@@ -132,8 +132,8 @@ export default function AdminDashboard() {
                 data.charts.activityHeatmap
                   .sort((a, b) => b.count - a.count)
                   .slice(0, 5)
-                  .map((point, idx) => (
-                    <div key={idx} className="flex justify-between items-center border-b pb-2">
+                  .map((point) => (
+                    <div key={`${point.day}-${point.hour}`} className="flex justify-between items-center border-b pb-2">
                       <span className="font-medium text-gray-700">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][point.day]} at {point.hour}:00
                       </span>
@@ -189,8 +189,8 @@ export default function AdminDashboard() {
                 </span>
               </div>
 
-              {data.systemHealth.services.map((service, idx) => (
-                <div key={idx} className="flex items-center justify-between border-l-4 border-green-500 pl-3">
+              {data.systemHealth.services.map((service) => (
+                <div key={service.name} className="flex items-center justify-between border-l-4 border-green-500 pl-3">
                   <div>
                     <p className="text-sm font-medium">{service.name}</p>
                     <p className="text-xs text-gray-500">{service.latencyMs}ms latency</p>
@@ -203,8 +203,8 @@ export default function AdminDashboard() {
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="text-sm font-bold text-red-600 mb-2">Recent Errors</h4>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {data.systemHealth.recentErrors.map((err, idx) => (
-                      <div key={idx} className="text-xs text-gray-600 bg-red-50 p-2 rounded">
+                    {data.systemHealth.recentErrors.map((err) => (
+                      <div key={err.id} className="text-xs text-gray-600 bg-red-50 p-2 rounded">
                         <span className="font-mono text-red-500">[{err.code}]</span> {err.message}
                         <br />
                         <span className="text-gray-400">{new Date(err.timestamp).toLocaleTimeString()}</span>
