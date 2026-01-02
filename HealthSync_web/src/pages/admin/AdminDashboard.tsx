@@ -57,12 +57,38 @@ export default function AdminDashboard() {
     value: data.charts.goalSuccessRate.data[index],
   }));
 
+  const NoDataDisplay = ({ message }: { message: string }) => (
+    <div className="flex flex-col items-center justify-center p-6 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200 min-h-[120px]">
+      <span className="text-2xl mb-2">📊</span>
+      <span className="text-sm font-medium">{message}</span>
+    </div>
+  );
+
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-          <span className="text-sm text-gray-500">Last updated: {new Date(data.timestamp).toLocaleString()}</span>
+        <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">Overview of system performance and user activity</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-xs text-gray-400">
+              Updated: {new Date(data.timestamp).toLocaleTimeString()}
+            </span>
+            <button
+              onClick={fetchDashboardData}
+              disabled={loading}
+              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+              ) : (
+                <span className="mr-2">↻</span>
+              )}
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* 1. KPI Cards */}
@@ -122,92 +148,115 @@ export default function AdminDashboard() {
         {/* 3. Heatmap & Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Activity Heatmap (Simplified List) */}
-          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
-            <h3 className="text-xl font-semibold mb-4">Activity Peak Hours</h3>
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Activity Peak Hours</h3>
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">Most active times:</p>
+              <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Most active times</p>
               {data.charts.activityHeatmap.length === 0 ? (
-                <p className="text-sm text-gray-400 italic">Not enough data</p>
+                <NoDataDisplay message="Not enough activity data" />
               ) : (
-                data.charts.activityHeatmap
-                  .sort((a, b) => b.count - a.count)
-                  .slice(0, 5)
-                  .map((point) => (
-                    <div key={`${point.day}-${point.hour}`} className="flex justify-between items-center border-b pb-2">
-                      <span className="font-medium text-gray-700">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][point.day]} at {point.hour}:00
-                      </span>
-                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                        {point.count} logs
-                      </span>
-                    </div>
-                  ))
+                <div className="space-y-2">
+                  {data.charts.activityHeatmap
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5)
+                    .map((point) => (
+                      <div key={`${point.day}-${point.hour}`} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded transition-colors">
+                        <span className="font-medium text-gray-700 text-sm">
+                          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][point.day]} at {point.hour}:00
+                        </span>
+                        <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-full">
+                          {point.count} logs
+                        </span>
+                      </div>
+                    ))}
+                </div>
               )}
             </div>
           </div>
 
           {/* Content Insights */}
-          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
-            <h3 className="text-xl font-semibold mb-4">Top Content</h3>
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Top Content</h3>
             <div className="space-y-6">
               <div>
-                <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Top Exercises</h4>
-                <ul className="space-y-2">
-                  {data.contentInsights.topExercises.map(e => (
-                    <li key={e.id} className="flex justify-between text-sm">
-                      <span>{e.name}</span>
-                      <span className="text-gray-500">{e.count} logs</span>
-                    </li>
-                  ))}
-                  {data.contentInsights.topExercises.length === 0 && <span className="text-sm text-gray-400 italic">No data</span>}
-                </ul>
+                <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                  Top Exercises
+                </h4>
+                {data.contentInsights.topExercises.length === 0 ? (
+                  <div className="text-sm text-gray-400 italic pl-4">No exercise data yet</div>
+                ) : (
+                  <ul className="space-y-2">
+                    {data.contentInsights.topExercises.map(e => (
+                      <li key={e.id} className="flex justify-between items-center text-sm p-2 hover:bg-gray-50 rounded">
+                        <span className="text-gray-700 font-medium truncate max-w-[150px]" title={e.name}>{e.name}</span>
+                        <span className="text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-xs">{e.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Top Foods</h4>
-                <ul className="space-y-2">
-                  {data.contentInsights.topFoods.map(f => (
-                    <li key={f.id} className="flex justify-between text-sm">
-                      <span>{f.name}</span>
-                      <span className="text-gray-500">{f.count} logs</span>
-                    </li>
-                  ))}
-                  {data.contentInsights.topFoods.length === 0 && <span className="text-sm text-gray-400 italic">No data</span>}
-                </ul>
+              <div className="border-t pt-4">
+                <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                  Top Foods
+                </h4>
+                {data.contentInsights.topFoods.length === 0 ? (
+                  <div className="text-sm text-gray-400 italic pl-4">No food data yet</div>
+                ) : (
+                  <ul className="space-y-2">
+                    {data.contentInsights.topFoods.map(f => (
+                      <li key={f.id} className="flex justify-between items-center text-sm p-2 hover:bg-gray-50 rounded">
+                        <span className="text-gray-700 font-medium truncate max-w-[150px]" title={f.name}>{f.name}</span>
+                        <span className="text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-xs">{f.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
 
           {/* System Health */}
-          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
-            <h3 className="text-xl font-semibold mb-4">System Health</h3>
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border border-gray-100">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">System Health</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <span className="font-medium">Overall Status</span>
-                <span className={`px-2 py-1 rounded text-xs font-bold ${data.systemHealth.status === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <span className="font-medium text-gray-700">Overall Status</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${data.systemHealth.status === 'Healthy' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
                   }`}>
                   {data.systemHealth.status}
                 </span>
               </div>
 
-              {data.systemHealth.services.map((service) => (
-                <div key={service.name} className="flex items-center justify-between border-l-4 border-green-500 pl-3">
-                  <div>
-                    <p className="text-sm font-medium">{service.name}</p>
-                    <p className="text-xs text-gray-500">{service.latencyMs}ms latency</p>
+              <div className="space-y-3">
+                {data.systemHealth.services.map((service) => (
+                  <div key={service.name} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-2.5 w-2.5 rounded-full ${service.status === 'Online' ? 'bg-green-500 shadow-sm shadow-green-200' : 'bg-red-500 shadow-sm shadow-red-200'}`} />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">{service.name}</p>
+                        <p className="text-xs text-gray-400">{service.latencyMs}ms latency</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded ${service.status === 'Online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {service.status}
+                    </span>
                   </div>
-                  <div className={`h-3 w-3 rounded-full ${service.status === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} title={service.status}></div>
-                </div>
-              ))}
+                ))}
+              </div>
 
               {data.systemHealth.recentErrors.length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-bold text-red-600 mb-2">Recent Errors</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <h4 className="text-xs font-bold text-red-600 mb-2 uppercase tracking-wide">Recent Errors</h4>
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                     {data.systemHealth.recentErrors.map((err) => (
-                      <div key={err.id} className="text-xs text-gray-600 bg-red-50 p-2 rounded">
-                        <span className="font-mono text-red-500">[{err.code}]</span> {err.message}
-                        <br />
-                        <span className="text-gray-400">{new Date(err.timestamp).toLocaleTimeString()}</span>
+                      <div key={err.id} className="text-xs bg-red-50 p-2 rounded border border-red-100">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-mono text-red-600 font-bold">[{err.code}]</span>
+                          <span className="text-gray-400 text-[10px]">{new Date(err.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <p className="text-gray-700">{err.message}</p>
                       </div>
                     ))}
                   </div>

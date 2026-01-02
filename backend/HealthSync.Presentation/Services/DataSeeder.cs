@@ -352,9 +352,17 @@ public class DataSeeder
     private async Task SeedFakeUsersAsync()
     {
         // 5. Seed Fake Users with Rich Transactional Data
-        if (await _dbContext.ApplicationUsers.CountAsync() < 50)
+        await EnsureUsersAsync();
+        await EnsureUserActivityAsync();
+    }
+
+    private async Task EnsureUsersAsync()
+    {
+        int currentCount = await _dbContext.ApplicationUsers.CountAsync();
+        if (currentCount < 50)
         {
-            Console.WriteLine("[Seeder] Generating 50 fake users with rich history...");
+            int limit = 50 - currentCount;
+            Console.WriteLine($"[Seeder] Generating {limit} fake users...");
             
             // Preload sample avatars
             var sampleAvatars = await _avatarSeeder.SeedSampleAvatarsAsync();
@@ -362,10 +370,6 @@ public class DataSeeder
 
             // Ensure Customer role exists
             var customerRole = await EnsureCustomerRoleAsync();
-
-            // Fetch IDs and data for random generation
-            var exerciseIds = await _dbContext.Exercises.Select(e => e.ExerciseId).ToListAsync();
-            var foodItems = await _dbContext.FoodItems.ToListAsync();
 
             // Configure faker for UserProfile
             var profileFaker = new Faker<UserProfile>("vi") // Vietnamese locale
@@ -386,8 +390,8 @@ public class DataSeeder
                 .RuleFor(u => u.EmailConfirmed, f => true)
                 .RuleFor(u => u.CreatedAt, f => f.Date.Past(1));
 
-            // Generate 50 fake users
-            var fakeUsers = userFaker.Generate(50);
+            // Generate users
+            var fakeUsers = userFaker.Generate(limit);
             
             int processedCount = 0;
             foreach (var user in fakeUsers)
@@ -407,22 +411,77 @@ public class DataSeeder
 
                 // Create UserRole
                 _dbContext.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
-
-                // --- NEW: Generate Transactional Data ---
+                
+                // Create Goal
                 CreateFakeGoal(user.UserId, user.CreatedAt, profile.WeightKg);
-                CreateFakeWorkoutLogs(user.UserId, random, exerciseIds);
-                CreateFakeNutritionLogs(user.UserId, random, foodItems);
 
                 processedCount++;
                 if (processedCount % 10 == 0)
                 {
-                    Console.WriteLine($"[Seeder] Processed {processedCount}/50 users...");
-                    await _dbContext.SaveChangesAsync(); // Save in batches
+                    Console.WriteLine($"[Seeder] Created {processedCount}/{limit} users...");
                 }
             }
             
             await _dbContext.SaveChangesAsync(); // Final save
-            Console.WriteLine("[Success] Generated 50 fake users with full history.");
+            Console.WriteLine($"[Success] Generated {limit} fake users.");
+        }
+    }
+
+    private async Task EnsureUserActivityAsync()
+    {
+        Console.WriteLine("[Seeder] Checking and generating user activity...");
+        
+        var exerciseIds = await _dbContext.Exercises.Select(e => e.ExerciseId).ToListAsync();
+        var foodItems = await _dbContext.FoodItems.ToListAsync();
+        
+        if (!exerciseIds.Any() || !foodItems.Any())
+        {
+            Console.WriteLine("[Warning] No exercises or mock foods found. Skipping activity generation.");
+            return;
+        }
+
+        var users = await _dbContext.ApplicationUsers
+            .Include(u => u.WorkoutLogs)
+            .Include(u => u.NutritionLogs)
+            .Take(100)
+            .ToListAsync();
+            
+        var random = new Random();
+        int updatedUsers = 0;
+
+        foreach (var user in users)
+        {
+            bool hasUpdates = false;
+
+            // Generate Workouts if missing
+            if (!user.WorkoutLogs.Any())
+            {
+                CreateFakeWorkoutLogs(user.UserId, random, exerciseIds);
+                hasUpdates = true;
+            }
+
+            // Generate Nutrition logs if missing
+            if (!user.NutritionLogs.Any())
+            {
+                CreateFakeNutritionLogs(user.UserId, random, foodItems);
+                hasUpdates = true;
+            }
+
+            if (hasUpdates)
+            {
+                updatedUsers++;
+                if (updatedUsers % 10 == 0) Console.WriteLine($"[Seeder] Updated activity for {updatedUsers} users...");
+            }
+        }
+
+        if (updatedUsers > 0)
+        {
+            await _dbContext.SaveChangesAsync();
+            Console.WriteLine($"[Success] Generated activity for {updatedUsers} users.");
+        }
+        else
+        {
+             Console.WriteLine($"[Info] All users already have activity.");
         }
     }
 
