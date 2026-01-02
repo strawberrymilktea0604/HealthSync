@@ -26,7 +26,7 @@ export default function Login() {
         variant: "destructive",
       });
       // Optional: Clean up the URL
-      window.history.replaceState({}, '', '/login');
+      globalThis.history.replaceState({}, '', '/login');
     }
   }, [searchParams, toast]);
 

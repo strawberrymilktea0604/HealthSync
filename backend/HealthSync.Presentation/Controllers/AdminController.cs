@@ -24,6 +24,7 @@ public class AdminController : ControllerBase
     private readonly IMinioClient _minioClient;
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private const string ERR_INTERNAL_SERVER = "Internal server error";
     // private const string DEFAULT_MINIO_URL = "http://localhost:9002"; // Removed hardcoded URI
 
     public AdminController(IMediator mediator, ILogger<AdminController> logger, IMinioClient minioClient, HttpClient httpClient, IConfiguration configuration)
@@ -48,7 +49,7 @@ public class AdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching admin dashboard data");
-            return StatusCode(500, new { Error = "Internal server error" });
+            return StatusCode(500, new { Error = ERR_INTERNAL_SERVER });
         }
     }
 
@@ -80,7 +81,7 @@ public class AdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting all users");
-            return StatusCode(500, new { Error = "Internal server error" });
+            return StatusCode(500, new { Error = ERR_INTERNAL_SERVER });
         }
     }
 
@@ -215,7 +216,7 @@ public class AdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user avatar: {UserId}", userId);
-            return StatusCode(500, new { Error = "Internal server error" });
+            return StatusCode(500, new { Error = ERR_INTERNAL_SERVER });
         }
     }
 
@@ -309,7 +310,7 @@ public class AdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user status: {UserId}", userId);
-            return StatusCode(500, new { Error = "Internal server error" });
+            return StatusCode(500, new { Error = ERR_INTERNAL_SERVER });
         }
     }
 }

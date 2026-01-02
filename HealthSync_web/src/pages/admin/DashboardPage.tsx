@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminService, AdminDashboardDto, HeatmapPointDto } from '../../services/adminService';
+import { adminService, AdminDashboardDto } from '../../services/adminService';
 import StatCard from '../../components/admin/StatCard';
 import { LineChartCard } from '../../components/admin/LineChartCard';
 import { PieChartCard } from '../../components/admin/PieChartCard';
@@ -112,8 +112,8 @@ export default function DashboardPage() {
                         {data.charts.activityHeatmap
                             .sort((a, b) => b.count - a.count)
                             .slice(0, 5)
-                            .map((point, idx) => (
-                                <div key={idx} className="flex justify-between items-center border-b pb-2">
+                            .map((point) => (
+                                <div key={`${point.day}-${point.hour}`} className="flex justify-between items-center border-b pb-2">
                                     <span className="font-medium text-gray-700">
                                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][point.day]} at {point.hour}:00
                                     </span>

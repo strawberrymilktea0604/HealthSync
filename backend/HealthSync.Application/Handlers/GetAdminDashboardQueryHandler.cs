@@ -111,7 +111,7 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
         for (int i = 5; i >= 0; i--)
         {
             var monthDate = now.AddMonths(-i);
-            var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
+            var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var monthEnd = monthStart.AddMonths(1);
             
             var count = await _context.ApplicationUsers.CountAsync(u => u.CreatedAt < monthEnd, cancellationToken);
@@ -250,7 +250,10 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
             minioOk = true;
             minioLatency = sw.ElapsedMilliseconds;
         }
-        catch { }
+        catch 
+        {
+            // Ignore errors as this is just a heath check - service will be marked as offline implicitly checking minioOk
+        }
 
         health.Services.Add(new ServiceStatusDto 
         { 
