@@ -5,6 +5,13 @@ import StatCard from '../../components/admin/StatCard';
 import { LineChartCard } from '../../components/admin/LineChartCard';
 import { PieChartCard } from '../../components/admin/PieChartCard';
 
+const NoDataDisplay = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center p-6 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200 min-h-[120px]">
+    <span className="text-2xl mb-2">📊</span>
+    <span className="text-sm font-medium">{message}</span>
+  </div>
+);
+
 export default function AdminDashboard() {
   const [data, setData] = useState<AdminDashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,13 +63,6 @@ export default function AdminDashboard() {
     name: label,
     value: data.charts.goalSuccessRate.data[index],
   }));
-
-  const NoDataDisplay = ({ message }: { message: string }) => (
-    <div className="flex flex-col items-center justify-center p-6 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200 min-h-[120px]">
-      <span className="text-2xl mb-2">📊</span>
-      <span className="text-sm font-medium">{message}</span>
-    </div>
-  );
 
   return (
     <AdminLayout>
@@ -180,8 +180,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Top Exercises
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Top Exercises
                 </h4>
                 {data.contentInsights.topExercises.length === 0 ? (
                   <div className="text-sm text-gray-400 italic pl-4">No exercise data yet</div>
@@ -198,8 +197,7 @@ export default function AdminDashboard() {
               </div>
               <div className="border-t pt-4">
                 <h4 className="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center">
-                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                  Top Foods
+                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>Top Foods
                 </h4>
                 {data.contentInsights.topFoods.length === 0 ? (
                   <div className="text-sm text-gray-400 italic pl-4">No food data yet</div>
