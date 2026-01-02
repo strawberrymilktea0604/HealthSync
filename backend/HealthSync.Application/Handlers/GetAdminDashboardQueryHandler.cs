@@ -33,17 +33,11 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
         };
 
         // Parallel execution for better performance
-        var kpiTask = GetKpiStatsAsync(now, cancellationToken);
-        var chartsTask = GetChartsAsync(now, cancellationToken);
-        var contentTask = GetContentInsightsAsync(cancellationToken);
-        var systemTask = GetSystemHealthAsync(cancellationToken);
-
-        await Task.WhenAll(kpiTask, chartsTask, contentTask, systemTask);
-
-        dashboard.KpiStats = await kpiTask;
-        dashboard.Charts = await chartsTask;
-        dashboard.ContentInsights = await contentTask;
-        dashboard.SystemHealth = await systemTask;
+        // Sequential execution to avoid DbContext threading issues
+        dashboard.KpiStats = await GetKpiStatsAsync(now, cancellationToken);
+        dashboard.Charts = await GetChartsAsync(now, cancellationToken);
+        dashboard.ContentInsights = await GetContentInsightsAsync(cancellationToken);
+        dashboard.SystemHealth = await GetSystemHealthAsync(cancellationToken);
 
         return dashboard;
     }
