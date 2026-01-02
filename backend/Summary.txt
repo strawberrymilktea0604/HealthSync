@@ -1,22 +1,22 @@
 Summary
-  Generated on: 1/1/2026 - 11:16:22 PM
+  Generated on: 1/2/2026 - 5:11:49 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
-  Classes: 103
-  Files: 101
-  Line coverage: 99.9%
-  Covered lines: 1337
-  Uncovered lines: 1
-  Coverable lines: 1338
-  Total lines: 7766
-  Branch coverage: 80.2% (284 of 354)
-  Covered branches: 284
-  Total branches: 354
-  Method coverage: 100% (162 of 162)
-  Full method coverage: 99.3% (161 of 162)
-  Covered methods: 162
-  Fully covered methods: 161
-  Total methods: 162
+  Classes: 105
+  Files: 103
+  Line coverage: 99.8%
+  Covered lines: 1561
+  Uncovered lines: 2
+  Coverable lines: 1563
+  Total lines: 8400
+  Branch coverage: 81.6% (320 of 392)
+  Covered branches: 320
+  Total branches: 392
+  Method coverage: 99.4% (172 of 173)
+  Full method coverage: 98.8% (171 of 173)
+  Covered methods: 172
+  Fully covered methods: 171
+  Total methods: 173
 
 HealthSync.Application                                                      100%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
@@ -34,6 +34,7 @@ HealthSync.Application                                                      100%
   HealthSync.Application.Handlers.DeleteUserCommandHandler                  100%
   HealthSync.Application.Handlers.DeleteWorkoutLogCommandHandler            100%
   HealthSync.Application.Handlers.ForgotPasswordCommandHandler              100%
+  HealthSync.Application.Handlers.GetAdminDashboardQueryHandler             100%
   HealthSync.Application.Handlers.GetAdminStatisticsQueryHandler            100%
   HealthSync.Application.Handlers.GetAllUsersQueryHandler                   100%
   HealthSync.Application.Handlers.GetChatHistoryQueryHandler                100%
@@ -103,7 +104,8 @@ HealthSync.Infrastructure                                                  99.8%
   HealthSync.Infrastructure.Authorization.RequirePermissionAttribute        100%
   HealthSync.Infrastructure.Authorization.RolePermissionMapping             100%
   HealthSync.Infrastructure.Persistence.ApplicationUserRepository           100%
-  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                 100%
+  HealthSync.Infrastructure.Persistence.DbInitializer                       100%
+  HealthSync.Infrastructure.Persistence.HealthSyncDbContext                99.6%
   HealthSync.Infrastructure.Persistence.UserProfileRepository               100%
   HealthSync.Infrastructure.ServiceCollectionExtensions                     100%
   HealthSync.Infrastructure.Services.AuthService                            100%

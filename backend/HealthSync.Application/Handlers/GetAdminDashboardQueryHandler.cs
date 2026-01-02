@@ -95,7 +95,7 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
 
         // 4. AI Usage (Mocked or extrapolated from ChatMessages if available)
         // Assuming ChatMessage table exists
-        var aiRequests = await _context.ChatMessages.CountAsync(m => !m.IsUser, cancellationToken);
+        var aiRequests = await _context.ChatMessages.CountAsync(m => m.Role != "user", cancellationToken);
         stats.AiUsage.TotalRequests = aiRequests;
         stats.AiUsage.CostEstimate = (decimal)(aiRequests * 0.001); // Arbitrary cost per request
         stats.AiUsage.LimitWarning = false;
@@ -231,7 +231,7 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
         var health = new SystemHealthDto();
 
         // 1. Database
-        bool dbOk = await _context.Database.CanConnectAsync(cancellationToken);
+        bool dbOk = await _context.CanConnectAsync(cancellationToken);
         health.Services.Add(new ServiceStatusDto 
         { 
             Name = "Database (SQL Server)", 

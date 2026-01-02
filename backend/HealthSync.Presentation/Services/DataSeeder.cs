@@ -386,8 +386,7 @@ public class DataSeeder
                 .RuleFor(p => p.Dob, f => f.Date.Past(30, DateTime.Now.AddYears(-18)))
                 .RuleFor(p => p.HeightCm, f => f.Random.Decimal(150, 190))
                 .RuleFor(p => p.WeightKg, f => f.Random.Decimal(45, 90))
-                .RuleFor(p => p.ActivityLevel, f => f.PickRandom("Sedentary", "Light", "Moderate", "Active", "VeryActive"))
-                .RuleFor(p => p.Tdee, f => f.Random.Decimal(1500, 3000));
+                .RuleFor(p => p.ActivityLevel, f => f.PickRandom("Sedentary", "Light", "Moderate", "Active", "VeryActive"));
 
             // Configure faker for ApplicationUser
             // Helper to hash password
@@ -429,13 +428,12 @@ public class DataSeeder
                 var goal = new Goal
                 {
                     UserId = user.UserId,
-                    GoalType = new Faker().PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
-                    TargetValue = profile.WeightKg.HasValue ? profile.WeightKg.Value * (decimal)0.9 : 60,
-                    Metric = "kg",
+                    Type = new Faker().PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
+                    TargetValue = profile.WeightKg * (decimal)0.9,
                     StartDate = user.CreatedAt,
                     EndDate = user.CreatedAt.AddMonths(6),
                     Status = "InProgress",
-                    Description = "Mục tiêu 6 tháng đầu năm"
+                    Notes = "Mục tiêu 6 tháng đầu năm"
                 };
                 _dbContext.Goals.Add(goal);
 
@@ -503,10 +501,10 @@ public class DataSeeder
                                 FatG = food.FatG * qtyRatio
                             };
 
-                            tCal += entry.CaloriesKcal;
-                            tP += entry.ProteinG;
-                            tC += entry.CarbsG;
-                            tF += entry.FatG;
+                            tCal += entry.CaloriesKcal ?? 0;
+                            tP += entry.ProteinG ?? 0;
+                            tC += entry.CarbsG ?? 0;
+                            tF += entry.FatG ?? 0;
 
                             nutritionLog.FoodEntries.Add(entry);
                         }

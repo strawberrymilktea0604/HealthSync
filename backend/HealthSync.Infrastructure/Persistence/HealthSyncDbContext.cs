@@ -59,6 +59,11 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
         Remove(entity);
     }
 
+    Task<bool> IApplicationDbContext.CanConnectAsync(CancellationToken cancellationToken)
+    {
+        return Database.CanConnectAsync(cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

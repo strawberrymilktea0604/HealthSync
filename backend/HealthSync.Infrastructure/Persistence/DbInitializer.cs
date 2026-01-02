@@ -196,7 +196,6 @@ public static class DbInitializer
                     HeightCm = _faker.Random.Decimal(150, 190),
                     WeightKg = _faker.Random.Decimal(45, 100),
                     ActivityLevel = _faker.PickRandom("Sedentary", "Light", "Moderate", "Active", "VeryActive"),
-                    Tdee = _faker.Random.Decimal(1500, 3000),
                     AvatarUrl = _faker.Internet.Avatar()
                 };
                 context.UserProfiles.Add(profile);
@@ -206,13 +205,12 @@ public static class DbInitializer
             var goal = new Goal
             {
                 UserId = user.UserId,
-                GoalType = _faker.PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
+                Type = _faker.PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
                 TargetValue = _faker.Random.Decimal(50, 90),
-                Metric = "kg",
                 StartDate = user.CreatedAt,
                 EndDate = user.CreatedAt.AddMonths(6),
                 Status = "InProgress",
-                Description = "Mục tiêu tập luyện năm nay"
+                Notes = "Mục tiêu tập luyện năm nay"
             };
             context.Goals.Add(goal);
 
@@ -289,10 +287,10 @@ public static class DbInitializer
                      FatG = food.FatG * qty
                  };
                  
-                 tCal += entry.CaloriesKcal;
-                 tP += entry.ProteinG;
-                 tC += entry.CarbsG;
-                 tF += entry.FatG;
+                 tCal += entry.CaloriesKcal ?? 0;
+                 tP += entry.ProteinG ?? 0;
+                 tC += entry.CarbsG ?? 0;
+                 tF += entry.FatG ?? 0;
 
                  nutritionLog.FoodEntries.Add(entry);
              }

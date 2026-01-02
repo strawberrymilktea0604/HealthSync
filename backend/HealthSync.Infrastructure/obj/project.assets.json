@@ -1863,7 +1863,8 @@
           "MediatR": "13.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.10",
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0"
+          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+          "Minio": "7.0.0"
         },
         "compile": {
           "bin/placeholder/HealthSync.Application.dll": {}

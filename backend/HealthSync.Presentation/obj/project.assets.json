@@ -3278,7 +3278,8 @@
           "MediatR": "13.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.10",
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0"
+          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+          "Minio": "7.0.0"
         },
         "compile": {
           "bin/placeholder/HealthSync.Application.dll": {}
@@ -3301,6 +3302,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
+          "Bogus": "35.6.5",
           "HealthSync.Application": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.2",
           "Microsoft.EntityFrameworkCore": "8.0.10",

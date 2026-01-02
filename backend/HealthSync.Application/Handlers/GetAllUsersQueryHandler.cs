@@ -5,6 +5,7 @@ using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace HealthSync.Application.Handlers;
 
