@@ -1,17 +1,13 @@
 import { ReactNode, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Permission } from "@/types/rbac";
 import {
   LayoutDashboard,
   Users,
-  Menu,
   X,
-  LogOut,
   ChevronLeft,
   ChevronRight,
-  User,
   Dumbbell,
   Apple,
 } from "lucide-react";
@@ -32,7 +28,6 @@ interface MenuItem {
 export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
   const { hasPermission } = usePermissions();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -72,10 +67,7 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  // Removed unused handleLogout function
 
   const handleMenuClick = (path: string) => {
     navigate(path);
