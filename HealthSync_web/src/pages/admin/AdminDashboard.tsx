@@ -1,42 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AdminLayout from "@/components/admin/AdminLayout";
-import { Card } from 'primereact/card';
-import { Chart } from 'primereact/chart';
-import { adminStatisticsService } from '@/services/adminStatisticsService';
-import { AdminStatistics } from '@/types/adminStatistics';
-import { toast } from 'sonner';
-import 'primeflex/primeflex.css';
+import AdminLayout from '../../components/admin/AdminLayout';
+import { adminService, AdminDashboardDto } from '../../services/adminService';
+import StatCard from '../../components/admin/StatCard';
+import { LineChartCard } from '../../components/admin/LineChartCard';
+import { PieChartCard } from '../../components/admin/PieChartCard';
 
 export default function AdminDashboard() {
-  const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
+  const [data, setData] = useState<AdminDashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeRange] = useState<number>(365);
-  const [exerciseSearch, setExerciseSearch] = useState('');
-  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStatistics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeRange]);
+    fetchDashboardData();
+  }, []);
 
-  const fetchStatistics = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('Fetching statistics...');
-      const data = await adminStatisticsService.getStatistics(timeRange);
-      console.log('Statistics data received:', data);
-      console.log('Top exercises:', data.workoutStatistics?.topExercises);
-      setStatistics(data);
-    } catch (error: unknown) {
-      console.error('Error fetching statistics:', error);
-      const errorResponse = error && typeof error === 'object' && 'response' in error ? (error as { response?: { status?: number } }).response : undefined;
-      if (errorResponse?.status === 401 || errorResponse?.status === 403) {
-        toast.error('Bạn không có quyền truy cập trang này');
-        navigate('/login');
-      } else {
-        toast.error('Không thể tải dữ liệu thống kê');
-      }
+      const result = await adminService.getDashboard();
+      setData(result);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
@@ -45,189 +29,191 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-          <i className="pi pi-spin pi-spinner" style={{ fontSize: '3rem', color: '#4A6C6F' }}></i>
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </AdminLayout>
     );
   }
 
-  if (!statistics) {
+  if (error || !data) {
     return (
       <AdminLayout>
-        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-          <p className="text-500">Không có dữ liệu thống kê</p>
+        <div className="p-8 text-red-500 text-center">
+          Error: {error || 'No data available'}
         </div>
       </AdminLayout>
     );
   }
 
-  // Ensure statistics has the required structure and valid data
-  if (!statistics.userStatistics || !statistics.workoutStatistics || !statistics.nutritionStatistics || !statistics.goalStatistics) {
-    return (
-      <AdminLayout>
-        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-          <p className="text-500">Dữ liệu thống kê không đầy đủ</p>
-        </div>
-      </AdminLayout>
-    );
-  }
+  // Prepare Chart Data
+  const userGrowthData = data.charts.userGrowth.labels.map((label, index) => ({
+    name: label,
+    users: data.charts.userGrowth.data[index],
+  }));
 
-  // Check for required numeric fields
-  if (typeof statistics.userStatistics.totalUsers !== 'number' ||
-    typeof statistics.userStatistics.activeUsers !== 'number' ||
-    typeof statistics.userStatistics.newUsersThisMonth !== 'number' ||
-    typeof statistics.workoutStatistics.totalWorkoutLogs !== 'number') {
-    console.error('Statistics data contains invalid numeric values:', statistics);
-    return (
-      <AdminLayout>
-        <div className="flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-          <p className="text-500">Dữ liệu thống kê không hợp lệ</p>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  const { userStatistics, workoutStatistics } = statistics;
-
-  // User Role Distribution Chart
-  const userRoleData = {
-    labels: userStatistics.userRoleDistribution?.map(r => r.role) || [],
-    datasets: [{
-      data: userStatistics.userRoleDistribution?.map(r => r.count) || [],
-      backgroundColor: ['#4A6C6F', '#6B8E23', '#8B7355'],
-    }]
-  };
-
-  const userRoleOptions = {
-    plugins: {
-      legend: {
-        position: 'bottom' as const
-      }
-    }
-  };
+  const goalData = data.charts.goalSuccessRate.labels.map((label: string, index: number) => ({
+    name: label,
+    value: data.charts.goalSuccessRate.data[index],
+  }));
 
   return (
     <AdminLayout>
-      <div className="p-4">
-        {/* Stats Cards Grid */}
-        <div className="grid">
-          <div className="col-12 md:col-6 lg:col-3">
-            <Card className="border-round-xl shadow-2">
-              <div className="flex align-items-center justify-content-between mb-3">
-                <div className="text-500 font-medium text-sm">Total Users</div>
-                <div className="w-3rem h-3rem border-circle bg-primary flex align-items-center justify-content-center">
-                  <i className="pi pi-users text-white text-xl"></i>
-                </div>
-              </div>
-              <div className="text-900 font-bold text-4xl mb-2">{(userStatistics.totalUsers || 0).toLocaleString()}</div>
-              <div className="text-500 text-sm font-medium">
-                Tổng số người dùng trong hệ thống
-              </div>
-            </Card>
-          </div>
-
-          <div className="col-12 md:col-6 lg:col-3">
-            <Card className="border-round-xl shadow-2">
-              <div className="flex align-items-center justify-content-between mb-3">
-                <div className="text-500 font-medium text-sm">New Users</div>
-                <div className="w-3rem h-3rem border-circle bg-primary flex align-items-center justify-content-center">
-                  <i className="pi pi-user-plus text-white text-xl"></i>
-                </div>
-              </div>
-              <div className="text-900 font-bold text-4xl mb-2">{userStatistics.newUsersThisMonth || 0}</div>
-              <div className="text-500 text-sm font-medium">
-                Người dùng mới tháng này
-              </div>
-            </Card>
-          </div>
-
-          <div className="col-12 md:col-6 lg:col-3">
-            <Card className="border-round-xl shadow-2">
-              <div className="flex align-items-center justify-content-between mb-3">
-                <div className="text-500 font-medium text-sm">Active Users</div>
-                <div className="w-3rem h-3rem border-circle bg-primary flex align-items-center justify-content-center">
-                  <i className="pi pi-chart-line text-white text-xl"></i>
-                </div>
-              </div>
-              <div className="text-900 font-bold text-4xl mb-2">{(userStatistics.activeUsers || 0).toLocaleString()}</div>
-              <div className="text-500 text-sm font-medium">
-                Người dùng hoạt động
-              </div>
-            </Card>
-          </div>
-
-          <div className="col-12 md:col-6 lg:col-3">
-            <Card className="border-round-xl shadow-2">
-              <div className="flex align-items-center justify-content-between mb-3">
-                <div className="text-500 font-medium text-sm">Workout Logs</div>
-                <div className="w-3rem h-3rem border-circle bg-primary flex align-items-center justify-content-center">
-                  <i className="pi pi-chart-bar text-white text-xl"></i>
-                </div>
-              </div>
-              <div className="text-900 font-bold text-4xl mb-2">{(workoutStatistics.totalWorkoutLogs || 0).toLocaleString()}</div>
-              <div className="text-500 text-sm font-medium">
-                Tổng số lượt tập luyện
-              </div>
-            </Card>
-          </div>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+          <span className="text-sm text-gray-500">Last updated: {new Date(data.timestamp).toLocaleString()}</span>
         </div>
 
-        {/* Charts Grid */}
-        <div className="grid mt-4">
-          <div className="col-12 lg:col-6">
-            <Card className="border-round-xl shadow-2">
-              <h3 className="text-xl font-semibold mb-4 text-900">Phân bổ vai trò người dùng</h3>
-              {userStatistics.userRoleDistribution && userStatistics.userRoleDistribution.length > 0 ? (
-                <Chart type="pie" data={userRoleData} options={userRoleOptions} style={{ height: '300px' }} />
+        {/* 1. KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Users"
+            value={data.kpiStats.totalUsers.value}
+            subtitle="Registered accounts"
+            trend={{
+              value: `${data.kpiStats.totalUsers.growthRate}%`,
+              isPositive: data.kpiStats.totalUsers.trend === 'up'
+            }}
+            icon="👥"
+          />
+          <StatCard
+            title="Active Users"
+            value={data.kpiStats.activeUsers.monthly}
+            subtitle={`Daily: ${data.kpiStats.activeUsers.daily}`}
+            trend={{
+              value: `${data.kpiStats.activeUsers.growthRate}%`,
+              isPositive: data.kpiStats.activeUsers.trend === 'up'
+            }}
+            icon="🔥"
+          />
+          <StatCard
+            title="Content Library"
+            value={data.kpiStats.contentCount.total}
+            subtitle={`${data.kpiStats.contentCount.exercises} Exercises, ${data.kpiStats.contentCount.foodItems} Foods`}
+            icon="📚"
+          />
+          <StatCard
+            title="AI Usage"
+            value={data.kpiStats.aiUsage.totalRequests}
+            subtitle={`Est. Cost: $${data.kpiStats.aiUsage.costEstimate.toFixed(2)}`}
+            icon="🤖"
+          />
+        </div>
+
+        {/* 2. Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <LineChartCard
+            title="User Growth (6 Months)"
+            data={userGrowthData}
+            dataKey="users"
+            xAxisKey="name"
+            color="#4F46E5"
+          />
+          <PieChartCard
+            title="Goal Success Rate"
+            data={goalData}
+            dataKey="value"
+            nameKey="name"
+            colors={['#10B981', '#F59E0B', '#EF4444']}
+          />
+        </div>
+
+        {/* 3. Heatmap & Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Activity Heatmap (Simplified List) */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">Activity Peak Hours</h3>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">Most active times:</p>
+              {data.charts.activityHeatmap.length === 0 ? (
+                <p className="text-sm text-gray-400 italic">Not enough data</p>
               ) : (
-                <p className="text-500 text-center">Chưa có dữ liệu phân bổ vai trò</p>
+                data.charts.activityHeatmap
+                  .sort((a, b) => b.count - a.count)
+                  .slice(0, 5)
+                  .map((point, idx) => (
+                    <div key={idx} className="flex justify-between items-center border-b pb-2">
+                      <span className="font-medium text-gray-700">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][point.day]} at {point.hour}:00
+                      </span>
+                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                        {point.count} logs
+                      </span>
+                    </div>
+                  ))
               )}
-            </Card>
+            </div>
           </div>
 
-          <div className="col-12 lg:col-6">
-            <Card className="border-round-xl shadow-2">
-              <h3 className="text-xl font-semibold mb-4 text-900">Most Popular Exercises</h3>
-              <div className="mb-3">
-                <input
-                  type="text"
-                  placeholder="Search exercises..."
-                  value={exerciseSearch}
-                  onChange={(e) => setExerciseSearch(e.target.value)}
-                  className="w-full p-2 border-1 border-200 border-round"
-                />
-              </div>
-              <div className="flex flex-column gap-3">
-                {(workoutStatistics.topExercises || [])
-                  .filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()))
-                  .slice(0, 5)
-                  .map((exercise) => (
-                    <div key={exercise.exerciseId} className="flex align-items-center gap-3">
-                      <div className="w-1rem h-1rem border-circle" style={{ backgroundColor: '#4A6C6F' }}></div>
-                      <span className="font-medium text-900">{exercise.exerciseName || 'Unknown Exercise'}</span>
-                      <div className="flex-1 mx-3">
-                        <div className="w-full h-0-5rem bg-gray-200 border-round">
-                          <div
-                            className="h-full bg-primary border-round"
-                            style={{
-                              width: `${(() => {
-                                const filteredExercises = (workoutStatistics.topExercises || []).filter(e => e && typeof e.exerciseName === 'string' && e.exerciseName.trim() !== '' && e.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase()));
-                                const maxUsage = filteredExercises.length > 0 ? Math.max(...filteredExercises.map(e => e.usageCount)) : 1;
-                                return (exercise.usageCount / maxUsage) * 100;
-                              })()}%`
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                      <span className="text-500 text-sm">{exercise.usageCount.toLocaleString()}</span>
-                    </div>
+          {/* Content Insights */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">Top Content</h3>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Top Exercises</h4>
+                <ul className="space-y-2">
+                  {data.contentInsights.topExercises.map(e => (
+                    <li key={e.id} className="flex justify-between text-sm">
+                      <span>{e.name}</span>
+                      <span className="text-gray-500">{e.count} logs</span>
+                    </li>
                   ))}
-                {(workoutStatistics.topExercises || []).filter(exercise => exercise && typeof exercise.exerciseName === 'string' && exercise.exerciseName.trim() !== '' && exercise.exerciseName.toLowerCase().includes(exerciseSearch.toLowerCase())).length === 0 && (
-                  <p className="text-500 text-center">Chưa có dữ liệu bài tập</p>
-                )}
+                  {data.contentInsights.topExercises.length === 0 && <span className="text-sm text-gray-400 italic">No data</span>}
+                </ul>
               </div>
-            </Card>
+              <div>
+                <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Top Foods</h4>
+                <ul className="space-y-2">
+                  {data.contentInsights.topFoods.map(f => (
+                    <li key={f.id} className="flex justify-between text-sm">
+                      <span>{f.name}</span>
+                      <span className="text-gray-500">{f.count} logs</span>
+                    </li>
+                  ))}
+                  {data.contentInsights.topFoods.length === 0 && <span className="text-sm text-gray-400 italic">No data</span>}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* System Health */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">System Health</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <span className="font-medium">Overall Status</span>
+                <span className={`px-2 py-1 rounded text-xs font-bold ${data.systemHealth.status === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                  {data.systemHealth.status}
+                </span>
+              </div>
+
+              {data.systemHealth.services.map((service, idx) => (
+                <div key={idx} className="flex items-center justify-between border-l-4 border-green-500 pl-3">
+                  <div>
+                    <p className="text-sm font-medium">{service.name}</p>
+                    <p className="text-xs text-gray-500">{service.latencyMs}ms latency</p>
+                  </div>
+                  <div className={`h-3 w-3 rounded-full ${service.status === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} title={service.status}></div>
+                </div>
+              ))}
+
+              {data.systemHealth.recentErrors.length > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="text-sm font-bold text-red-600 mb-2">Recent Errors</h4>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {data.systemHealth.recentErrors.map((err, idx) => (
+                      <div key={idx} className="text-xs text-gray-600 bg-red-50 p-2 rounded">
+                        <span className="font-mono text-red-500">[{err.code}]</span> {err.message}
+                        <br />
+                        <span className="text-gray-400">{new Date(err.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

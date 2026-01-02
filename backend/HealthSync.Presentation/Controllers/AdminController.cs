@@ -35,6 +35,23 @@ public class AdminController : ControllerBase
         _configuration = configuration;
     }
 
+    [HttpGet("dashboard")]
+    [RequirePermission(PermissionCodes.DASHBOARD_ADMIN)]
+    public async Task<IActionResult> GetDashboard()
+    {
+        try
+        {
+            var query = new GetAdminDashboardQuery();
+            var response = await _mediator.Send(query);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching admin dashboard data");
+            return StatusCode(500, new { Error = "Internal server error" });
+        }
+    }
+
     [HttpGet("users")]
     [RequirePermission(PermissionCodes.USER_READ)]
     public async Task<IActionResult> GetAllUsers(

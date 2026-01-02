@@ -79,63 +79,73 @@ public class AuthService : IAuthService
         {
             RoleNames.ADMIN => new List<string>
             {
-                // All User Management
-                "Permissions.Users.View",
-                "Permissions.Users.Create",
-                "Permissions.Users.Edit",
-                "Permissions.Users.Delete",
-                "Permissions.Users.ManageRoles",
+                // User Management
+                PermissionCodes.USER_READ,
+                PermissionCodes.USER_BAN,
+                PermissionCodes.USER_UPDATE_ROLE,
+                PermissionCodes.USER_DELETE,
 
-                // All Exercise Management
-                "Permissions.Exercises.View",
-                "Permissions.Exercises.Create",
-                "Permissions.Exercises.Edit",
-                "Permissions.Exercises.Delete",
+                // Exercise Management
+                PermissionCodes.EXERCISE_READ,
+                PermissionCodes.EXERCISE_CREATE,
+                PermissionCodes.EXERCISE_UPDATE,
+                PermissionCodes.EXERCISE_DELETE,
 
-                // All Food Management
-                "Permissions.FoodItems.View",
-                "Permissions.FoodItems.Create",
-                "Permissions.FoodItems.Edit",
-                "Permissions.FoodItems.Delete",
+                // Food Management
+                PermissionCodes.FOOD_READ,
+                PermissionCodes.FOOD_CREATE,
+                PermissionCodes.FOOD_UPDATE,
+                PermissionCodes.FOOD_DELETE,
 
-                // View All Data
-                "Permissions.WorkoutLogs.ViewAll",
-                "Permissions.NutritionLogs.ViewAll",
-                "Permissions.Goals.ViewAll",
-                "Permissions.Profile.ViewAll",
+                // Workout Logs
+                PermissionCodes.WORKOUT_LOG_READ,
+                PermissionCodes.WORKOUT_LOG_CREATE,
+                PermissionCodes.WORKOUT_LOG_UPDATE, // Assuming Admin can update all logs
+                PermissionCodes.WORKOUT_LOG_DELETE,
+
+                // Nutrition Logs
+                PermissionCodes.NUTRITION_LOG_READ,
+                PermissionCodes.NUTRITION_LOG_CREATE,
+                PermissionCodes.NUTRITION_LOG_UPDATE,
+                PermissionCodes.NUTRITION_LOG_DELETE,
+
+                // Goals
+                PermissionCodes.GOAL_READ,
+                PermissionCodes.GOAL_CREATE,
+                PermissionCodes.GOAL_UPDATE,
+                PermissionCodes.GOAL_DELETE,
 
                 // Dashboard & Reports
-                "Permissions.Dashboard.ViewAdmin",
-                "Permissions.Reports.View",
-                "Permissions.Reports.Export",
+                PermissionCodes.DASHBOARD_ADMIN,
+                PermissionCodes.DASHBOARD_VIEW, // Admin can view user dashboard too? or just admin dashboard logic
+                // PermissionCodes.REPORTS_VIEW, // Not defined in PermissionCodes.cs yet? Check file.
             },
             RoleNames.CUSTOMER => new List<string>
             {
                 // View Library
-                "Permissions.Exercises.View",
-                "Permissions.FoodItems.View",
+                PermissionCodes.EXERCISE_READ,
+                PermissionCodes.FOOD_READ,
 
-                // Own Workout Logs
-                "Permissions.WorkoutLogs.ViewOwn",
-                "Permissions.WorkoutLogs.CreateOwn",
-                "Permissions.WorkoutLogs.EditOwn",
-                "Permissions.WorkoutLogs.DeleteOwn",
+                // Own Workout Logs (Permissions are generic, Policy handles "Own")
+                PermissionCodes.WORKOUT_LOG_READ,
+                PermissionCodes.WORKOUT_LOG_CREATE,
+                PermissionCodes.WORKOUT_LOG_UPDATE,
+                PermissionCodes.WORKOUT_LOG_DELETE,
 
                 // Own Nutrition Logs
-                "Permissions.NutritionLogs.ViewOwn",
-                "Permissions.NutritionLogs.CreateOwn",
-                "Permissions.NutritionLogs.EditOwn",
-                "Permissions.NutritionLogs.DeleteOwn",
+                PermissionCodes.NUTRITION_LOG_READ,
+                PermissionCodes.NUTRITION_LOG_CREATE,
+                PermissionCodes.NUTRITION_LOG_UPDATE,
+                PermissionCodes.NUTRITION_LOG_DELETE,
 
                 // Own Goals
-                "Permissions.Goals.ViewOwn",
-                "Permissions.Goals.CreateOwn",
-                "Permissions.Goals.EditOwn",
-                "Permissions.Goals.DeleteOwn",
+                PermissionCodes.GOAL_READ,
+                PermissionCodes.GOAL_CREATE,
+                PermissionCodes.GOAL_UPDATE,
+                PermissionCodes.GOAL_DELETE,
 
-                // Own Profile
-                "Permissions.Profile.ViewOwn",
-                "Permissions.Profile.EditOwn",
+                // Dashboard
+                PermissionCodes.DASHBOARD_VIEW,
             },
             _ => new List<string>()
         };

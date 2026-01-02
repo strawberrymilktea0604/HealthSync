@@ -56,6 +56,107 @@ export interface UpdateUserRequest {
   role: string;
 }
 
+// --- Dashboard Types ---
+export interface KpiValueDto {
+  value: number;
+  growthRate: number;
+  trend: 'up' | 'down' | 'neutral';
+}
+
+export interface ActiveUsersDto {
+  daily: number;
+  monthly: number;
+  growthRate: number;
+  trend: 'up' | 'down' | 'neutral';
+}
+
+export interface ContentCountDto {
+  exercises: number;
+  foodItems: number;
+  total: number;
+}
+
+export interface AiUsageDto {
+  totalRequests: number;
+  costEstimate: number;
+  limitWarning: boolean;
+}
+
+export interface KpiStatsDto {
+  totalUsers: KpiValueDto;
+  activeUsers: ActiveUsersDto;
+  contentCount: ContentCountDto;
+  aiUsage: AiUsageDto;
+}
+
+export interface ChartDataDto {
+  labels: string[];
+  data: number[];
+  period: string;
+}
+
+export interface PieChartDataDto {
+  labels: string[];
+  data: number[];
+  totalGoals: number;
+}
+
+export interface HeatmapPointDto {
+  day: number;
+  hour: number;
+  count: number;
+}
+
+export interface DashboardChartsDto {
+  userGrowth: ChartDataDto;
+  goalSuccessRate: PieChartDataDto;
+  activityHeatmap: HeatmapPointDto[];
+}
+
+export interface TopContentItemDto {
+  id: number;
+  name: string;
+  count: number;
+}
+
+export interface MissedSearchDto {
+  keyword: string;
+  count: number;
+}
+
+export interface ContentInsightsDto {
+  topExercises: TopContentItemDto[];
+  topFoods: TopContentItemDto[];
+  missedSearches: MissedSearchDto[];
+}
+
+export interface ServiceStatusDto {
+  name: string;
+  status: string;
+  latencyMs: number;
+}
+
+export interface ErrorLogDto {
+  id: string;
+  timestamp: string;
+  message: string;
+  code: number;
+}
+
+export interface SystemHealthDto {
+  status: string;
+  services: ServiceStatusDto[];
+  recentErrors: ErrorLogDto[];
+}
+
+export interface AdminDashboardDto {
+  timestamp: string;
+  kpiStats: KpiStatsDto;
+  charts: DashboardChartsDto;
+  contentInsights: ContentInsightsDto;
+  systemHealth: SystemHealthDto;
+}
+
 export const adminService = {
   getAllUsers: async (
     page: number = 1,
@@ -157,5 +258,10 @@ export const adminService = {
     return {
       message: data.Message || data.message || 'User status updated successfully',
     };
+  },
+
+  getDashboard: async (): Promise<AdminDashboardDto> => {
+    const response = await api.get<AdminDashboardDto>('/admin/dashboard');
+    return response.data;
   },
 };

@@ -13,6 +13,10 @@ using Minio;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Linq;
+using HealthSync.Domain.Constants;
 
 namespace HealthSync.Presentation.Services;
 
@@ -347,9 +351,11 @@ public class DataSeeder
 
     private async Task SeedFakeUsersAsync()
     {
-        // 5. Seed Fake Users for Testing Pagination
+        // 5. Seed Fake Users with Rich Transactional Data
         if (await _dbContext.ApplicationUsers.CountAsync() < 50)
         {
+            Console.WriteLine("[Seeder] Generating 50 fake users with rich history...");
+            
             // Preload sample avatars
             var sampleAvatars = await _avatarSeeder.SeedSampleAvatarsAsync();
             var random = new Random();
@@ -367,24 +373,38 @@ public class DataSeeder
                 await _dbContext.SaveChangesAsync();
             }
 
+            // Fetch IDs for random generation
+            var exerciseIds = await _dbContext.Exercises.Select(e => e.ExerciseId).ToListAsync();
+            // Load FoodItems into memory for macro calculation (small dataset, ~50 items ok)
+            var foodItems = await _dbContext.FoodItems.ToListAsync();
+            // var foodDict = foodItems.ToDictionary(f => f.FoodItemId, f => f); // Not used directy, list is fine
+
             // Configure faker for UserProfile
-            var profileFaker = new Faker<UserProfile>("vi")
+            var profileFaker = new Faker<UserProfile>("vi") // Vietnamese locale
                 .RuleFor(p => p.FullName, f => f.Name.FullName())
                 .RuleFor(p => p.Gender, f => f.PickRandom("Male", "Female"))
                 .RuleFor(p => p.Dob, f => f.Date.Past(30, DateTime.Now.AddYears(-18)))
                 .RuleFor(p => p.HeightCm, f => f.Random.Decimal(150, 190))
-                .RuleFor(p => p.WeightKg, f => f.Random.Decimal(45, 90));
+                .RuleFor(p => p.WeightKg, f => f.Random.Decimal(45, 90))
+                .RuleFor(p => p.ActivityLevel, f => f.PickRandom("Sedentary", "Light", "Moderate", "Active", "VeryActive"))
+                .RuleFor(p => p.Tdee, f => f.Random.Decimal(1500, 3000));
 
             // Configure faker for ApplicationUser
+            // Helper to hash password
+            string passwordHash = HashPassword("Password123!");
+
             var userFaker = new Faker<ApplicationUser>("vi")
                 .RuleFor(u => u.Email, f => f.Internet.Email())
-                .RuleFor(u => u.UserName, f => f.Internet.UserName())
-                .RuleFor(u => u.PasswordHash, f => "DUMMY_HASH_FOR_TESTING")
-                .RuleFor(u => u.IsActive, f => true);
+                .RuleFor(u => u.UserName, (f, u) => u.Email)
+                .RuleFor(u => u.PasswordHash, f => passwordHash)
+                .RuleFor(u => u.IsActive, f => true)
+                .RuleFor(u => u.EmailConfirmed, f => true)
+                .RuleFor(u => u.CreatedAt, f => f.Date.Past(1));
 
             // Generate 50 fake users
             var fakeUsers = userFaker.Generate(50);
-
+            
+            int processedCount = 0;
             foreach (var user in fakeUsers)
             {
                 // Random gán avatar từ sample
@@ -398,20 +418,125 @@ public class DataSeeder
                 // Create corresponding profile
                 var profile = profileFaker.Generate();
                 profile.UserId = user.UserId; // Now UserId is set
+                _dbContext.UserProfiles.Add(profile);
 
                 // Create UserRole
-                var userRole = new UserRole
+                _dbContext.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
+
+                // --- NEW: Generate Transactional Data ---
+                
+                // 1. Goals
+                var goal = new Goal
                 {
                     UserId = user.UserId,
-                    RoleId = customerRole.Id
+                    GoalType = new Faker().PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
+                    TargetValue = profile.WeightKg.HasValue ? profile.WeightKg.Value * (decimal)0.9 : 60,
+                    Metric = "kg",
+                    StartDate = user.CreatedAt,
+                    EndDate = user.CreatedAt.AddMonths(6),
+                    Status = "InProgress",
+                    Description = "Mục tiêu 6 tháng đầu năm"
                 };
+                _dbContext.Goals.Add(goal);
 
-                // Add profile and role
-                _dbContext.UserProfiles.Add(profile);
-                _dbContext.UserRoles.Add(userRole);
-                await _dbContext.SaveChangesAsync();
+                // 2. Workout Logs (Last 90 days)
+                int workoutCount = random.Next(15, 30);
+                for (int w = 0; w < workoutCount; w++)
+                {
+                    var workoutDate = new Faker().Date.Between(DateTime.UtcNow.AddDays(-90), DateTime.UtcNow);
+                    var workoutLog = new WorkoutLog
+                    {
+                        UserId = user.UserId,
+                        WorkoutDate = workoutDate,
+                        DurationMin = random.Next(30, 90),
+                        Notes = new Faker().Lorem.Sentence(),
+                    };
+                    
+                    if (exerciseIds.Any())
+                    {
+                        int sessionCount = random.Next(3, 6);
+                        for (int s = 0; s < sessionCount; s++)
+                        {
+                            var exerciseId = exerciseIds[random.Next(exerciseIds.Count)];
+                            workoutLog.ExerciseSessions.Add(new ExerciseSession
+                            {
+                                ExerciseId = exerciseId,
+                                Sets = random.Next(3, 5),
+                                Reps = random.Next(8, 15),
+                                WeightKg = (decimal)random.Next(10, 80),
+                                Rpe = (decimal)random.NextDouble() * 3 + 6 // 6.0 - 9.0
+                            });
+                        }
+                    }
+                    _dbContext.WorkoutLogs.Add(workoutLog);
+                }
+
+                // 3. Nutrition Logs (Last 90 days)
+                int nutritionCount = random.Next(30, 50);
+                for (int n = 0; n < nutritionCount; n++)
+                {
+                    var logDate = new Faker().Date.Between(DateTime.UtcNow.AddDays(-90), DateTime.UtcNow);
+                    var nutritionLog = new NutritionLog
+                    {
+                        UserId = user.UserId,
+                        LogDate = logDate,
+                        Notes = new Faker().PickRandom("Ăn ngon", "Hơi no", "Healthy meal", null)
+                    };
+
+                    if (foodItems.Any())
+                    {
+                        int entryCount = random.Next(2, 5);
+                        decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+
+                        for (int e = 0; e < entryCount; e++)
+                        {
+                            var food = foodItems[random.Next(foodItems.Count)];
+                            var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5); // 0.5 - 2.0 serving
+
+                            var entry = new FoodEntry
+                            {
+                                FoodItemId = food.FoodItemId,
+                                Quantity = qtyRatio * food.ServingSize,
+                                CaloriesKcal = food.CaloriesKcal * qtyRatio,
+                                ProteinG = food.ProteinG * qtyRatio,
+                                CarbsG = food.CarbsG * qtyRatio,
+                                FatG = food.FatG * qtyRatio
+                            };
+
+                            tCal += entry.CaloriesKcal;
+                            tP += entry.ProteinG;
+                            tC += entry.CarbsG;
+                            tF += entry.FatG;
+
+                            nutritionLog.FoodEntries.Add(entry);
+                        }
+                        
+                        nutritionLog.TotalCalories = tCal;
+                        nutritionLog.ProteinG = tP;
+                        nutritionLog.CarbsG = tC;
+                        nutritionLog.FatG = tF;
+                    }
+                    _dbContext.NutritionLogs.Add(nutritionLog);
+                }
+
+                processedCount++;
+                if (processedCount % 10 == 0)
+                {
+                    Console.WriteLine($"[Seeder] Processed {processedCount}/50 users...");
+                    await _dbContext.SaveChangesAsync(); // Save in batches
+                }
             }
+            
+            await _dbContext.SaveChangesAsync(); // Final save
+            Console.WriteLine("[Success] Generated 50 fake users with full history.");
         }
+    }
+
+    private static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
     }
 }
 

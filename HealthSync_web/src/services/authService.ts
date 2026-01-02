@@ -46,9 +46,17 @@ export interface UpdateProfileRequest {
   activityLevel: string;
 }
 
+export interface SendVerificationCodeRequest {
+  email: string;
+}
+
 class AuthService {
   private getApiBaseUrl(): string {
     return import.meta.env.VITE_API_BASE_URL || '/api';
+  }
+
+  getGoogleAuthUrl(): string {
+    return `${this.getApiBaseUrl()}/auth/google/web`;
   }
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
