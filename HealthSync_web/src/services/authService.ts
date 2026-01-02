@@ -30,6 +30,7 @@ export interface ProfileResponse {
   email: string;
   fullName: string;
   role: string;
+  avatarUrl?: string;
 }
 
 export interface SetPasswordRequest {
@@ -70,7 +71,7 @@ class AuthService {
   }
 
   async getProfile(): Promise<ProfileResponse> {
-    const response = await api.get('/user/profile');
+    const response = await api.get('/userprofile');
     return response.data;
   }
 
@@ -83,7 +84,7 @@ class AuthService {
   }
 
   async updateProfile(data: UpdateProfileRequest): Promise<void> {
-    await api.put('/user/profile', data);
+    await api.put('/userprofile', data);
   }
 }
 

@@ -16,6 +16,7 @@ import {
   Apple,
 } from "lucide-react";
 import logoHeader from "@/assets/logoheader.png";
+import AdminHeader from "./AdminHeader";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -128,8 +129,8 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
                 key={item.path}
                 onClick={() => handleMenuClick(item.path)}
                 className={`w-full flex items-center gap-4 px-6 py-4 transition-colors ${isActive(item.path)
-                    ? "bg-[#5A7F7F] border-l-4 border-[#E8E4D9]"
-                    : "hover:bg-[#5A7F7F]"
+                  ? "bg-[#5A7F7F] border-l-4 border-[#E8E4D9]"
+                  : "hover:bg-[#5A7F7F]"
                   }`}
                 title={isSidebarCollapsed ? item.label : ""}
               >
@@ -159,46 +160,10 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm px-4 lg:px-8 py-4 flex items-center justify-between">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="lg:hidden text-[#4A6F6F] hover:bg-[#E8E4D9] p-2 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-
-          <h1 className="text-xl lg:text-2xl font-bold text-[#4A6F6F]">
-            {accessibleMenuItems.find((item) => isActive(item.path))?.label ||
-              "Admin Panel"}
-          </h1>
-
-          {/* User Info & Actions */}
-          <div className="flex items-center gap-2 lg:gap-4">
-            {/* User Avatar & Name */}
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-[#4A6F6F] text-white flex items-center justify-center hover:bg-[#5A7F7F] transition-colors">
-                <User size={20} />
-              </div>
-              <div className="hidden lg:block">
-                <p className="text-sm font-semibold text-gray-800">
-                  {user?.fullName || "Admin"}
-                </p>
-                <p className="text-xs text-gray-500">{user?.role || "Administrator"}</p>
-              </div>
-            </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 lg:px-4 py-2 bg-[#4A6F6F] text-white rounded-lg hover:bg-[#5A7F7F] transition-colors"
-              title="Đăng xuất"
-            >
-              <LogOut size={18} />
-              <span className="hidden lg:inline">Đăng xuất</span>
-            </button>
-          </div>
-        </header>
+        <AdminHeader
+          title={accessibleMenuItems.find((item) => isActive(item.path))?.label || "Admin Panel"}
+          onMobileMenuOpen={() => setIsMobileMenuOpen(true)}
+        />
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-4 lg:p-8">{children}</main>
