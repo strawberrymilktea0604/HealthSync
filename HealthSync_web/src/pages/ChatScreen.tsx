@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, RefreshCw } from 'lucide-react';
 import { chatService } from '../services/chatService';
 import { ChatMessage } from '../types/chat';
+import logo from '../assets/logo.png';
 
 const ChatScreen: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -36,7 +37,7 @@ const ChatScreen: React.FC = () => {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const question = inputMessage.trim();
     if (!question || isSending) return;
 
@@ -54,7 +55,7 @@ const ChatScreen: React.FC = () => {
 
     try {
       const response = await chatService.sendMessage(question);
-      
+
       const aiMessage: ChatMessage = {
         id: response.messageId,
         role: 'assistant',
@@ -97,9 +98,8 @@ const ChatScreen: React.FC = () => {
     return messages.map((message) => (
       <div
         key={message.id}
-        className={`flex gap-3 ${
-          message.role === 'user' ? 'justify-end' : 'justify-start'
-        }`}
+        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'
+          }`}
       >
         {message.role === 'assistant' && (
           <div className="w-10 h-10 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
@@ -108,17 +108,15 @@ const ChatScreen: React.FC = () => {
         )}
 
         <div
-          className={`max-w-2xl rounded-2xl px-4 py-3 ${
-            message.role === 'user'
-              ? 'bg-[#D4C5A9] text-white'
-              : 'bg-white border border-gray-200'
-          }`}
+          className={`max-w-2xl rounded-2xl px-4 py-3 ${message.role === 'user'
+            ? 'bg-[#D4C5A9] text-white'
+            : 'bg-white border border-gray-200'
+            }`}
         >
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
           <p
-            className={`text-xs mt-1 ${
-              message.role === 'user' ? 'text-white/70' : 'text-gray-500'
-            }`}
+            className={`text-xs mt-1 ${message.role === 'user' ? 'text-white/70' : 'text-gray-500'
+              }`}
           >
             {formatTime(message.createdAt)}
           </p>
@@ -158,7 +156,9 @@ const ChatScreen: React.FC = () => {
       {/* Welcome Banner */}
       <div className="bg-[#D4C5A9]/20 border-b border-[#D4C5A9] px-6 py-4">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-lg font-semibold">🤖 Xin chào! Tôi là HealthSync Bot</p>
+          <p className="text-lg font-semibold flex items-center justify-center gap-2">
+            🤖 Xin chào! Tôi là <img src={logo} alt="HealthSync" className="h-6 inline-block" /> Bot
+          </p>
           <p className="text-sm text-gray-600">
             Hãy hỏi tôi về dinh dưỡng, luyện tập và sức khỏe của bạn
           </p>
@@ -169,7 +169,7 @@ const ChatScreen: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="max-w-4xl mx-auto space-y-4">
           {renderChatContent()}
-          
+
           {isSending && (
             <div className="flex gap-3 justify-start">
               <div className="w-10 h-10 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
@@ -184,7 +184,7 @@ const ChatScreen: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
       </div>

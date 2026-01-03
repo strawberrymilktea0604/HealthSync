@@ -1,256 +1,184 @@
-import { useState } from "react";
-import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
-import { Card } from "primereact/card";
-import { ProgressBar } from "primereact/progressbar";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import nutritionService, { NutritionLog } from "@/services/nutritionService";
+import Header from "@/components/Header";
+import { Loader2, Plus, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
 
 export default function NutritionOverview() {
-  const [userInfo] = useState({
-    fullName: "Nguyen Duc Manh",
-    avatarUrl: "https://placehold.co/100x100"
-  });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [nutritionLog, setNutritionLog] = useState<NutritionLog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [targetCalories] = useState(2000); // TODO: Fetch from user profile/goals
+  const [targetProtein] = useState(150);
+  const [targetCarbs] = useState(220);
+  const [targetFat] = useState(60);
 
-  const nutritionData = {
-    dailyCalories: 1800,
-    targetCalories: 2000,
-    protein: 80,
-    targetProtein: 100,
-    carbs: 200,
-    targetCarbs: 250,
-    fat: 50,
-    targetFat: 65
+  useEffect(() => {
+    loadNutritionLog();
+  }, []);
+
+  const loadNutritionLog = async () => {
+    try {
+      setLoading(true);
+      const data = await nutritionService.getNutritionLogByDate(new Date());
+      setNutritionLog(data);
+    } catch (error) {
+      console.error("Failed to load nutrition log", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const currentCalories = nutritionLog?.totalCalories || 0;
+  const currentProtein = nutritionLog?.proteinG || 0;
+  const currentCarbs = nutritionLog?.carbsG || 0;
+  const currentFat = nutritionLog?.fatG || 0;
+
+  // Data for the gauge
+  const gaugeData = [
+    { name: "Consumed", value: Math.min(currentCalories, targetCalories) },
+    { name: "Remaining", value: Math.max(0, targetCalories - currentCalories) },
+  ];
+  const COLORS = ["#FF69B4", "#E0E0E0"]; // Pink for progress, gray for empty
+
+  // Custom detailed gauge data
+  // We want a gradient-like effect or multiple segments if possible, but for now simple 2 segments
+  // Actually, to match Image 0 (rainbow/pink-blue-yellow), we might want a segmented colorful arc if it's the specific design.
+  // The image description says "Pink Protein, Blue Carb, Yellow Fat".
+  // The gauge itself in Image 0 seems to be "Calories".
+  // Let's stick to a clean calories gauge for now.
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFBD4] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-[#4A6F6F]" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen surface-ground">
-      {/* Header */}
-      <header className="surface-card border-bottom-1 surface-border px-4 py-3">
-        <div className="flex align-items-center justify-content-between max-w-7xl mx-auto">
-          <div className="flex align-items-center gap-3">
-            <h1 className="text-3xl font-bold m-0">
-              <span className="text-900">health</span>
-              <span className="text-primary">sync</span>
-            </h1>
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <main className="max-w-4xl mx-auto px-4 md:px-8 pb-12 pt-4">
+        <div className="mb-6 flex items-center gap-2">
+          <Button variant="ghost" className="rounded-full hover:bg-black/5" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-xl font-bold text-gray-800 uppercase tracking-wide">Dinh dưỡng hôm nay</h1>
+        </div>
+
+        {/* Main Card */}
+        <div className="bg-[#FFFFE0]/80 rounded-[2.5rem] p-8 shadow-sm border border-white/50 backdrop-blur-sm relative overflow-hidden">
+
+          {/* Header Text */}
+          <div className="text-center mb-8 relative z-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#2d2d2d] mb-2">Dinh dưỡng hôm nay</h2>
+            <p className="text-gray-400 font-medium">{format(new Date(), "'Cập nhật lúc' HH:mm, dd/MM/yyyy")}</p>
           </div>
 
-          <div className="flex align-items-center gap-3">
-            <Avatar 
-              image={userInfo.avatarUrl} 
-              size="large" 
-              shape="circle" 
-            />
-          </div>
-        </div>
-      </header>
+          {/* Gauge Chart */}
+          <div className="relative h-64 w-full flex items-center justify-center mb-8 z-10">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={gaugeData}
+                  cx="50%"
+                  cy="70%"
+                  startAngle={180}
+                  endAngle={0}
+                  innerRadius={100}
+                  outerRadius={120}
+                  paddingAngle={0}
+                  dataKey="value"
+                  stroke="none"
+                  cornerRadius={10}
+                >
+                  <Cell fill="url(#colorGradient)" />
+                  <Cell fill="#e5e7eb" />
+                </Pie>
+                <defs>
+                  <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#ebb305" />
+                    <stop offset="50%" stopColor="#f472b6" />
+                    <stop offset="100%" stopColor="#60a5fa" />
+                  </linearGradient>
+                </defs>
+              </PieChart>
+            </ResponsiveContainer>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Welcome Section */}
-        <div className="mb-5">
-          <p className="text-xl mb-2">Welcome to</p>
-          <h2 className="text-4xl font-bold m-0">
-            <span className="text-900">health</span>
-            <span className="text-primary">sync</span>
-          </h2>
-          <p className="text-600 mt-2">{userInfo.fullName}</p>
-        </div>
-
-        {/* Page Title */}
-        <div className="mb-5">
-          <h3 className="text-3xl font-bold m-0">Welcome to Your Nutrition</h3>
-        </div>
-
-        {/* Nutrition Overview Card */}
-        <Card className="shadow-3" style={{ borderRadius: '2rem' }}>
-          <div className="grid">
-            {/* Main Nutrition Stats */}
-            <div className="col-12 lg:col-8">
-              <div className="mb-5">
-                <h4 className="text-2xl font-bold mb-4">Tổng quan dinh dưỡng hôm nay</h4>
-                
-                {/* Calories */}
-                <div className="mb-4 p-4 surface-100 border-round-xl">
-                  <div className="flex align-items-center justify-content-between mb-2">
-                    <span className="font-semibold">Calories</span>
-                    <span className="text-xl font-bold">{nutritionData.dailyCalories}/{nutritionData.targetCalories} kcal</span>
-                  </div>
-                  <ProgressBar 
-                    value={(nutritionData.dailyCalories / nutritionData.targetCalories) * 100} 
-                    showValue={false}
-                    style={{ height: '12px' }}
-                  />
-                </div>
-
-                {/* Protein */}
-                <div className="mb-4 p-4 surface-100 border-round-xl">
-                  <div className="flex align-items-center justify-content-between mb-2">
-                    <span className="font-semibold">Protein</span>
-                    <span className="text-xl font-bold">{nutritionData.protein}/{nutritionData.targetProtein}g</span>
-                  </div>
-                  <ProgressBar 
-                    value={(nutritionData.protein / nutritionData.targetProtein) * 100} 
-                    showValue={false}
-                    style={{ height: '12px' }}
-                    color="#4CAF50"
-                  />
-                </div>
-
-                {/* Carbs */}
-                <div className="mb-4 p-4 surface-100 border-round-xl">
-                  <div className="flex align-items-center justify-content-between mb-2">
-                    <span className="font-semibold">Carbs</span>
-                    <span className="text-xl font-bold">{nutritionData.carbs}/{nutritionData.targetCarbs}g</span>
-                  </div>
-                  <ProgressBar 
-                    value={(nutritionData.carbs / nutritionData.targetCarbs) * 100} 
-                    showValue={false}
-                    style={{ height: '12px' }}
-                    color="#2196F3"
-                  />
-                </div>
-
-                {/* Fat */}
-                <div className="mb-4 p-4 surface-100 border-round-xl">
-                  <div className="flex align-items-center justify-content-between mb-2">
-                    <span className="font-semibold">Fat</span>
-                    <span className="text-xl font-bold">{nutritionData.fat}/{nutritionData.targetFat}g</span>
-                  </div>
-                  <ProgressBar 
-                    value={(nutritionData.fat / nutritionData.targetFat) * 100} 
-                    showValue={false}
-                    style={{ height: '12px' }}
-                    color="#FF9800"
-                  />
-                </div>
-              </div>
-
-              {/* Meal Breakdown */}
-              <div>
-                <h4 className="text-xl font-bold mb-3">Bữa ăn hôm nay</h4>
-                <div className="grid">
-                  <div className="col-12 md:col-4">
-                    <Card className="text-center" style={{ backgroundColor: '#FFF3E0' }}>
-                      <i className="pi pi-sun text-5xl text-orange-500 mb-3"></i>
-                      <h5 className="text-lg font-bold m-0 mb-2">Sáng</h5>
-                      <p className="text-600 m-0">450 kcal</p>
-                    </Card>
-                  </div>
-                  <div className="col-12 md:col-4">
-                    <Card className="text-center" style={{ backgroundColor: '#E3F2FD' }}>
-                      <i className="pi pi-cloud text-5xl text-blue-500 mb-3"></i>
-                      <h5 className="text-lg font-bold m-0 mb-2">Trưa</h5>
-                      <p className="text-600 m-0">750 kcal</p>
-                    </Card>
-                  </div>
-                  <div className="col-12 md:col-4">
-                    <Card className="text-center" style={{ backgroundColor: '#F3E5F5' }}>
-                      <i className="pi pi-moon text-5xl text-purple-500 mb-3"></i>
-                      <h5 className="text-lg font-bold m-0 mb-2">Tối</h5>
-                      <p className="text-600 m-0">600 kcal</p>
-                    </Card>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Side Panel */}
-            <div className="col-12 lg:col-4">
-              <Card className="h-full" style={{ backgroundColor: '#F5F5F5' }}>
-                <div className="text-center mb-4">
-                  <img 
-                    src="https://placehold.co/300x200" 
-                    alt="Nutrition tips" 
-                    className="w-full border-round-2xl"
-                  />
-                </div>
-                
-                <h5 className="text-lg font-bold mb-3">Gợi ý hôm nay</h5>
-                <p className="text-600 line-height-3 mb-4">
-                  Bạn đang thiếu 20g protein. Hãy thêm thực phẩm giàu protein như trứng, thịt gà hoặc đậu phụ vào bữa tối nhé!
-                </p>
-
-                <Button 
-                  label="Xem gợi ý món ăn" 
-                  className="w-full mb-3"
-                  outlined
-                />
-                <Button 
-                  label="Ghi bữa ăn" 
-                  className="w-full"
-                />
-              </Card>
+            <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+              <p className="text-5xl font-black text-[#ff8a80]">{Math.round(currentCalories)}</p>
+              <p className="text-gray-400 font-medium text-lg">/ {targetCalories} kcal</p>
             </div>
           </div>
-        </Card>
 
-        {/* Quick Actions */}
-        <div className="grid mt-5">
-          <div className="col-12 md:col-6">
-            <Button 
-              label="Danh sách món ăn" 
-              icon="pi pi-list" 
-              className="w-full p-4 text-xl"
-              style={{ borderRadius: '2rem' }}
-              onClick={() => globalThis.location.href = '/food-list'}
-            />
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 z-10 relative">
+
+            {/* Protein */}
+            <div className="bg-white/60 rounded-3xl p-4 flex flex-col items-center justify-center text-center backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-pink-400"></div>
+                <span className="font-bold text-gray-700">Protein</span>
+              </div>
+              <p className="text-2xl font-black text-[#2d2d2d] mb-1">{Math.round(currentProtein)}g</p>
+              <p className="text-xs text-gray-500">Mục tiêu: {targetProtein}g</p>
+            </div>
+
+            {/* Carb */}
+            <div className="bg-white/60 rounded-3xl p-4 flex flex-col items-center justify-center text-center backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                <span className="font-bold text-gray-700">Carb</span>
+              </div>
+              <p className="text-2xl font-black text-[#2d2d2d] mb-1">{Math.round(currentCarbs)}g</p>
+              <p className="text-xs text-gray-500">Mục tiêu: {targetCarbs}g</p>
+            </div>
+
+            {/* Fat */}
+            <div className="bg-white/60 rounded-3xl p-4 flex flex-col items-center justify-center text-center backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                <span className="font-bold text-gray-700">Fat</span>
+              </div>
+              <p className="text-2xl font-black text-[#2d2d2d] mb-1">{Math.round(currentFat)}g</p>
+              <p className="text-xs text-gray-500">Mục tiêu: {targetFat}g</p>
+            </div>
+
           </div>
-          <div className="col-12 md:col-6">
-            <Button 
-              label="Tìm kiếm món ăn" 
-              icon="pi pi-search" 
-              className="w-full p-4 text-xl"
-              outlined
-              style={{ borderRadius: '2rem' }}
-              onClick={() => globalThis.location.href = '/food-search'}
-            />
+
+          {/* Add Button */}
+          <div className="flex justify-center z-10 relative">
+            <Button
+              className="bg-[#ffab91] hover:bg-[#ff8a65] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-[#ffab91]/30 transition-all hover:scale-105 flex items-center gap-2"
+              onClick={() => navigate('/food-search')} // Assuming food search is where we add meals
+            >
+              <div className="bg-white/20 rounded-full p-1">
+                <Plus className="w-5 h-5" />
+              </div>
+              Thêm bữa ăn
+            </Button>
           </div>
+
         </div>
+
       </main>
 
-      {/* Footer */}
-      <footer className="surface-card border-top-1 surface-border py-6 mt-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid align-items-center">
-            <div className="col-12 md:col-4">
-              <h2 className="text-3xl font-bold m-0">
-                <span className="text-900">health</span>
-                <span className="text-primary">sync</span>
-              </h2>
-            </div>
-            
-            <div className="col-12 md:col-4">
-              <div className="flex flex-wrap gap-4 justify-content-center">
-                <a href="#inspiration" className="text-600 no-underline">Inspiration</a>
-                <a href="#about" className="text-600 no-underline">About</a>
-                <a href="#support" className="text-600 no-underline">Support</a>
-                <a href="#blog" className="text-600 no-underline">Blog</a>
-                <a href="#pts" className="text-600 no-underline">PTs</a>
-              </div>
-            </div>
-
-            <div className="col-12 md:col-4">
-              <div className="flex gap-3 justify-content-end">
-                <Button icon="pi pi-twitter" rounded text />
-                <Button icon="pi pi-facebook" rounded text />
-                <Button icon="pi pi-instagram" rounded text />
-              </div>
-            </div>
-          </div>
-
-          <div className="border-top-1 surface-border pt-4 mt-4">
-            <div className="flex flex-wrap gap-4 justify-content-between text-sm text-600">
-              <span>© healthsync 2025</span>
-              <div className="flex gap-4">
-                <a href="#terms" className="text-600 no-underline">Term&Conditions</a>
-                <a href="#cookies" className="text-600 no-underline">Cookies</a>
-                <a href="#resources" className="text-600 no-underline">Resources</a>
-                <a href="#tags" className="text-600 no-underline">Tags</a>
-                <a href="#freelancers" className="text-600 no-underline">Freelancers</a>
-              </div>
-            </div>
-          </div>
+      {/* Footer Line */}
+      <footer className="max-w-7xl mx-auto px-6 md:px-8 pb-12 mt-auto">
+        <div className="border-t border-black/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          {/* ... reuse footer content or leave simple ... */}
         </div>
       </footer>
+
     </div>
   );
 }
+

@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Target } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { useToast } from '@/hooks/use-toast';
 
 const CreateGoalPage = () => {
@@ -81,8 +82,8 @@ const CreateGoalPage = () => {
             Quay lại
           </Button>
           <h1 className="text-3xl font-bold text-gray-900">Tạo mục tiêu sức khỏe mới</h1>
-          <p className="text-gray-600 mt-1">
-            Hãy đặt ra một mục tiêu rõ ràng để hoàn thành nó cùng HealthSync
+          <p className="text-gray-600 mt-1 flex items-center gap-2">
+            Hãy đặt ra 1 mục tiêu và cùng <img src={logo} alt="HealthSync" className="h-5 inline-block" /> hoàn thiện nhé
           </p>
         </div>
 
@@ -132,7 +133,7 @@ const CreateGoalPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, targetValue: Number.parseFloat(e.target.value) || 0 })
                     }
-                    placeholder="Ví dụ: 65"
+                    placeholder="ví dụ: 60kg hoặc 10km"
                     className="pr-12 bg-white"
                     required
                   />

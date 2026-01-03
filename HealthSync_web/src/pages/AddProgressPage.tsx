@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { goalService, AddProgressRequest } from '@/services/goalService';
+import { goalService, AddProgressRequest, Goal } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Flag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AddProgressPage = () => {
@@ -14,6 +14,7 @@ const AddProgressPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [goal, setGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState<AddProgressRequest>({
     recordDate: new Date().toISOString().split('T')[0],
     value: 0,
@@ -21,6 +22,15 @@ const AddProgressPage = () => {
     weightKg: undefined,
     waistCm: undefined,
   });
+
+  useEffect(() => {
+    if (goalId) {
+      goalService.getGoals().then(goals => {
+        const found = goals.find((g: Goal) => g.goalId === Number(goalId));
+        if (found) setGoal(found);
+      });
+    }
+  }, [goalId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +79,7 @@ const AddProgressPage = () => {
           </Button>
           <h1 className="text-3xl font-bold text-gray-900">Cập nhật tiến độ mục tiêu</h1>
           <p className="text-gray-600 mt-1">
-            Ghi lại tiến độ của bạn để theo dõi sự tiến bộ
+            Ghi lại tiến trình của bạn để ra mục tiêu
           </p>
         </div>
 
@@ -83,6 +93,47 @@ const AddProgressPage = () => {
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Current Goal Display (Read-only) */}
+              <div className="bg-gray-50 p-4 rounded-lg border flex items-center gap-3">
+                <div className="bg-white p-2 rounded-full shadow-sm">
+                  <Flag className="w-5 h-5 text-[#5FCCB4]" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Mục tiêu hiện tại</p>
+                  <p className="font-bold text-gray-900">
+                    {goal ? (
+                      <>
+                        {goal.type === 'weight_loss' ? 'Giảm' : 'Mục tiêu'} <span className="text-[#5FCCB4]">{goal.targetValue}kg</span>
+                      </>
+                    ) : '...'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Value (Main Metric) */}
+              <div className="space-y-2">
+                <Label htmlFor="value" className="text-base font-semibold">
+                  Giá trị đo lường mới (kg) <span className="text-red-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="value"
+                    type="number"
+                    step="0.1"
+                    value={formData.value || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, value: Number.parseFloat(e.target.value) || 0 })
+                    }
+                    placeholder="Nhập cân nặng hiện tại"
+                    className="pr-12 bg-white"
+                    required
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    kg
+                  </span>
+                </div>
+              </div>
+
               {/* Record Date */}
               <div className="space-y-2">
                 <Label htmlFor="recordDate" className="text-base font-semibold">
@@ -98,30 +149,6 @@ const AddProgressPage = () => {
                   className="bg-white"
                   max={new Date().toISOString().split('T')[0]}
                 />
-              </div>
-
-              {/* Value (Main Metric) */}
-              <div className="space-y-2">
-                <Label htmlFor="value" className="text-base font-semibold">
-                  Giá trị đo được <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="value"
-                    type="number"
-                    step="0.1"
-                    value={formData.value || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, value: Number.parseFloat(e.target.value) || 0 })
-                    }
-                    placeholder="Nhập giá trị"
-                    className="pr-12 bg-white"
-                    required
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    kg
-                  </span>
-                </div>
               </div>
 
               {/* Weight */}
@@ -198,9 +225,9 @@ const AddProgressPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-3 text-lg font-semibold"
+                  className="w-full bg-[#E8E4D9] hover:bg-[#d6d2c4] text-gray-900 py-3 text-lg font-bold border-2 border-gray-900/10"
                 >
-                  {loading ? 'Đang lưu...' : 'Lưu tiến độ'}
+                  {loading ? 'Đang cập nhật...' : 'Cập nhật tiến độ'}
                 </Button>
               </div>
             </form>

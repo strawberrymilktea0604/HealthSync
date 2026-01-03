@@ -100,7 +100,7 @@ export default function AdminLayout({ children }: Readonly<AdminLayoutProps>) {
           <div className="flex items-center gap-3">
             <img src={logoHeader} alt="HealthSync Logo" className="w-10 h-10 rounded-lg" />
             {!isSidebarCollapsed && (
-              <span className="text-xl font-semibold">HealthSync Admin</span>
+              <span className="text-xl font-semibold">Admin</span>
             )}
           </div>
           {/* Mobile Close Button */}

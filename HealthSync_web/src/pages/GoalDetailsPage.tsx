@@ -4,13 +4,14 @@ import { goalService, Goal } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowLeft, 
-  Plus, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Plus,
+  Calendar,
   TrendingUp,
   TrendingDown,
-  Activity
+  Activity,
+  Target
 } from 'lucide-react';
 import {
   XAxis,
@@ -40,10 +41,11 @@ const GoalDetailsPage = () => {
     if (goalId) {
       loadGoalDetails();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goalId]);
 
   const loadGoalDetails = async () => {
+    if (!goalId) return;
     try {
       setLoading(true);
       const goals = await goalService.getGoals();
@@ -70,15 +72,15 @@ const GoalDetailsPage = () => {
 
   const calculateProgress = () => {
     if (!goal || goal.progressRecords.length === 0) return 0;
-    
+
     const sortedRecords = [...goal.progressRecords].sort(
       (a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
     );
-    
+
     const startValue = sortedRecords[0].value;
     const currentValue = sortedRecords.at(-1)?.value ?? 0;
     const targetValue = goal.targetValue;
-    
+
     if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
       const progress = ((startValue - currentValue) / (startValue - targetValue)) * 100;
       return Math.max(0, Math.min(100, progress));
@@ -90,7 +92,7 @@ const GoalDetailsPage = () => {
 
   const getChartData = () => {
     if (!goal || goal.progressRecords.length === 0) return [];
-    
+
     const sortedRecords = [...goal.progressRecords].sort(
       (a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
     );
@@ -107,9 +109,9 @@ const GoalDetailsPage = () => {
     }
 
     return filteredRecords.map(record => ({
-      date: new Date(record.recordDate).toLocaleDateString('vi-VN', { 
-        month: 'short', 
-        day: 'numeric' 
+      date: new Date(record.recordDate).toLocaleDateString('vi-VN', {
+        month: 'short',
+        day: 'numeric'
       }),
       value: record.value,
       weight: record.weightKg,
@@ -155,7 +157,7 @@ const GoalDetailsPage = () => {
           <Card className="bg-white">
             <CardContent className="py-12 text-center">
               <p className="text-gray-600">Không tìm thấy mục tiêu</p>
-              <Button 
+              <Button
                 onClick={() => navigate('/goals')}
                 className="mt-4 bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
               >
@@ -171,10 +173,10 @@ const GoalDetailsPage = () => {
   const progress = calculateProgress();
   const stats = getStatistics();
   const chartData = getChartData();
-  const latestRecord = goal.progressRecords.length > 0 
-    ? [...goal.progressRecords].sort((a, b) => 
-        new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
-      )[0]
+  const latestRecord = goal.progressRecords.length > 0
+    ? [...goal.progressRecords].sort((a, b) =>
+      new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
+    )[0]
     : null;
 
   return (
@@ -192,118 +194,73 @@ const GoalDetailsPage = () => {
           </Button>
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {getGoalTypeDisplay(goal.type)}
+              <p className="text-sm text-gray-500 mb-1">Mục tiêu chính</p>
+              <h1 className="text-3xl font-bold text-[#5FCCB4] mb-1">
+                {getGoalTypeDisplay(goal.type)} {Math.abs(goal.targetValue - (goal.progressRecords[0]?.value || 0))}kg
               </h1>
-              <p className="text-gray-600 mt-1">
-                Mục tiêu: {goal.targetValue} kg
+              <p className="text-gray-400 text-sm">
+                Mục tiêu: {goal.targetValue}kg
               </p>
             </div>
             <Button
               onClick={() => navigate(`/goals/${goalId}/progress`)}
-              className="bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
+              className="bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Cập nhật tiến độ
+              Cập nhật
             </Button>
           </div>
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Current Progress */}
-          <Card className="bg-white">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Tiến độ hiện tại
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-3xl font-bold text-gray-900">
-                    {latestRecord?.value.toFixed(1) || 0}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Da giam / Da tang */}
+          <Card className="bg-green-50/50 border-none shadow-sm">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                <TrendingDown className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Đã giảm</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-gray-900">
+                    {Math.abs(stats.change).toFixed(1)}
                   </span>
                   <span className="text-sm text-gray-500">kg</span>
                 </div>
-                <Progress value={progress} className="h-2" />
-                <p className="text-xs text-gray-500">
-                  {progress.toFixed(0)}% hoàn thành
-                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Change */}
-          <Card className="bg-white">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Thay đổi
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  {stats.change < 0 ? (
-                    <TrendingDown className="w-5 h-5 text-green-500 mr-2" />
-                  ) : (
-                    <TrendingUp className="w-5 h-5 text-blue-500 mr-2" />
-                  )}
-                  <span className="text-3xl font-bold text-gray-900">
-                    {Math.abs(stats.change).toFixed(1)}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-1">kg</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {stats.changePercent > 0 ? '+' : ''}
-                  {stats.changePercent.toFixed(1)}% so với ban đầu
-                </p>
+          {/* Con lai */}
+          <Card className="bg-orange-50/50 border-none shadow-sm">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                <Target className="w-6 h-6" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Remaining */}
-          <Card className="bg-white">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Còn lại
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-baseline">
-                  <span className="text-3xl font-bold text-gray-900">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Còn lại</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-gray-900">
                     {Math.abs(stats.remaining).toFixed(1)}
                   </span>
-                  <span className="text-sm text-gray-500 ml-1">kg</span>
+                  <span className="text-sm text-gray-500">kg</span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  để đạt mục tiêu {goal.targetValue} kg
-                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Chart */}
-        <Card className="bg-white mb-8">
-          <CardHeader className="border-b" style={{ backgroundColor: '#F5F3ED' }}>
+        <Card className="bg-white mb-8 border-none shadow-sm">
+          <CardHeader className="border-b-0 pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl">Biểu đồ Cân nặng</CardTitle>
+              <CardTitle className="text-lg font-bold">Biểu đồ tiến độ cân nặng</CardTitle>
               <div className="flex gap-2">
-                {(['week', 'month', 'all'] as const).map((range) => (
-                  <Button
-                    key={range}
-                    variant={timeRange === range ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setTimeRange(range)}
-                    className={timeRange === range 
-                      ? 'bg-[#5FCCB4] hover:bg-[#4DB89E] text-white' 
-                      : ''}
-                  >
-                    {rangeLabels[range]}
-                  </Button>
-                ))}
+                <div className="flex items-center gap-4 text-xs font-medium mr-4">
+                  <div className="flex items-center gap-1 text-blue-500"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Hiện tại</div>
+                  <div className="flex items-center gap-1 text-green-500"><div className="w-2 h-2 rounded-full bg-green-500"></div> Mục tiêu</div>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -313,40 +270,44 @@ const GoalDetailsPage = () => {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#5FCCB4" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#5FCCB4" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#5FCCB4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#5FCCB4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     stroke="#6B7280"
                     style={{ fontSize: '12px' }}
                   />
-                  <YAxis 
-                    stroke="#6B7280"
+                  <YAxis
+                    stroke="#9CA3AF"
                     style={{ fontSize: '12px' }}
-                    domain={['dataMin - 2', 'dataMax + 2']}
+                    domain={['dataMin - 1', 'dataMax + 1']}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'white',
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px'
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                     }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#5FCCB4" 
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3B82F6"
                     strokeWidth={3}
-                    fill="url(#colorValue)"
+                    dot={false}
+                    activeDot={{ r: 6, fill: "#3B82F6", stroke: "white", strokeWidth: 2 }}
                   />
                   {/* Target line */}
-                  <Line 
-                    type="monotone" 
+                  <Line
+                    type="monotone"
                     dataKey={() => goal.targetValue}
-                    stroke="#FF6B6B" 
+                    stroke="#FF6B6B"
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     dot={false}
@@ -373,7 +334,7 @@ const GoalDetailsPage = () => {
                 {[...goal.progressRecords]
                   .sort((a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime())
                   .map((record) => (
-                    <div 
+                    <div
                       key={record.progressRecordId}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                     >
@@ -443,11 +404,10 @@ const GoalDetailsPage = () => {
               )}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Trạng thái</p>
-                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                  goal.status === 'active' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${goal.status === 'active'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-700'
+                  }`}>
                   {goal.status === 'active' ? 'Đang hoạt động' : 'Đã hoàn thành'}
                 </span>
               </div>

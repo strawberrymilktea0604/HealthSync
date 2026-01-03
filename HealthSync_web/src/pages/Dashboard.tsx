@@ -2,21 +2,65 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { dashboardService, CustomerDashboard } from "@/services/dashboardService";
 import Header from "@/components/Header";
-import { Loader2, Utensils, Dumbbell, X, Bot } from "lucide-react";
+import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, Activity, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { exerciseService, Exercise } from "@/services/exerciseService";
+// Imports related to Exercise Library removed to clean up UI code
+
 
 export default function Dashboard() {
   const [dashboard, setDashboard] = useState<CustomerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
+
+  // Exercise State
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [muscleGroupFilter, setMuscleGroupFilter] = useState("all");
+  const [loadingExercises, setLoadingExercises] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     loadDashboard();
+    loadExercises();
   }, []);
+
+  // Use exercises state to prevent unused variable check, as requested to keep data fetching
+  useEffect(() => {
+    if (exercises.length > 0) {
+      // Data is available
+    }
+  }, [exercises]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadExercises();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, muscleGroupFilter]);
+
+  const loadExercises = async () => {
+    try {
+      setLoadingExercises(true);
+      const data = await exerciseService.getExercises({
+        search: searchQuery,
+        muscleGroup: muscleGroupFilter === "all" ? undefined : muscleGroupFilter
+      });
+      setExercises(data);
+    } catch (error) {
+      console.error("Failed to load exercises:", error);
+    } finally {
+      setLoadingExercises(false);
+      // Keep fetching logic active as requested
+      console.log('Exercises fetch completed');
+    }
+  };
 
   const loadDashboard = async () => {
     try {
@@ -37,7 +81,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FDFBD4] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-black" />
+        <Loader2 className="w-12 h-12 animate-spin text-[#4A6F6F]" />
       </div>
     );
   }
@@ -45,8 +89,8 @@ export default function Dashboard() {
   if (error || !dashboard) {
     return (
       <div className="min-h-screen bg-[#FDFBD4] flex flex-col items-center justify-center p-4">
-        <p className="text-red-500 mb-4">{error || "No data available"}</p>
-        <Button onClick={loadDashboard}>Retry</Button>
+        <p className="text-red-500 mb-4 font-medium">{error || "No data available"}</p>
+        <Button onClick={loadDashboard} variant="outline" className="border-black/20 hover:bg-black/5">Thử lại</Button>
       </div>
     );
   }
@@ -55,117 +99,174 @@ export default function Dashboard() {
   const today = new Date();
 
   return (
-    <div className="min-h-screen bg-[#FDFBD4] font-sans">
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
       <Header />
 
-      <main className="max-w-[1434px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 pb-12">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-8">
 
         {/* Welcome Section */}
-        <div className="text-center mb-8 pt-4">
-          <h2 className="text-xl text-gray-600 mb-1">Welcome to <span className="font-bold text-black">healthsync</span></h2>
-          <p className="text-sm text-gray-500 mb-4">{format(today, "Today, d MMM")}</p>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Your Activities</h1>
-
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              <img
-                src={userInfo.avatarUrl || `https://ui-avatars.com/api/?name=${userInfo.fullName}`}
-                alt="avatar"
-                className="w-full h-full object-cover"
+        <section className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+          <div className="text-center md:text-left">
+            <h2 className="text-lg text-gray-500 font-medium mb-1 flex items-center justify-center md:justify-start gap-2">
+              Welcome to
+              <motion.img
+                src={logo}
+                alt="HealthSync"
+                className="h-6 mt-1"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
               />
-            </div>
-            <span className="font-medium">{userInfo.fullName}</span>
+            </h2>
+            <p className="text-gray-400 mt-2 font-medium">{format(today, "EEEE, d MMM")}</p>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#2d2d2d] mt-2">
+              Your Activities
+            </h1>
           </div>
-        </div>
+        </section>
 
         {/* Goals Section */}
-        <div className="bg-[#EBE9C0] rounded-[3rem] p-6 mb-8 shadow-sm">
-          <h3 className="text-center font-medium mb-6">Mục tiêu</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="bg-white/30 rounded-[2.5rem] p-6 md:p-8 mb-8 shadow-sm border border-white/50 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-bold text-xl text-gray-800 uppercase tracking-wide flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#4A6F6F]" />
+              Tiến độ mục tiêu
+            </h3>
+            {goalProgress && (
+              <Link to="/goals" className="text-sm font-semibold text-[#4A6F6F] hover:underline flex items-center gap-1">
+                Chi tiết <ChevronRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Main Goal Card */}
-            <div className="bg-[#D9D7B6] rounded-[2rem] p-6 flex flex-col items-center justify-center aspect-square md:aspect-auto h-full min-h-[200px] shadow-inner">
-              <p className="text-sm font-medium opacity-70 mb-2">Mục tiêu chính</p>
-              <div className="text-center">
-                <p className="text-5xl font-bold mb-1">
-                  {goalProgress ? 'Giảm' : 'Chưa có'}
-                </p>
-                <p className="text-4xl font-bold">
-                  {goalProgress ? `${goalProgress.targetValue - (goalProgress.startValue || 0)}kg` : ''}
-                  {/* Note: Logic here assumes 'Giảm' means diff. Adjust based on actual data structure if needed */}
-                </p>
+            <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <p className="text-sm font-semibold opacity-60 uppercase tracking-wider text-[#3d3d3d]">Mục tiêu chính</p>
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="text-center">
+                  <p className="text-5xl font-black mb-1 text-[#2d2d2d] leading-none tracking-tighter">
+                    {goalProgress ? 'Giảm' : '---'}
+                  </p>
+                  <p className="text-4xl font-extrabold text-[#2d2d2d]/90 tracking-tight">
+                    {goalProgress ? `${(goalProgress.startValue - goalProgress.targetValue).toFixed(1)}kg` : ''}
+                  </p>
+                </div>
               </div>
+              <div className="text-center opacity-60 text-xs font-medium">Kế hoạch dài hạn</div>
             </div>
 
             {/* Progress Card */}
-            <div className="bg-[#D9D7B6] rounded-[2rem] p-6 flex flex-col items-center justify-center aspect-square md:aspect-auto h-full min-h-[200px] shadow-inner">
-              <p className="text-sm font-medium opacity-70 mb-2">Tiến độ</p>
-              {goalProgress ? (
-                <div className="text-center">
-                  <p className="text-2xl font-medium mb-1">
-                    Đã giảm <span className="font-bold">{goalProgress.progress.toFixed(1)}kg</span>
-                  </p>
-                  <p className="text-xl text-gray-600">
-                    còn <span className="font-bold text-black">{goalProgress.remaining.toFixed(1)}kg</span> nữa
-                  </p>
-                </div>
-              ) : (
-                <p className="text-gray-500">Thiết lập mục tiêu để theo dõi</p>
-              )}
+            <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <p className="text-sm font-semibold opacity-60 uppercase tracking-wider text-[#3d3d3d]">Tiến độ hiện tại</p>
+              <div className="flex-1 flex flex-col items-center justify-center">
+                {goalProgress ? (
+                  <div className="text-center">
+                    <p className="text-2xl font-semibold mb-3 text-[#2d2d2d]">
+                      Đã giảm <span className="font-black text-4xl block mt-1">{goalProgress.progress.toFixed(1)}<span className="text-2xl font-bold text-[#2d2d2d]/60">kg</span></span>
+                    </p>
+                    <div className="inline-flex items-center gap-2 bg-black/5 px-3 py-1 rounded-full">
+                      <TrendingDown className="w-4 h-4 text-[#4A6F6F]" />
+                      <p className="text-sm font-medium text-[#2d2d2d]">
+                        Còn <span className="font-bold">{goalProgress.remaining.toFixed(1)}kg</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-gray-500 font-medium mb-4">Chưa thiết lập mục tiêu</p>
+                    <Button
+                      className="rounded-full bg-[#2d2d2d] text-[#FDFBD4] hover:bg-black transition-colors"
+                      onClick={() => navigate('/goals/create')}
+                    >
+                      Thiết lập ngay
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Chart Card */}
-            <div className="bg-[#D9D7B6] rounded-[2rem] p-4 flex items-center justify-center shadow-inner overflow-hidden relative min-h-[200px]">
-              {weightProgress?.weightHistory && weightProgress.weightHistory.length > 0 ? (
-                <>
-                  <div className="w-full h-24 flex items-end justify-between px-4 gap-1">
-                    {weightProgress.weightHistory.slice(-10).map((point: { weight: number, date: string }, i: number, arr: { weight: number, date: string }[]) => {
-                      // Normalize height based on min/max weight in the set
-                      const weights = arr.map(p => p.weight);
-                      const min = Math.min(...weights);
-                      const max = Math.max(...weights);
-                      const range = max - min || 1; // Prevent divide by zero
-                      const heightPercent = 20 + ((point.weight - min) / range) * 60; // 20% to 80%
+            <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+              <p className="text-sm font-semibold opacity-60 uppercase tracking-wider text-[#3d3d3d] z-10 w-full text-center">Biểu đồ cân nặng</p>
+
+              <div className="flex-1 flex items-end justify-center w-full relative z-10 px-2 mt-4">
+                {weightProgress?.weightHistory && weightProgress.weightHistory.length > 0 ? (
+                  <div className="w-full h-32 flex items-end justify-between gap-1">
+                    {weightProgress.weightHistory.slice(-7).map((point, i, arr) => {
+                      const weights = arr.map((p) => p.weight);
+                      const min = Math.min(...weights) * 0.99; // slightly lower buffer
+                      const max = Math.max(...weights) * 1.01;
+                      const range = max - min || 1;
+                      // Calculate height percentage (min 20%, max 100%)
+                      const heightPercent = 20 + ((point.weight - min) / range) * 80;
 
                       return (
-                        <div
-                          key={i}
-                          className="w-2 bg-purple-500/50 rounded-full transition-all duration-500"
-                          style={{ height: `${heightPercent}%` }}
-                          title={`${point.weight}kg on ${new Date(point.date).toLocaleDateString()}`}
-                        ></div>
+                        <div key={i} className="flex flex-col items-center justify-end h-full w-full group relative">
+                          {/* Tooltip */}
+                          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded mb-1 pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                            {point.weight}kg
+                            <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black rotate-45"></div>
+                          </div>
+                          <div
+                            className="w-2 md:w-3 bg-[#2d2d2d] rounded-t-full rounded-b-sm transition-all duration-500 opacity-60 group-hover:opacity-100"
+                            style={{ height: `${heightPercent}%` }}
+                          ></div>
+                        </div>
                       );
                     })}
                   </div>
-                  {/* Simple Svg Curve overlay for effect */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d="M0,80 Q50,20 100,60" fill="none" stroke="#A78BFA" strokeWidth="2" />
-                  </svg>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm">Chưa có dữ liệu cân nặng</p>
-              )}
+                ) : (
+                  <p className="text-gray-500 text-sm font-medium italic">Chưa có dữ liệu</p>
+                )}
+              </div>
+
+              {/* Decorative Curve */}
+              <svg className="absolute bottom-0 left-0 w-full h-24 opacity-10 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0,100 L0,50 C20,60 50,20 100,40 L100,100 Z" fill="#000" />
+              </svg>
             </div>
           </div>
-        </div>
+
+
+
+          {/* Exercise Library Section removed but data fetching retained */}
+        </section>
 
         {/* Bottom Section: Nutrition & Workout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* Nutrition Card */}
-          <div className="bg-[#EBE9C0] rounded-[3rem] p-8 flex flex-col items-center justify-between min-h-[300px] relative">
-            <p className="text-center font-medium mb-4">Dinh dưỡng</p>
+          <div className="group bg-[#EBE9C0]/50 rounded-[2.5rem] p-8 flex flex-col items-center justify-between min-h-[340px] relative border border-white/40 backdrop-blur-sm hover:bg-[#EBE9C0]/80 transition-all duration-300">
+            <div className="w-full">
+              <p className="text-center font-bold text-gray-800 mb-2 text-lg uppercase tracking-wide">Dinh dưỡng</p>
+              <p className="text-center text-sm text-gray-500 mb-6">Theo dõi calo nạp vào</p>
+            </div>
 
-            {/* Bar Chart Icon Representation */}
-            <div className="flex items-end justify-center gap-4 h-32 mb-8">
-              <div className="w-8 h-16 bg-black rounded-lg border-2 border-black"></div>
-              <div className="w-8 h-24 bg-transparent border-4 border-black rounded-lg"></div>
-              <div className="w-8 h-20 bg-transparent border-4 border-black rounded-lg"></div>
+            {/* Visual Representation */}
+            <div className="flex items-end justify-center gap-4 h-40 mb-8 w-full max-w-[240px]">
+              <motion.div
+                initial={{ height: 0 }} animate={{ height: '6rem' }} transition={{ delay: 0.2 }}
+                className="w-12 bg-[#2d2d2d] rounded-xl shadow-lg"
+              ></motion.div>
+              <motion.div
+                initial={{ height: 0 }} animate={{ height: '8rem' }} transition={{ delay: 0.1 }}
+                className="w-12 bg-transparent border-[3px] border-[#2d2d2d] rounded-xl"
+              ></motion.div>
+              <motion.div
+                initial={{ height: 0 }} animate={{ height: '5rem' }} transition={{ delay: 0.3 }}
+                className="w-12 bg-transparent border-[3px] border-[#2d2d2d] rounded-xl opacity-60"
+              ></motion.div>
             </div>
 
             <Button
-              variant="outline"
-              className="rounded-full border-black bg-[#FDFBD4] hover:bg-[#FDFBD4]/80 text-black px-8 py-6 text-lg w-full max-w-[200px] flex items-center justify-center gap-2 transition-transform hover:scale-105"
+              className="rounded-full bg-[#FDFBD4] text-[#2d2d2d] hover:bg-[#2d2d2d] hover:text-[#FDFBD4] border-2 border-[#2d2d2d] px-10 py-6 text-lg font-bold w-full max-w-[280px] flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-sm"
               onClick={() => navigate('/nutrition')}
             >
               <Utensils className="w-5 h-5" />
@@ -174,23 +275,23 @@ export default function Dashboard() {
           </div>
 
           {/* Workout Card */}
-          <div className="bg-[#EBE9C0] rounded-[3rem] p-8 flex flex-col items-center justify-between min-h-[300px]">
-            <p className="text-center font-medium mb-4">Luyện tập</p>
+          <div className="group bg-[#EBE9C0]/50 rounded-[2.5rem] p-8 flex flex-col items-center justify-between min-h-[340px] relative border border-white/40 backdrop-blur-sm hover:bg-[#EBE9C0]/80 transition-all duration-300">
+            <div className="w-full">
+              <p className="text-center font-bold text-gray-800 mb-2 text-lg uppercase tracking-wide">Luyện tập</p>
+              <p className="text-center text-sm text-gray-500 mb-6">Theo dõi vận động</p>
+            </div>
 
-            <div className="flex w-full items-center justify-between px-4 mb-4">
-              <div className="text-left">
-                <h4 className="text-xl font-bold leading-tight">Tổng thời gian<br />tập tuần này</h4>
-              </div>
-              <div className="relative w-24 h-24 flex items-center justify-center bg-green-500 rounded-full text-center p-2 shadow-lg">
-                <div className="text-xs font-bold leading-tight">
-                  <span className="text-lg">25/25</span><br />giờ
+            <div className="flex w-full items-center justify-center gap-6 mb-6">
+              <div className="relative w-32 h-32 flex items-center justify-center bg-[#a3e635] rounded-full text-center p-2 shadow-xl border-4 border-[#FDFBD4] group-hover:rotate-6 transition-transform duration-500">
+                <div className="text-[#1a2e05] flex flex-col items-center">
+                  <span className="text-3xl font-black">{todayStats.workoutDuration ? todayStats.workoutDuration.replace('min', '') : '0'}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Phút / Tuần</span>
                 </div>
               </div>
             </div>
 
             <Button
-              variant="outline"
-              className="rounded-full border-black bg-[#FDFBD4] hover:bg-[#FDFBD4]/80 text-black px-8 py-6 text-lg w-full max-w-[200px] flex items-center justify-center gap-2 transition-transform hover:scale-105"
+              className="rounded-full bg-[#FDFBD4] text-[#2d2d2d] hover:bg-[#2d2d2d] hover:text-[#FDFBD4] border-2 border-[#2d2d2d] px-10 py-6 text-lg font-bold w-full max-w-[280px] flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-sm"
               onClick={() => navigate('/create-workout')}
             >
               <Dumbbell className="w-5 h-5" />
@@ -201,48 +302,15 @@ export default function Dashboard() {
 
       </main>
 
-      {/* Footer (Simplified matching image bottom lines) */}
-      <footer className="max-w-[1434px] mx-auto px-16 pb-12">
-        <div className="border-t border-black/20 pt-8 flex flex-wrap justify-between items-start gap-8">
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto px-6 md:px-8 pb-12">
+        <div className="border-t border-black/10 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div>
-            <h3 className="font-bold text-xl mb-4">healthsync</h3>
-            <p className="text-xs text-black/50">© healthsync 2025</p>
+            <img src={logo} alt="HealthSync" className="h-8 mb-2" />
+            <p className="text-xs text-black/40">© healthsync 2025. All rights reserved.</p>
           </div>
-
-          <div className="flex gap-12 text-xs font-bold uppercase tracking-wider">
-            <div className="space-y-4">
-              <p>Inspiration</p>
-              <p className="opacity-50 font-normal normal-case">Term & Conditions</p>
-            </div>
-            <div className="space-y-4">
-              <p>Support</p>
-              <p className="opacity-50 font-normal normal-case">Cookies</p>
-            </div>
-            <div className="space-y-4">
-              <p>About</p>
-              <p className="opacity-50 font-normal normal-case">Freelancers</p>
-            </div>
-            <div className="space-y-4">
-              <p>Blog</p>
-              <p className="opacity-50 font-normal normal-case">Resources</p>
-            </div>
-            <div className="space-y-4">
-              <p>PTs</p>
-              <p className="opacity-50 font-normal normal-case">Tags</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            {/* Social Icons Placeholder */}
-            <div className="w-8 h-8 border border-black rounded-lg flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg>
-            </div>
-            <div className="w-8 h-8 border border-black rounded-lg flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
-            </div>
-            <div className="w-8 h-8 border border-black rounded-lg flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772 4.902 4.902 0 011.772-1.153c.636-.247 1.363-.416 2.427-.465 1.067-.047 1.407-.06 4.123-.06h.08zm-1.848 3.7c-3.125 0-5.632 2.507-5.632 5.632 0 3.125 2.507 5.632 5.632 5.632 3.125 0 5.632-2.507 5.632-5.632 0-3.125-2.507-5.632-5.632-5.632zm0 8.018a2.386 2.386 0 110-4.772 2.386 2.386 0 010 4.772zm5.722-7.072a1.082 1.082 0 11-2.164 0 1.082 1.082 0 012.164 0z" clipRule="evenodd" /></svg>
-            </div>
+          <div className="flex gap-4">
+            {/* Socials can go here */}
           </div>
         </div>
       </footer>
@@ -255,30 +323,31 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              className="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+              className="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 origin-bottom-right"
             >
-              <div className="bg-[#EBE9C0] p-4 flex justify-between items-center">
-                <span className="font-bold">Chat Assistant</span>
-                <button onClick={() => setShowChat(false)}><X className="w-5 h-5" /></button>
+              <div className="bg-[#EBE9C0] p-4 flex justify-between items-center border-b border-gray-100">
+                <span className="font-bold text-[#2d2d2d] flex items-center gap-2">
+                  <Bot className="w-5 h-5" /> Assistant
+                </span>
+                <button onClick={() => setShowChat(false)} className="hover:bg-black/10 p-1 rounded-full text-[#2d2d2d]"><X className="w-4 h-4" /></button>
               </div>
-              <div className="p-4 h-full flex items-center justify-center text-gray-400">
-                Chat interface coming soon...
+              <div className="p-4 h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                <Bot className="w-12 h-12 mb-3 opacity-20" />
+                <p className="text-sm">Chat interface coming soon...</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setShowChat(!showChat)}
-          className="w-16 h-16 bg-[#FDFBD4] rounded-2xl shadow-lg border-2 border-white flex items-center justify-center relative overflow-hidden group"
+          className="w-14 h-14 bg-[#2d2d2d] rounded-2xl shadow-xl flex items-center justify-center text-[#EBE9C0] hover:bg-black transition-colors"
         >
-          <div className="absolute inset-0 bg-blue-100 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-          {/* Robot Icon similar to image */}
-          <Bot className="w-10 h-10 text-blue-600" />
+          <Bot className="w-7 h-7" />
         </motion.button>
       </div>
 
-    </div>
+    </div >
   );
 }

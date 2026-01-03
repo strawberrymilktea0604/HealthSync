@@ -31,6 +31,12 @@ import GoalsPage from "./pages/GoalsPage";
 import CreateGoalPage from "./pages/CreateGoalPage";
 import AddProgressPage from "./pages/AddProgressPage";
 import GoalDetailsPage from "./pages/GoalDetailsPage";
+import NutritionPage from "./pages/NutritionPage";
+import CreateWorkoutPage from "./pages/CreateWorkoutPage";
+import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
+import FoodList from "./pages/FoodList";
+import FoodSearch from "./pages/FoodSearch";
+import ExerciseLibraryPage from "./pages/ExerciseLibraryPage";
 
 const queryClient = new QueryClient();
 
@@ -300,6 +306,78 @@ function AppContent() {
               transition={{ duration: 0.4 }}
             >
               <AddProgressPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <NutritionPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition/search" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <FoodSearch />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition/list" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <FoodList />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/create-workout" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <CreateWorkoutPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/exercises" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <ExerciseLibraryPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/workout-history" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <WorkoutHistoryPage />
             </motion.div>
           </ProtectedRoute>
         } />

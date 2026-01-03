@@ -95,7 +95,8 @@ namespace HealthSync.Application.Handlers
             }
 
             // Get today's stats
-            var today = DateTime.UtcNow.Date;
+            // Assuming simplified logic: use Server time offset by 7 hours for Vietnam
+            var today = DateTime.UtcNow.AddHours(7).Date;
             var todayNutritionLog = await _context.NutritionLogs
                 .Include(n => n.FoodEntries)
                 .Where(n => n.UserId == request.UserId && n.LogDate.Date == today)

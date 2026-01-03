@@ -1,350 +1,226 @@
-import { useState } from "react";
-import { Button } from "primereact/button";
-import { Avatar } from "primereact/avatar";
-import { Card } from "primereact/card";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { foodItemService, FoodItem } from '@/services/foodItemService';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Search, Filter } from 'lucide-react';
+import Header from '@/components/Header';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface FoodSearchResult {
-  id: number;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  servingSize: string;
-  category: string;
-}
+const FoodSearch = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-export default function FoodSearch() {
-  const [userInfo] = useState({
-    fullName: "Nguyen Duc Manh",
-    avatarUrl: "https://placehold.co/100x100"
-  });
+  // Filters state
+  const [category, setCategory] = useState('all');
+  const [calorieRange, setCalorieRange] = useState('all');
+  const [proteinRange, setProteinRange] = useState('all');
+  const [carbRange, setCarbRange] = useState('all');
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [mealType, setMealType] = useState("breakfast");
-  const [searchResults, setSearchResults] = useState<FoodSearchResult[]>([]);
+  useEffect(() => {
+    loadFoodItems();
+  }, []);
 
-  const mealTypes = [
-    { label: "Bữa sáng", value: "breakfast" },
-    { label: "Bữa trưa", value: "lunch" },
-    { label: "Bữa tối", value: "dinner" },
-    { label: "Bữa phụ", value: "snack" }
-  ];
-
-  const sampleResults: FoodSearchResult[] = [
-    {
-      id: 1,
-      name: "Cơm gạo lứt",
-      calories: 350,
-      protein: 7,
-      carbs: 76,
-      fat: 3,
-      servingSize: "1 chén (200g)",
-      category: "Carbs"
-    },
-    {
-      id: 2,
-      name: "Ức gà luộc",
-      calories: 165,
-      protein: 31,
-      carbs: 0,
-      fat: 4,
-      servingSize: "100g",
-      category: "Protein"
-    },
-    {
-      id: 3,
-      name: "Salad rau củ",
-      calories: 120,
-      protein: 3,
-      carbs: 15,
-      fat: 6,
-      servingSize: "1 bát (150g)",
-      category: "Vegetables"
-    },
-    {
-      id: 4,
-      name: "Trứng chiên",
-      calories: 155,
-      protein: 13,
-      carbs: 1,
-      fat: 11,
-      servingSize: "1 quả",
-      category: "Protein"
-    },
-    {
-      id: 5,
-      name: "Chuối",
-      calories: 105,
-      protein: 1,
-      carbs: 27,
-      fat: 0,
-      servingSize: "1 quả trung bình",
-      category: "Fruit"
-    },
-    {
-      id: 6,
-      name: "Sữa chua Hy Lạp",
-      calories: 100,
-      protein: 10,
-      carbs: 6,
-      fat: 4,
-      servingSize: "1 hộp (170g)",
-      category: "Dairy"
+  const loadFoodItems = async () => {
+    try {
+      setLoading(true);
+      const data = await foodItemService.getFoodItems({ search: searchQuery });
+      setFoodItems(data);
+    } catch (error) {
+      console.error('Failed to load food items:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải danh sách món ăn",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
-      const filtered = sampleResults.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(filtered);
-    } else {
-      setSearchResults(sampleResults);
-    }
+    loadFoodItems();
   };
 
-  const handleAddFood = async (food: FoodSearchResult) => {
-    try {
-      const response = await fetch('/api/nutrition/food-entry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          foodItemId: food.id,
-          quantity: 1, // or some quantity
-          mealType: mealType
-        })
-      });
-      if (response.ok) {
-        alert(`Added ${food.name} to ${mealType}`);
-      } else {
-        alert("Failed to add food");
-      }
-    } catch {
-      alert("Error adding food");
-    }
-  };
+  // Client-side filtering logic to match the UI selectors
+  const filteredItems = foodItems.filter(item => {
+    // 1. Category filter (Mock implementation if API doesn't support)
+    // Assuming backend might not have 'category' field yet based on interface, 
+    // but the UI needs it. We'll skip if no category field in data.
 
-  const renderContent = () => {
-    // Trường hợp 1: Có kết quả tìm kiếm
-    if (searchResults.length > 0) {
-      return (
-        <>
-          <div className="mb-3">
-            <p className="text-xl font-semibold">
-              Kết quả tìm kiếm: {searchResults.length} món
-            </p>
-          </div>
-
-          <div className="grid">
-            {searchResults.map((food) => (
-              <div key={food.id} className="col-12">
-                <Card className="hover:shadow-3 transition-all transition-duration-300">
-                  <div className="grid align-items-center">
-                    {/* Food Info */}
-                    <div className="col-12 md:col-4">
-                      <h4 className="text-xl font-bold m-0 mb-2">{food.name}</h4>
-                      <span className="px-2 py-1 border-round text-xs font-semibold surface-100">
-                        {food.category}
-                      </span>
-                      <p className="text-600 mt-2 mb-0">{food.servingSize}</p>
-                    </div>
-
-                    {/* Nutrition Stats */}
-                    <div className="col-12 md:col-6">
-                      <div className="grid">
-                        <div className="col-6 lg:col-3 text-center">
-                          <p className="text-sm text-600 m-0">Calories</p>
-                          <p className="text-lg font-bold m-0">{food.calories}</p>
-                          <p className="text-xs text-600 m-0">kcal</p>
-                        </div>
-                        <div className="col-6 lg:col-3 text-center">
-                          <p className="text-sm text-600 m-0">Protein</p>
-                          <p className="text-lg font-bold m-0">{food.protein}</p>
-                          <p className="text-xs text-600 m-0">g</p>
-                        </div>
-                        <div className="col-6 lg:col-3 text-center">
-                          <p className="text-sm text-600 m-0">Carbs</p>
-                          <p className="text-lg font-bold m-0">{food.carbs}</p>
-                          <p className="text-xs text-600 m-0">g</p>
-                        </div>
-                        <div className="col-6 lg:col-3 text-center">
-                          <p className="text-sm text-600 m-0">Fat</p>
-                          <p className="text-lg font-bold m-0">{food.fat}</p>
-                          <p className="text-xs text-600 m-0">g</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <div className="col-12 md:col-2">
-                      <Button 
-                        label="Thêm" 
-                        icon="pi pi-plus" 
-                        onClick={() => handleAddFood(food)}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </>
-      );
+    // 2. Calorie Range
+    if (calorieRange !== 'all') {
+      const cal = item.caloriesKcal;
+      if (calorieRange === 'low' && cal > 200) return false;
+      if (calorieRange === 'medium' && (cal <= 200 || cal > 500)) return false;
+      if (calorieRange === 'high' && cal <= 500) return false;
     }
 
-    // Trường hợp 2: Có search nhưng không có kết quả
-    if (searchQuery && searchResults.length === 0) {
-      return (
-        <div className="text-center py-8">
-          <i className="pi pi-search text-6xl text-400 mb-3"></i>
-          <p className="text-xl text-600">Không tìm thấy kết quả</p>
-          <p className="text-600">Hãy thử tìm kiếm với từ khóa khác</p>
-        </div>
-      );
+    // 3. Protein Range
+    if (proteinRange !== 'all') {
+      const p = item.proteinG;
+      if (proteinRange === 'high' && p < 20) return false;
+      if (proteinRange === 'low' && p >= 20) return false;
     }
 
-    // Trường hợp 3: Mặc định (Chưa search)
-    return (
-      <Card className="text-center">
-        <i className="pi pi-search text-6xl text-400 mb-3"></i>
-        <p className="text-xl font-semibold mb-2">Tìm kiếm món ăn</p>
-        <p className="text-600">
-          Nhập tên món ăn bạn muốn tìm và chọn bữa ăn để bắt đầu
-        </p>
-      </Card>
-    );
-  };
+    return true;
+  });
 
   return (
-    <div className="min-h-screen surface-ground">
-      {/* Header */}
-      <header className="surface-card border-bottom-1 surface-border px-4 py-3">
-        <div className="flex align-items-center justify-content-between max-w-7xl mx-auto">
-          <div className="flex align-items-center gap-3">
-            <h1 className="text-3xl font-bold m-0">
-              <span className="text-900">health</span>
-              <span className="text-primary">sync</span>
-            </h1>
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-4">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h2 className="text-2xl font-serif text-gray-700 italic">Welcome back,</h2>
+            {user && <span className="font-bold text-gray-900">{user.fullName}</span>}
           </div>
 
-          <div className="flex align-items-center gap-3">
-            <Avatar 
-              image={userInfo.avatarUrl} 
-              size="large" 
-              shape="circle" 
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Welcome Section */}
-        <div className="mb-5">
-          <p className="text-xl mb-2">Welcome to</p>
-          <h2 className="text-4xl font-bold m-0">
-            <span className="text-900">health</span>
-            <span className="text-primary">sync</span>
-          </h2>
-          <p className="text-600 mt-2">{userInfo.fullName}</p>
+          <h1 className="text-4xl font-serif font-medium text-gray-800 mb-2">Welcome to Your Nutrition</h1>
+          <h3 className="text-2xl font-bold text-gray-900">Tìm kiếm món ăn</h3>
+          <p className="text-gray-500 mt-2">Tìm và thêm món ăn vào dinh dưỡng của bạn</p>
         </div>
 
-        {/* Page Title */}
-        <div className="mb-5">
-          <h3 className="text-3xl font-bold m-0 mb-3">Tìm kiếm món ăn</h3>
-          <p className="text-600">Tìm và thêm món ăn vào dinh dưỡng của bạn</p>
-        </div>
-
-        {/* Search Section */}
-        <Card className="mb-4">
-          <div className="grid">
-            <div className="col-12 md:col-8">
-              <div className="p-inputgroup flex-1">
-                <span className="p-inputgroup-addon">
-                  <i className="pi pi-search"></i>
-                </span>
-                <InputText 
-                  placeholder="Tìm kiếm món ăn (ví dụ: cơm, gà, trứng...)" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full"
-                />
-              </div>
-            </div>
-            <div className="col-12 md:col-4">
-              <Dropdown
-                value={mealType}
-                onChange={(e) => setMealType(e.value)}
-                options={mealTypes}
-                placeholder="Chọn bữa ăn"
-                className="w-full"
+        {/* Search & Filter Card */}
+        <Card className="bg-[#FFFDF7]/80 backdrop-blur-md border-white/50 shadow-sm rounded-[2.5rem] p-6 mb-8">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Tìm kiếm món ăn (ví dụ: phở bò, cơm tấm...)"
+                className="pl-12 h-14 text-lg bg-gray-50/50 border-transparent hover:bg-white transition-colors rounded-2xl"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
-            <div className="col-12">
-              <Button 
-                label="Tìm kiếm" 
-                icon="pi pi-search" 
+
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-12 rounded-xl bg-gray-50/50 border-transparent">
+                  <SelectValue placeholder="Loại món ăn" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả loại</SelectItem>
+                  <SelectItem value="main">Món chính</SelectItem>
+                  <SelectItem value="side">Món phụ</SelectItem>
+                  <SelectItem value="snack">Ăn vặt</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={calorieRange} onValueChange={setCalorieRange}>
+                <SelectTrigger className="h-12 rounded-xl bg-gray-50/50 border-transparent">
+                  <SelectValue placeholder="Calories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả Calo</SelectItem>
+                  <SelectItem value="low">Thấp (&lt; 200)</SelectItem>
+                  <SelectItem value="medium">Vừa (200 - 500)</SelectItem>
+                  <SelectItem value="high">Cao (&gt; 500)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={proteinRange} onValueChange={setProteinRange}>
+                <SelectTrigger className="h-12 rounded-xl bg-gray-50/50 border-transparent">
+                  <SelectValue placeholder="Protein" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả Protein</SelectItem>
+                  <SelectItem value="high">Giàu Protein (&gt; 20g)</SelectItem>
+                  <SelectItem value="low">Protein thường</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={carbRange} onValueChange={setCarbRange}>
+                <SelectTrigger className="h-12 rounded-xl bg-gray-50/50 border-transparent">
+                  <SelectValue placeholder="Carb" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả Carb</SelectItem>
+                  <SelectItem value="low">Low Carb</SelectItem>
+                  <SelectItem value="high">High Carb</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
                 onClick={handleSearch}
-                className="w-full md:w-auto"
-              />
+                className="h-12 rounded-xl bg-[#FDBA74] hover:bg-[#FB923C] text-white font-bold text-base shadow-sm"
+              >
+                Áp dụng
+              </Button>
             </div>
           </div>
         </Card>
 
-        {/* Search Results */}
-        {renderContent()}
-      </main>
-
-      {/* Footer */}
-      <footer className="surface-card border-top-1 surface-border py-6 mt-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid align-items-center">
-            <div className="col-12 md:col-4">
-              <h2 className="text-3xl font-bold m-0">
-                <span className="text-900">health</span>
-                <span className="text-primary">sync</span>
-              </h2>
-            </div>
-            
-            <div className="col-12 md:col-4">
-              <div className="flex flex-wrap gap-4 justify-content-center">
-                <a href="#inspiration" className="text-600 no-underline">Inspiration</a>
-                <a href="#about" className="text-600 no-underline">About</a>
-                <a href="#support" className="text-600 no-underline">Support</a>
-                <a href="#blog" className="text-600 no-underline">Blog</a>
-                <a href="#pts" className="text-600 no-underline">PTs</a>
-              </div>
-            </div>
-
-            <div className="col-12 md:col-4">
-              <div className="flex gap-3 justify-content-end">
-                <Button icon="pi pi-twitter" rounded text />
-                <Button icon="pi pi-facebook" rounded text />
-                <Button icon="pi pi-instagram" rounded text />
-              </div>
-            </div>
-          </div>
-
-          <div className="border-top-1 surface-border pt-4 mt-4">
-            <div className="flex flex-wrap gap-4 justify-content-between text-sm text-600">
-              <span>© healthsync 2025</span>
-              <div className="flex gap-4">
-                <a href="#terms" className="text-600 no-underline">Term&Conditions</a>
-                <a href="#cookies" className="text-600 no-underline">Cookies</a>
-                <a href="#resources" className="text-600 no-underline">Resources</a>
-                <a href="#tags" className="text-600 no-underline">Tags</a>
-                <a href="#freelancers" className="text-600 no-underline">Freelancers</a>
-              </div>
-            </div>
-          </div>
+        {/* Results Info */}
+        <div className="mb-6 font-semibold text-gray-700">
+          Kết quả tìm kiếm ({filteredItems.length})
         </div>
-      </footer>
+
+        {/* Grid Results */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredItems.map((item) => (
+              <div
+                key={item.foodItemId}
+                className="group bg-white rounded-[2rem] p-4 pb-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-orange-100 cursor-pointer"
+              >
+                {/* Image Container */}
+                <div className="relative aspect-[4/3] mb-4 overflow-hidden rounded-[1.5rem] bg-gray-100">
+                  <img
+                    src={item.imageUrl || "https://placehold.co/400x300?text=No+Image"}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 right-3 bg-white/90 p-1.5 rounded-full shadow-sm hover:bg-orange-100 transition-colors">
+                    <Plus className="w-5 h-5 text-gray-600" />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-1">
+                  <h3 className="font-bold text-gray-900 text-lg mb-1 line-clamp-1">{item.name}</h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    {item.servingSize} {item.servingUnit}
+                  </p>
+
+                  {/* Macros Tags */}
+                  <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="bg-[#FEF08A] text-[#854D0E] px-2 py-1 rounded-md">
+                      {item.caloriesKcal.toFixed(0)} kcal
+                    </span>
+                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
+                      P: {item.proteinG.toFixed(0)}g
+                    </span>
+                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
+                      C: {item.carbsG.toFixed(0)}g
+                    </span>
+                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
+                      F: {item.fatG.toFixed(0)}g
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
-}
+};
+
+export default FoodSearch;

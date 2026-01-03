@@ -134,8 +134,7 @@ export default function Profile() {
                 gender,
                 heightCm: height,
                 weightKg: weight,
-                activityLevel,
-                avatarUrl: avatarUrl
+                activityLevel
             };
 
             await authService.updateProfile(updateData);

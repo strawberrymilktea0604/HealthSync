@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { goalService, Goal } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Plus, TrendingUp, Target, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import Header from '@/components/Header';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 const GoalsPage = () => {
   const navigate = useNavigate();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'in-progress' | 'completed'>('in-progress');
+  const [activeTab, setActiveTab] = useState<'all' | 'in-progress' | 'completed' | 'overdue'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadGoals();
@@ -23,6 +30,11 @@ const GoalsPage = () => {
       setGoals(data);
     } catch (error) {
       console.error('Failed to load goals:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải danh sách mục tiêu",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -34,181 +46,245 @@ const GoalsPage = () => {
       'weight_gain': 'Tăng cân',
       'muscle_gain': 'Tăng cơ',
       'fat_loss': 'Giảm mỡ',
+      'running': 'Chạy bộ', // Example extension
+      'water': 'Uống nước', // Example extension
     };
     return types[type] || type;
   };
 
   const calculateProgress = (goal: Goal) => {
     if (goal.progressRecords.length === 0) return 0;
-    
-    const latestRecord = goal.progressRecords.sort(
-      (a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
-    )[0];
-    
-    const startValue = goal.progressRecords[0]?.value || latestRecord.value;
-    const currentValue = latestRecord.value;
-    const targetValue = goal.targetValue;
-    
+
+    // Find earliest and latest records
+    const sortedRecords = [...goal.progressRecords].sort((a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime());
+    const firstRecord = sortedRecords[0];
+    const lastRecord = sortedRecords[sortedRecords.length - 1];
+
+    if (!firstRecord || !lastRecord) return 0;
+
+    const currentV = lastRecord.value;
+    const startV = firstRecord.value; // Or use goal.startValue if it existed, but using first record is safer here
+    const targetV = goal.targetValue;
+
+    // For weight/fat loss, target < start
     if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
-      const progress = ((startValue - currentValue) / (startValue - targetValue)) * 100;
+      if (startV === targetV) return 100;
+      // Avoid division by zero if startV == targetV (handled above)
+      // If startV < targetV (weird for weight loss), handle gracefully
+      const totalChange = startV - targetV;
+      const currentChange = startV - currentV;
+      const progress = (currentChange / totalChange) * 100;
       return Math.max(0, Math.min(100, progress));
     } else {
-      const progress = ((currentValue - startValue) / (targetValue - startValue)) * 100;
+      // For gain, target > start
+      const totalChange = targetV - startV;
+      const currentChange = currentV - startV;
+      if (totalChange === 0) return 100;
+      const progress = (currentChange / totalChange) * 100;
       return Math.max(0, Math.min(100, progress));
     }
   };
 
   const getCurrentValue = (goal: Goal) => {
-    if (goal.progressRecords.length === 0) return null;
+    if (goal.progressRecords.length === 0) return 0;
     const latestRecord = goal.progressRecords.sort(
       (a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
     )[0];
     return latestRecord.value;
   };
 
-  const filteredGoals = goals.filter(goal => 
-    activeTab === 'in-progress' 
-      ? goal.status === 'active' 
-      : goal.status === 'completed'
-  );
+  // Helper to determine status based on progress and date
+  const getStatus = (goal: Goal) => {
+    // If explicitly completed in backend
+    if (goal.status === 'completed') return 'completed';
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#E8E4D9' }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải...</p>
-        </div>
-      </div>
-    );
-  }
+    const progress = calculateProgress(goal);
+    if (progress >= 100) return 'completed';
+
+    if (goal.endDate && new Date(goal.endDate) < new Date()) {
+      return 'overdue';
+    }
+
+    return 'in-progress';
+  };
+
+  const filteredGoals = goals.filter(goal => {
+    const status = getStatus(goal);
+    const matchesTab =
+      activeTab === 'all' ||
+      (activeTab === 'in-progress' && status === 'in-progress') ||
+      (activeTab === 'completed' && status === 'completed') ||
+      (activeTab === 'overdue' && status === 'overdue');
+
+    const matchesSearch =
+      (goal.notes || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getGoalTypeDisplay(goal.type).toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return { label: 'HOÀN THÀNH', color: 'text-emerald-500 bg-emerald-100', barColor: 'bg-emerald-500' };
+      case 'overdue':
+        return { label: 'QUÁ HẠN', color: 'text-orange-500 bg-orange-100', barColor: 'bg-orange-500' };
+      default:
+        return { label: 'ĐANG TIẾN HÀNH', color: 'text-purple-600 bg-purple-100', barColor: 'bg-purple-600' };
+    }
+  };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#E8E4D9' }}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Mục tiêu của bạn</h1>
-            <p className="text-gray-600 mt-1">Theo dõi và quản lý các mục tiêu sức khỏe</p>
-          </div>
-          <Button 
-            onClick={() => navigate('/goals/create')}
-            className="bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Tạo mục tiêu mới
-          </Button>
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pb-12 pt-4">
+        {/* Page Header */}
+        <div className="text-center mb-10">
+          <p className="text-gray-500 mb-2 font-medium">Goal for you!</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mục tiêu của bạn</h1>
+          <p className="text-gray-500">Theo dõi và quản lý tất cả các mục tiêu sức khỏe của mình</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          <Button
-            variant={activeTab === 'in-progress' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('in-progress')}
-            className={activeTab === 'in-progress' 
-              ? 'bg-[#5FCCB4] hover:bg-[#4DB89E] text-white' 
-              : 'bg-white hover:bg-gray-50'}
-          >
-            Đang thực hiện
-          </Button>
-          <Button
-            variant={activeTab === 'completed' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('completed')}
-            className={activeTab === 'completed' 
-              ? 'bg-[#5FCCB4] hover:bg-[#4DB89E] text-white' 
-              : 'bg-white hover:bg-gray-50'}
-          >
-            Đã hoàn thành
-          </Button>
-        </div>
+        {/* Main Card */}
+        <Card className="bg-[#FFFDF7]/80 backdrop-blur-sm border-white/50 shadow-sm rounded-[2.5rem] p-6 md:p-8">
+          {/* Controls */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+            {/* Search */}
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Tìm kiếm mục tiêu..."
+                className="pl-10 h-11 bg-white border-transparent hover:bg-white/80 transition-colors rounded-2xl shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-        {/* Goals Grid */}
-        {filteredGoals.length === 0 ? (
-          <Card className="bg-white">
-            <CardContent className="py-12 text-center">
-              <Target className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Chưa có mục tiêu nào
-              </h3>
-              <p className="text-gray-600 mb-4">
-                {activeTab === 'in-progress' 
-                  ? 'Hãy tạo mục tiêu đầu tiên của bạn'
-                  : 'Bạn chưa hoàn thành mục tiêu nào'}
-              </p>
-              {activeTab === 'in-progress' && (
-                <Button 
-                  onClick={() => navigate('/goals/create')}
-                  className="bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
+            {/* Filters */}
+            <div className="flex gap-2 p-1 bg-white/50 rounded-2xl w-full md:w-auto overflow-x-auto">
+              {[
+                { id: 'all', label: 'Tất cả' },
+                { id: 'in-progress', label: 'Đang tiến hành' },
+                { id: 'completed', label: 'Hoàn thành' },
+                { id: 'overdue', label: 'Quá hạn' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap",
+                    activeTab === tab.id
+                      ? "bg-[#D8B4FE] text-[#581C87] shadow-sm"
+                      : "bg-transparent text-gray-500 hover:bg-white/60"
+                  )}
                 >
-                  Tạo mục tiêu mới
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGoals.map((goal) => {
-              const progress = calculateProgress(goal);
-              const currentValue = getCurrentValue(goal);
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-              return (
-                <Card 
-                  key={goal.goalId} 
-                  className="bg-white hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/goals/${goal.goalId}`)}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl font-bold text-gray-900">
-                          {getGoalTypeDisplay(goal.type)}
-                        </CardTitle>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Mục tiêu: {goal.targetValue} kg
-                        </p>
-                      </div>
-                      <Target className="w-6 h-6 text-[#5FCCB4]" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Current Progress */}
-                    {currentValue && (
-                      <div className="mb-4">
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Hiện tại</span>
-                          <span className="font-semibold text-gray-900">
-                            {currentValue} kg
-                          </span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                        <p className="text-xs text-gray-500 mt-1">
-                          {progress.toFixed(0)}% hoàn thành
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Date Range */}
-                    <div className="flex items-center text-sm text-gray-600 mb-2">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>
-                        {new Date(goal.startDate).toLocaleDateString('vi-VN')}
-                        {goal.endDate && ` - ${new Date(goal.endDate).toLocaleDateString('vi-VN')}`}
-                      </span>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center text-sm text-gray-600">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      <span>{goal.progressRecords.length} bản ghi tiến độ</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {/* Create Button */}
+            <Button
+              onClick={() => navigate('/goals/create')}
+              className="hidden md:flex bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-2xl h-11 px-6 font-semibold shadow-purple-200 shadow-lg"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Tạo mục tiêu mới
+            </Button>
           </div>
-        )}
-      </div>
+
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-6 bg-gray-50/50 rounded-xl p-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <div className="col-span-12 md:col-span-4 pl-2">Tên mục tiêu</div>
+            <div className="col-span-12 md:col-span-3 hidden md:block">Tiến độ</div>
+            <div className="col-span-12 md:col-span-2 hidden md:block">Trạng thái</div>
+            <div className="col-span-12 md:col-span-2 hidden md:block">Ngày kết thúc</div>
+            <div className="col-span-12 md:col-span-1 hidden md:block text-right pr-2">Hành động</div>
+          </div>
+
+          {/* Goal Rows */}
+          <div className="space-y-3">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+              </div>
+            ) : filteredGoals.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 italic bg-white/30 rounded-3xl">
+                Không tìm thấy mục tiêu nào phù hợp.
+              </div>
+            ) : (
+              filteredGoals.map((goal) => {
+                const status = getStatus(goal);
+                const config = getStatusConfig(status);
+                const progress = calculateProgress(goal);
+                const currentValue = getCurrentValue(goal);
+
+                return (
+                  <div
+                    key={goal.goalId}
+                    className="group bg-white rounded-2xl p-4 shadow-sm border border-gray-50 hover:shadow-md transition-all grid grid-cols-12 gap-6 items-center cursor-pointer relative"
+                    onClick={() => navigate(`/goals/${goal.goalId}`)}
+                  >
+                    {/* Name */}
+                    <div className="col-span-12 md:col-span-4 pl-2">
+                      <h3 className="font-bold text-gray-900 text-lg">{goal.notes || getGoalTypeDisplay(goal.type)}</h3>
+                      {/* Mobile Status/Date view */}
+                      <div className="md:hidden flex items-center gap-2 mt-2 text-xs text-gray-500">
+                        <Badge variant="secondary" className={cn("rounded-md text-[10px]", config.color)}>
+                          {config.label}
+                        </Badge>
+                        <span>{goal.endDate ? format(new Date(goal.endDate), 'dd/MM/yyyy') : 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="col-span-12 md:col-span-3">
+                      <div className="flex items-center gap-3">
+                        <Progress value={progress} className="h-2 flex-1 bg-gray-100 rounded-full" indicatorClassName={config.barColor} />
+                        <span className="text-xs font-bold text-gray-500 whitespace-nowrap min-w-[60px] text-right">
+                          {currentValue}/{goal.targetValue} {goal.type.includes('weight') ? 'kg' : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="col-span-12 md:col-span-2 hidden md:block">
+                      <Badge variant="secondary" className={cn("rounded-lg font-bold px-3 py-1.5 border-none", config.color)}>
+                        {config.label}
+                      </Badge>
+                    </div>
+
+                    {/* End Date */}
+                    <div className="col-span-12 md:col-span-2 hidden md:block text-sm font-medium text-gray-500">
+                      {goal.endDate ? format(new Date(goal.endDate), 'dd/MM/yyyy') : 'No deadline'}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-12 md:col-span-1 hidden md:flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl">
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {/* Mobile Create Button */}
+            <Button
+              onClick={() => navigate('/goals/create')}
+              className="w-full md:hidden bg-[#8B5CF6] hover:bg-[#7C3AED] text-white rounded-xl mt-4 h-12 font-bold"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Tạo mục tiêu mới
+            </Button>
+          </div>
+        </Card>
+      </main>
     </div>
   );
 };

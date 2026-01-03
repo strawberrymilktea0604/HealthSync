@@ -51,7 +51,6 @@ export interface UpdateProfileRequest {
   heightCm: number;
   weightKg: number;
   activityLevel: string;
-  avatarUrl?: string;
 }
 
 export interface SendVerificationCodeRequest {
