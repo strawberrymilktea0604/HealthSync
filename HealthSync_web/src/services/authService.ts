@@ -23,13 +23,19 @@ export interface AuthResponse {
   expiresAt: string;
   isProfileComplete: boolean;
   requiresPassword: boolean;
+  avatarUrl?: string; // Mapped from backend
 }
 
 export interface ProfileResponse {
-  userId: string;
+  userId: number;
   email: string;
   fullName: string;
   role: string;
+  dob: string;
+  gender: string;
+  heightCm: number;
+  weightKg: number;
+  activityLevel: string;
   avatarUrl?: string;
 }
 

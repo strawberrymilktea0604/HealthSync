@@ -231,6 +231,7 @@ export default function Profile() {
                                 <Input
                                     id="dob"
                                     type="date"
+                                    max={new Date().toISOString().split("T")[0]}
                                     value={dateOfBirth}
                                     onChange={(e) => setDateOfBirth(e.target.value)}
                                     className="bg-white/50 border-gray-300 text-lg py-6"

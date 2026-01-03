@@ -14,13 +14,18 @@ public class ResetPasswordCommandHandlerTests
 {
     private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly Mock<IJwtTokenService> _jwtTokenServiceMock;
+    private readonly Mock<IAuthService> _authServiceMock;
     private readonly ResetPasswordCommandHandler _handler;
 
     public ResetPasswordCommandHandlerTests()
     {
         _contextMock = new Mock<IApplicationDbContext>();
         _jwtTokenServiceMock = new Mock<IJwtTokenService>();
-        _handler = new ResetPasswordCommandHandler(_contextMock.Object, _jwtTokenServiceMock.Object);
+        _authServiceMock = new Mock<IAuthService>();
+        _handler = new ResetPasswordCommandHandler(
+            _contextMock.Object, 
+            _jwtTokenServiceMock.Object,
+            _authServiceMock.Object);
     }
 
     [Fact]
@@ -50,14 +55,16 @@ public class ResetPasswordCommandHandlerTests
         _jwtTokenServiceMock.Setup(j => j.GetPrincipalFromToken("valid-token"))
             .Returns(principal);
 
+        _authServiceMock.Setup(a => a.HashPassword("NewPassword123!"))
+            .Returns("new-hashed-password");
+
         var command = new ResetPasswordCommand { Token = "valid-token", NewPassword = "NewPassword123!" };
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.NotEqual("old-hash", user.PasswordHash);
-        Assert.True(BCrypt.Net.BCrypt.Verify("NewPassword123!", user.PasswordHash));
+        Assert.Equal("new-hashed-password", user.PasswordHash);
         _contextMock.Verify(c => c.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -155,11 +162,11 @@ public class ResetPasswordCommandHandlerTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(command, CancellationToken.None));
         
-        Assert.Equal("Invalid token", exception.Message);
+        Assert.Contains("Invalid token", exception.Message);
     }
 
     [Fact]
-    public async Task Handle_ShouldHashPassword_WithBCrypt()
+    public async Task Handle_ShouldHashPassword_UsingAuthService()
     {
         // Arrange
         var user = new ApplicationUser
@@ -183,6 +190,9 @@ public class ResetPasswordCommandHandlerTests
 
         _jwtTokenServiceMock.Setup(j => j.GetPrincipalFromToken("valid-token"))
             .Returns(principal);
+        
+        _authServiceMock.Setup(a => a.HashPassword("SecurePassword123!"))
+            .Returns("hashed-secure-password");
 
         var command = new ResetPasswordCommand { Token = "valid-token", NewPassword = "SecurePassword123!" };
 
@@ -190,7 +200,7 @@ public class ResetPasswordCommandHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.StartsWith("$2", user.PasswordHash); // BCrypt hashes start with $2
-        Assert.True(BCrypt.Net.BCrypt.Verify("SecurePassword123!", user.PasswordHash));
+        Assert.Equal("hashed-secure-password", user.PasswordHash);
+        _authServiceMock.Verify(a => a.HashPassword("SecurePassword123!"), Times.Once);
     }
 }

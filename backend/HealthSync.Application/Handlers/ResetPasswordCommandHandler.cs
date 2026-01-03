@@ -4,7 +4,6 @@ using HealthSync.Application.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using BCrypt.Net;
 
 namespace HealthSync.Application.Handlers;
 
@@ -12,11 +11,16 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IAuthService _authService;
 
-    public ResetPasswordCommandHandler(IApplicationDbContext context, IJwtTokenService jwtTokenService)
+    public ResetPasswordCommandHandler(
+        IApplicationDbContext context, 
+        IJwtTokenService jwtTokenService,
+        IAuthService authService)
     {
         _context = context;
         _jwtTokenService = jwtTokenService;
+        _authService = authService;
     }
 
     public async Task Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
@@ -52,8 +56,8 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
             throw new InvalidOperationException("Tài khoản của bạn đã bị khóa.");
         }
 
-        // Hash password
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        // Hash password using AuthService to ensure consistency with Login logic
+        user.PasswordHash = _authService.HashPassword(request.NewPassword);
 
         await _context.SaveChangesAsync(cancellationToken);
     }

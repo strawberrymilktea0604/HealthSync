@@ -82,7 +82,14 @@ public class UserProfileController : ControllerBase
 
         // Update properties (UserId is NOT changeable)
         profile.FullName = dto.FullName;
+
+        // Validating Date of Birth
+        if (dto.Dob > DateTime.UtcNow)
+        {
+             return BadRequest("Ngày sinh không hợp lệ (không được lớn hơn ngày hiện tại).");
+        }
         profile.Dob = dto.Dob;
+        
         profile.Gender = dto.Gender;
         profile.HeightCm = dto.HeightCm;
         profile.WeightKg = dto.WeightKg;

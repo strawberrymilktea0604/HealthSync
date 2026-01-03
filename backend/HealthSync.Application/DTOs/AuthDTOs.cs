@@ -25,6 +25,7 @@ public class AuthResponse
     public DateTime ExpiresAt { get; set; }
     public bool RequiresPassword { get; set; } = false; // True if user needs to set password (first-time Google login)
     public bool IsProfileComplete { get; set; } = false; // True if user profile is fully filled
+    public string? AvatarUrl { get; set; }
 }
 
 public class SendVerificationCodeRequest

@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Check if token is still valid
         const expiresAt = new Date(parsedUser.expiresAt);
         const now = new Date();
-        
+
         if (expiresAt > now) {
           setUser(parsedUser);
         } else {
@@ -96,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         token: data.token,
         expiresAt: new Date(data.expiresAt),
         isProfileComplete: data.role === 'Admin' ? true : data.isProfileComplete, // Admin không cần complete profile
+        avatar: data.avatarUrl,
       };
 
       console.log("Mapped userData:", userData);

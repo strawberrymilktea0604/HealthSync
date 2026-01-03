@@ -81,7 +81,8 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse>
             ExpiresAt = DateTime.UtcNow.AddMinutes(60),
             IsProfileComplete = user.Profile?.IsComplete() ?? false,
             Roles = roles,
-            Permissions = permissions
+            Permissions = permissions,
+            AvatarUrl = user.Profile?.AvatarUrl
         };
     }
 }
