@@ -22,6 +22,7 @@ import ChangePasswordSuccess from "./pages/ChangePasswordSuccess";
 import CompleteProfile from "./pages/CompleteProfile";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Profile from "./pages/Profile";
 import UserManagement from "./pages/admin/UserManagement";
 import ExerciseManagement from "./pages/admin/ExerciseManagement";
 import FoodManagement from "./pages/admin/FoodManagement";
@@ -181,8 +182,20 @@ function AppContent() {
             </motion.div>
           </ProtectedRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Profile />
+            </motion.div>
+          </ProtectedRoute>
+        } />
         <Route path="/admin/dashboard" element={
-          <ProtectedRoute 
+          <ProtectedRoute
             requireAdmin={true}
             requiredPermission={Permission.VIEW_ADMIN_DASHBOARD}
           >
@@ -197,7 +210,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/users" element={
-          <ProtectedRoute 
+          <ProtectedRoute
             requireAdmin={true}
             requiredPermission={Permission.VIEW_USERS}
           >
@@ -213,7 +226,7 @@ function AppContent() {
         } />
 
         <Route path="/admin/exercises" element={
-          <ProtectedRoute 
+          <ProtectedRoute
             requireAdmin={true}
             requiredPermission={Permission.VIEW_EXERCISES}
           >
@@ -228,7 +241,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/foods" element={
-          <ProtectedRoute 
+          <ProtectedRoute
             requireAdmin={true}
             requiredPermission={Permission.VIEW_FOODS}
           >

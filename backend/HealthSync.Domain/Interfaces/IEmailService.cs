@@ -6,4 +6,5 @@ public interface IEmailService
 {
     Task SendVerificationCodeAsync(string email, string code);
     Task SendResetPasswordEmailAsync(string email, string resetToken);
+    Task SendResetPasswordOtpAsync(string email, string otp);
 }

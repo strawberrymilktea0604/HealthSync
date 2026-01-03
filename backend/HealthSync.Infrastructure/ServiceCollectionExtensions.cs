@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailService, EmailService>();
 
         // Register OtpService
-        services.AddScoped<IOtpService, OtpService>();
+        services.AddSingleton<IOtpService, OtpService>();
 
         // Register GoogleAuthService
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();

@@ -24,7 +24,7 @@ const AddProgressPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!goalId || formData.value <= 0) {
       toast({
         title: 'Lỗi',
@@ -136,9 +136,9 @@ const AddProgressPage = () => {
                     step="0.1"
                     value={formData.weightKg || ''}
                     onChange={(e) =>
-                      setFormData({ 
-                        ...formData, 
-                        weightKg: e.target.value ? Number.parseFloat(e.target.value) : undefined 
+                      setFormData({
+                        ...formData,
+                        weightKg: e.target.value ? Number.parseFloat(e.target.value) : undefined
                       })
                     }
                     placeholder="Nhập cân nặng"
@@ -162,9 +162,9 @@ const AddProgressPage = () => {
                     step="0.1"
                     value={formData.waistCm || ''}
                     onChange={(e) =>
-                      setFormData({ 
-                        ...formData, 
-                        waistCm: e.target.value ? Number.parseFloat(e.target.value) : undefined 
+                      setFormData({
+                        ...formData,
+                        waistCm: e.target.value ? Number.parseFloat(e.target.value) : undefined
                       })
                     }
                     placeholder="Nhập vòng eo"
@@ -198,7 +198,7 @@ const AddProgressPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-6 text-lg font-semibold"
+                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-3 text-lg font-semibold"
                 >
                   {loading ? 'Đang lưu...' : 'Lưu tiến độ'}
                 </Button>

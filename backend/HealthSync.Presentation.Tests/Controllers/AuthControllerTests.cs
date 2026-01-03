@@ -437,7 +437,7 @@ public class AuthControllerTests
         };
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyResetOtpCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(new VerifyResetOtpResponse { Success = true, Message = "OTP verified", Token = "reset-token" });
 
         // Act
         var result = await _controller.VerifyResetOtp(request);
@@ -459,7 +459,7 @@ public class AuthControllerTests
         };
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<VerifyResetOtpCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+            .ReturnsAsync(new VerifyResetOtpResponse { Success = false, Message = "Invalid OTP" });
 
         // Act
         var result = await _controller.VerifyResetOtp(request);

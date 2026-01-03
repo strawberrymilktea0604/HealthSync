@@ -19,6 +19,10 @@ public class OtpService : IOtpService
         var otp = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         var expiry = DateTime.UtcNow.AddMinutes(10); // 10 minutes
         _otpStore[email.ToLower()] = (otp, expiry);
+        
+        // Log OTP to console for development/testing
+        Console.WriteLine($"[OTP-DEBUG] Generated OTP for {email}: {otp}");
+        
         return otp;
     }
 

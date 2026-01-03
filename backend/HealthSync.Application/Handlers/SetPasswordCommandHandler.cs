@@ -29,6 +29,11 @@ public class SetPasswordCommandHandler : IRequestHandler<SetPasswordCommand>
             throw new InvalidOperationException("User not found");
         }
 
+        if (!user.IsActive)
+        {
+            throw new InvalidOperationException("Tài khoản của bạn đã bị khóa.");
+        }
+
         // Hash the password
         user.PasswordHash = _authService.HashPassword(request.Password);
 

@@ -45,6 +45,7 @@ export interface UpdateProfileRequest {
   heightCm: number;
   weightKg: number;
   activityLevel: string;
+  avatarUrl?: string;
 }
 
 export interface SendVerificationCodeRequest {
@@ -85,6 +86,30 @@ class AuthService {
 
   async updateProfile(data: UpdateProfileRequest): Promise<void> {
     await api.put('/userprofile', data);
+  }
+
+  async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/userprofile/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await api.post('/auth/forgot-password', { email });
+  }
+
+  async verifyResetOtp(email: string, otp: string): Promise<{ token: string; message: string }> {
+    const response = await api.post('/auth/verify-reset-otp', { email, otp });
+    return response.data;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await api.post('/auth/reset-password', { token, newPassword });
   }
 }
 

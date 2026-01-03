@@ -9,31 +9,37 @@ namespace HealthSync.Application.Handlers;
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IJwtTokenService _jwtTokenService;
+    private readonly IOtpService _otpService;
     private readonly IEmailService _emailService;
 
     public ForgotPasswordCommandHandler(
         IApplicationDbContext context,
-        IJwtTokenService jwtTokenService,
+        IOtpService otpService,
         IEmailService emailService)
     {
         _context = context;
-        _jwtTokenService = jwtTokenService;
+        _otpService = otpService;
         _emailService = emailService;
     }
 
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
+        var normalizedEmail = request.Email.Trim().ToLower();
+
         var user = await _context.ApplicationUsers
-            .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken);
 
         if (user == null)
         {
-            // Don't reveal if email exists or not for security
-            return;
+             throw new KeyNotFoundException("Email không tồn tại trong hệ thống.");
         }
 
-        var resetToken = await _jwtTokenService.GenerateResetTokenAsync(user.UserId, user.Email);
-        await _emailService.SendResetPasswordEmailAsync(user.Email, resetToken);
+        if (!user.IsActive)
+        {
+             throw new KeyNotFoundException("Tài khoản của bạn đã bị khóa.");
+        }
+
+        var otp = _otpService.GenerateOtp(user.Email);
+        await _emailService.SendResetPasswordOtpAsync(user.Email, otp);
     }
 }

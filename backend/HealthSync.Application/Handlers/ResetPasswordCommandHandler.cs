@@ -34,10 +34,10 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
             throw new InvalidOperationException("Invalid token type");
         }
 
-        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = principal.FindFirst("sub")?.Value;
         if (!int.TryParse(userIdClaim, out var userId))
         {
-            throw new InvalidOperationException("Invalid token");
+            throw new InvalidOperationException($"Invalid token: cannot parse user ID from claim 'sub' (Value: {userIdClaim})");
         }
 
         var user = await _context.ApplicationUsers
@@ -45,6 +45,11 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
         if (user == null)
         {
             throw new InvalidOperationException("User not found");
+        }
+
+        if (!user.IsActive)
+        {
+            throw new InvalidOperationException("Tài khoản của bạn đã bị khóa.");
         }
 
         // Hash password

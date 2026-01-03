@@ -37,7 +37,7 @@ const CreateGoalPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.type || formData.targetValue <= 0) {
       toast({
         title: 'Lỗi',
@@ -198,7 +198,7 @@ const CreateGoalPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-6 text-lg font-semibold"
+                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-3 text-lg font-semibold"
                 >
                   {loading ? 'Đang lưu...' : 'Lưu mục tiêu'}
                 </Button>

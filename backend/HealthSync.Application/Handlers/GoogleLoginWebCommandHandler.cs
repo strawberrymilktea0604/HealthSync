@@ -53,6 +53,11 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
                         .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.Email == googleUser.Email, cancellationToken);
 
+        if (user != null && !user.IsActive)
+        {
+            throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa.");
+        }
+
         if (user == null)
         {
             // Create new user for first-time Google login

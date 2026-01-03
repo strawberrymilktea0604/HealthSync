@@ -11,16 +11,16 @@ export default function ChangePasswordSuccess() {
       <div className="py-4 md:py-6 px-4 md:px-8">
         <Link to="/">
           <h1 className="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
-            Welcome to 
-            <motion.img 
-              src={logo} 
-              alt="healthsync" 
+            Welcome to
+            <motion.img
+              src={logo}
+              alt="healthsync"
               style={{ height: '24px', marginTop: '4px' }}
-              animate={{ 
+              animate={{
                 scale: [1, 1.1, 1],
                 rotate: [0, 5, -5, 0]
               }}
-              transition={{ 
+              transition={{
                 duration: 2,
                 repeat: Infinity,
                 ease: "easeInOut"
@@ -73,7 +73,7 @@ export default function ChangePasswordSuccess() {
               transition={{ duration: 0.5, delay: 0.8 }}
             >
               <Link to="/login">
-                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-6 md:py-8 text-2xl md:text-3xl lg:text-4xl h-auto font-normal">
+                <Button className="bg-[#FDFBD4] text-black hover:bg-[#FDFBD4]/90 rounded-full border border-black px-8 md:px-12 lg:px-16 py-3 md:py-4 text-xl md:text-2xl h-auto font-normal">
                   Go to Login
                 </Button>
               </Link>

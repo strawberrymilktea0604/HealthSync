@@ -78,6 +78,15 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | TC-PROFILE-005 | Nhập ngày sinh trong tương lai | 1. Chọn ngày sinh trong tương lai<br>2. Nhấn "Lưu" | DOB: 2030-01-01 | Hiển thị lỗi "Ngày sinh không hợp lệ" | | | |
 | TC-PROFILE-006 | Upload avatar (nếu có) | 1. Nhấn vào avatar<br>2. Chọn file ảnh<br>3. Xác nhận | File: avatar.jpg (< 5MB) | Avatar được upload và hiển thị | | | |
 
+### Chức năng 2.2: Cập Nhật Hồ Sơ (Profile Settings)
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-PROFILE-007 | Cập nhật thông tin cá nhân | 1. Vào trang Profile/Settings<br>2. Thay đổi cân nặng, chiều cao, activity level<br>3. Nhấn "Lưu thay đổi" | Weight: 72kg<br>ActivityLevel: Active | Thông tin được cập nhật thành công, hiển thị thông báo thành công | | | |
+| TC-PROFILE-008 | Cập nhật avatar từ trang settings | 1. Vào trang Profile<br>2. Nhấn vào ảnh đại diện<br>3. Upload ảnh mới | File: new_avatar.png | Avatar mới được cập nhật ngay lập tức | | | |
+| TC-PROFILE-009 | Hủy thay đổi | 1. Vào trang Profile<br>2. Thay đổi thông tin nhưng không lưu<br>3. Nhấn "Back" hoặc chuyển trang | N/A | Thông tin không bị thay đổi trong cơ sở dữ liệu | | | |
+| TC-PROFILE-010 | Validate dữ liệu khi cập nhật | 1. Nhập cân nặng âm<br>2. Nhấn "Lưu" | Weight: -5 | Hiển thị lỗi validation, không cho phép lưu | | | |
+
 ---
 
 ## Module 3: Dashboard Người Dùng
@@ -213,14 +222,14 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | Module | Số lượng Test Case | Pass | Fail | Pending |
 |--------|-------------------|------|------|---------|
 | Xác thực (Đăng ký, Đăng nhập, Quên MK) | 23 | | | |
-| Hoàn thiện hồ sơ | 6 | | | |
+| Hoàn thiện hồ sơ & Cập nhật | 10 | | | |
 | Dashboard | 6 | | | |
 | Quản lý Mục tiêu | 11 | | | |
 | Theo dõi Dinh dưỡng | 9 | | | |
 | Theo dõi Bài tập | 11 | | | |
 | AI Chat | 9 | | | |
 | Đăng xuất & Bảo mật | 3 | | | |
-| **TỔNG** | **78** | | | |
+| **TỔNG** | **82** | | | |
 
 ---
 

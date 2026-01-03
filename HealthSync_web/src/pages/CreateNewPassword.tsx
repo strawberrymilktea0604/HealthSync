@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function CreateNewPassword() {
   const [pw1, setPw1] = useState("");
@@ -6,6 +7,7 @@ export default function CreateNewPassword() {
   const [show1, setShow1] = useState(false);
   const [show2, setShow2] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const location = useLocation();
 
   const minLen = 8;
   const tooShort = pw1.length > 0 && pw1.length < minLen;
@@ -18,9 +20,10 @@ export default function CreateNewPassword() {
     setSubmitting(true);
     try {
       const urlParams = new URLSearchParams(globalThis.location.search);
-      const token = urlParams.get('token');
+      const token = location.state?.token || urlParams.get('token');
+
       if (!token) {
-        alert("Invalid reset link");
+        alert("Invalid reset token. Please request a new code.");
         return;
       }
       const response = await fetch('/api/auth/reset-password', {

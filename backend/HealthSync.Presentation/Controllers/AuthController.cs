@@ -309,7 +309,11 @@ public class AuthController : ControllerBase
             };
 
             await _mediator.Send(command);
-            return Ok(new { Message = "If the email exists, a reset link has been sent." });
+            return Ok(new { Message = "Nếu email tồn tại, mã xác thực đã được gửi đến email của bạn." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
         }
         catch (Exception)
         {
@@ -354,14 +358,14 @@ public class AuthController : ControllerBase
                 Otp = request.Otp
             };
 
-            var isValid = await _mediator.Send(command);
-            if (isValid)
+            var response = await _mediator.Send(command);
+            if (response.Success)
             {
-                return Ok(new { Message = "OTP verified" });
+                return Ok(new { Message = response.Message, Token = response.Token, Success = true });
             }
             else
             {
-                return BadRequest(new { Error = "Invalid OTP" });
+                return BadRequest(new { Error = response.Message, Success = false });
             }
         }
         catch (Exception)
