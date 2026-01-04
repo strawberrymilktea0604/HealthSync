@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -6,7 +7,8 @@ import 'network_service.dart';
 
 class ApiService {
   // Sử dụng 10.0.2.2 cho Android emulator để trỏ đến localhost của máy host
-  static const String baseUrl = 'http://10.0.2.2:5274/api';
+  // Port 8080 cho nginx
+  static const String baseUrl = 'http://10.0.2.2:8080/api';
   
   // Đăng nhập
   Future<User> login(String email, String password) async {
@@ -54,6 +56,54 @@ class ApiService {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Failed to send verification code');
     }
+  }
+
+  // Quên mật khẩu - Gửi mã xác thực cho email đã tồn tại
+  Future<void> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode != 200) {
+      if (response.body.isNotEmpty) {
+        try {
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? 'Failed to send recovery code');
+        } catch (_) {
+          throw Exception('Failed to send recovery code (server error)');
+        }
+      }
+      throw Exception('Failed to send recovery code (${response.statusCode})');
+    }
+  }
+
+  // Xác thực OTP khôi phục mật khẩu
+  Future<String> verifyResetOtp(String email, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/verify-reset-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'otp': otp, 
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      if (response.body.isNotEmpty) {
+        try {
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? 'Invalid verification code');
+        } catch (_) {
+          throw Exception('Invalid verification code (server error)');
+        }
+      }
+      throw Exception('Invalid verification code (${response.statusCode})');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['token'] ?? data['Token'] ?? '';
   }
 
   // Đăng ký
@@ -129,6 +179,38 @@ class ApiService {
     }
   }
 
+  // Get user profile
+  Future<Map<String, dynamic>> getProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    if (userJson == null) throw Exception('User not authenticated');
+
+    final userData = jsonDecode(userJson);
+    final token = userData['token'];
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/UserProfile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+       if (response.body.isNotEmpty) {
+        try {
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? 'Failed to load profile');
+        } catch (_) {
+          throw Exception('Failed to load profile (server error)');
+        }
+      }
+      throw Exception('Failed to load profile (${response.statusCode})');
+    }
+  }
+
   // Update user profile
   Future<void> updateProfile({
     required String fullName,
@@ -147,7 +229,7 @@ class ApiService {
     final token = userData['token'];
 
     final response = await http.put(
-      Uri.parse('$baseUrl/user/profile'),
+      Uri.parse('$baseUrl/UserProfile'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -163,8 +245,51 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      final error = jsonDecode(response.body);
-      throw Exception(error['Error'] ?? 'Failed to update profile');
+      if (response.body.isNotEmpty) {
+        try {
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? 'Failed to update profile');
+        } catch (_) {
+          throw Exception('Failed to update profile (server error)');
+        }
+      }
+      throw Exception('Failed to update profile (${response.statusCode})');
+    }
+  }
+
+  // Upload Avatar
+  Future<String> uploadAvatar(File file) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('user');
+    if (userJson == null) throw Exception('User not authenticated');
+
+    final userData = jsonDecode(userJson);
+    final token = userData['token'];
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/UserProfile/upload-avatar'),
+    );
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('File', file.path));
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(responseBody);
+      return data['AvatarUrl'] ?? data['avatarUrl'] ?? '';
+    } else {
+      if (responseBody.isNotEmpty) {
+        try {
+          final error = jsonDecode(responseBody);
+          throw Exception(error['Error'] ?? error['message'] ?? 'Failed to upload avatar');
+        } catch (_) {
+          throw Exception('Failed to upload avatar (server error)');
+        }
+      }
+      throw Exception('Failed to upload avatar (${response.statusCode})');
     }
   }
 
@@ -185,6 +310,33 @@ class ApiService {
     if (response.statusCode != 200) {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Failed to set password');
+    }
+  }
+
+  // Reset password
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/reset-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'token': token,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      if (response.body.isNotEmpty) {
+        try {
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? 'Failed to reset password');
+        } catch (_) {
+          throw Exception('Failed to reset password (server error)');
+        }
+      }
+      throw Exception('Failed to reset password (${response.statusCode})');
     }
   }
 

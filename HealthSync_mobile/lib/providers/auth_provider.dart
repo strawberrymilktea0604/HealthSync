@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
+import 'dart:io';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 
@@ -60,6 +61,11 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final user = await _apiService.login(email, password);
+
+      if (user.role == 'Admin') {
+        throw Exception('Tài khoản Admin không được phép đăng nhập trên ứng dụng mobile.');
+      }
+
       await _saveUser(user);
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
@@ -78,6 +84,41 @@ class AuthProvider with ChangeNotifier {
 
     try {
       await _apiService.sendVerificationCode(email);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Forgot Password
+  Future<void> forgotPassword(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.forgotPassword(email);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Verify Reset OTP
+  Future<String> verifyResetOtp(String email, String otp) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final token = await _apiService.verifyResetOtp(email, otp);
+      return token;
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
       rethrow;
@@ -113,6 +154,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+
+
   // Google Sign In
   Future<void> signInWithGoogle() async {
     _isLoading = true;
@@ -142,6 +185,11 @@ class AuthProvider with ChangeNotifier {
       }
 
       final user = await _apiService.googleLoginMobile(idToken);
+      
+      if (user.role == 'Admin') {
+        throw Exception('Tài khoản Admin không được phép đăng nhập trên ứng dụng mobile.');
+      }
+      
       await _saveUser(user);
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
@@ -198,6 +246,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Upload Avatar
+  Future<void> uploadAvatar(File file) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final avatarUrl = await _apiService.uploadAvatar(file);
+      updateUserAvatar(avatarUrl);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -232,6 +298,29 @@ class AuthProvider with ChangeNotifier {
         );
         await _saveUser(_user!);
       }
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Reset password
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.resetPassword(
+        token: token,
+        newPassword: newPassword,
+      );
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
       rethrow;

@@ -298,6 +298,23 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 
 ---
 
+## Module 12: Quản Lý Hồ Sơ Cá Nhân (User Profile)
+
+### Chức năng 12.1: Xem & Cập Nhật Hồ Sơ
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-UPROF-001 | Truy cập Profile Screen từ Home | 1. Tại Home Screen<br>2. Nhấn vào Avatar ở góc trái trên | N/A | Chuyển đến màn hình Hồ sơ cá nhân | | | |
+| TC-M-UPROF-002 | Hiển thị thông tin cá nhân | 1. Mở Profile Screen | N/A | Hiển thị đúng Avatar, Email, Họ tên, Ngày sinh, Giới tính, Chiều cao, Cân nặng, Mức độ hoạt động | | | |
+| TC-M-UPROF-003 | Cập nhật thông tin hợp lệ | 1. Sửa đổi thông tin (ví dụ: thay đổi cân nặng)<br>2. Nhấn "Lưu thay đổi" | Weight: 72 | Hiển thị thông báo thành công, dữ liệu được cập nhật trên server | | | |
+| TC-M-UPROF-004 | Cập nhật thông tin không hợp lệ | 1. Nhập chiều cao âm hoặc quá lớn<br>2. Nhấn "Lưu thay đổi" | Height: -5 | Hiển thị lỗi validation | | | |
+| TC-M-UPROF-005 | Đổi Avatar từ thư viện | 1. Nhấn icon Camera trên Avatar<br>2. Chọn ảnh từ thư viện | Image file | Avatar mới được upload và hiển thị ngay lập tức | | | |
+| TC-M-UPROF-006 | Đổi Avatar chụp ảnh mới | 1. Nhấn icon Camera<br>2. Chọn chụp ảnh (nếu hỗ trợ) | Camera capture | Avatar mới được upload và hiển thị | | | |
+| TC-M-UPROF-007 | Quay lại Home từ Profile | 1. Nhấn nút Back trên AppBar | N/A | Quay lại Home Screen, Avatar trên Home được cập nhật (nếu có thay đổi) | | | |
+| TC-M-UPROF-008 | Đăng xuất từ Profile | 1. Nhấn nút "Đăng xuất"<br>2. Xác nhận | N/A | Token bị xóa, chuyển về màn hình đăng nhập | | | |
+
+---
+
 # TỔNG KẾT TEST CASE USER MOBILE
 
 | Module | Số lượng Test Case | Pass | Fail | Pending |
@@ -313,7 +330,8 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | Tạo mật khẩu Google | 4 | | | |
 | Đăng xuất | 3 | | | |
 | Kiểm thử đặc thù Mobile | 14 | | | |
-| **TỔNG** | **116** | | | |
+| Quản lý Hồ sơ cá nhân | 8 | | | |
+| **TỔNG** | **124** | | | |
 
 ---
 
@@ -323,8 +341,8 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 |------|-------------------|
 | Phần 1: Admin (Web) | 59 |
 | Phần 2: User Web | 78 |
-| Phần 3: User Mobile | 116 |
-| **TỔNG CỘNG** | **253** |
+| Phần 3: User Mobile | 124 |
+| **TỔNG CỘNG** | **261** |
 
 ---
 

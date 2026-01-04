@@ -94,18 +94,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           opacity: _fadeAnimation,
           child: ScaleTransition(
             scale: _scaleAnimation,
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'healthsync',
-                  style: TextStyle(
-                    fontFamily: 'Eras Bold ITC',
-                    fontSize: 30,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                    letterSpacing: 0,
-                  ),
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 40,
                 ),
               ],
             ),

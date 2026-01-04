@@ -4,11 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/dashboard_model.dart';
 
 class DashboardService {
-  static const String baseUrl = 'http://10.0.2.2:5274/api';
+  static const String baseUrl = 'http://10.0.2.2:8080/api';
 
   Future<CustomerDashboard> getCustomerDashboard() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final userJson = prefs.getString('user');
+
+    if (userJson == null) {
+      throw Exception('No authentication token found');
+    }
+
+    final userData = jsonDecode(userJson);
+    final token = userData['token'];
 
     if (token == null) {
       throw Exception('No authentication token found');

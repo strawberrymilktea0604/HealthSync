@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'email_verification_screen.dart';
 
 class AccountRecoveryScreen extends StatefulWidget {
@@ -261,23 +263,36 @@ class _AccountRecoveryScreenState extends State<AccountRecoveryScreen> with Sing
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
-                              if (_emailController.text.isEmpty) {
+                            onPressed: () async {
+                              final email = _emailController.text.trim();
+                              if (email.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Please enter your email')),
                                 );
                                 return;
                               }
                               
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EmailVerificationScreen(
-                                    email: _emailController.text,
-                                    isFromRecovery: true,
-                                  ),
-                                ),
-                              );
+                              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                              try {
+                                await authProvider.forgotPassword(email);
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EmailVerificationScreen(
+                                        email: email,
+                                        isFromRecovery: true,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())),
+                                  );
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,

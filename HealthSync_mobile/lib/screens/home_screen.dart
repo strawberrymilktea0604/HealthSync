@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/dashboard_service.dart';
 import '../models/dashboard_model.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -98,23 +99,33 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: _dashboard!.userInfo.avatarUrl.isNotEmpty
-                                ? NetworkImage(_dashboard!.userInfo.avatarUrl)
-                                : null,
-                            child: _dashboard!.userInfo.avatarUrl.isEmpty
-                                ? const Icon(Icons.person, color: Colors.grey)
-                                : null,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ProfileScreen(),
+                                ),
+                              ).then((_) => _loadDashboard()); // Reload dashboard on return to update avatar/name
+                            },
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey[300],
+                              backgroundImage: _dashboard!.userInfo.avatarUrl.isNotEmpty
+                                  ? NetworkImage(_dashboard!.userInfo.avatarUrl)
+                                  : null,
+                              child: _dashboard!.userInfo.avatarUrl.isEmpty
+                                  ? const Icon(Icons.person, color: Colors.grey)
+                                  : null,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Chào buổi sáng, Mạnh!',
-                                style: TextStyle(
+                              Text(
+                                'Chào buổi sáng, ${_dashboard!.userInfo.fullName.split(' ').last}!',
+                                style: const TextStyle(
                                   fontFamily: 'Estedad-VF',
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'password_reset_success_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String token;
+
+  const ResetPasswordScreen({
+    super.key,
+    required this.token,
+  });
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -340,7 +347,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_passwordController.text.isEmpty ||
                                   _confirmPasswordController.text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -362,13 +369,32 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                                 );
                                 return;
                               }
-                              
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const PasswordResetSuccessScreen(),
-                                ),
-                              );
+
+                              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                              try {
+                                await authProvider.resetPassword(
+                                  token: widget.token,
+                                  newPassword: _passwordController.text,
+                                );
+                                
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const PasswordResetSuccessScreen(),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString()),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,

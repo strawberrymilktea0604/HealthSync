@@ -334,12 +334,30 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> with 
                               
                               // Navigate based on flag
                               if (widget.isFromRecovery) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ResetPasswordScreen(),
-                                  ),
-                                );
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                try {
+                                  final token = await authProvider.verifyResetOtp(widget.email, code);
+                                  
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ResetPasswordScreen(
+                                          token: token,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(e.toString()),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               } else {
                                 // Register user
                                 if (widget.password == null) {
