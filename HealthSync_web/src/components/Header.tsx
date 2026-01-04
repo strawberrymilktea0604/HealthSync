@@ -48,7 +48,7 @@ export default function Header() {
             </h1>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-4 bg-[#EBE9C0] rounded-full px-4 py-3 flex-1 max-w-[600px]">
+          <div className="hidden lg:flex items-center gap-4 bg-[#EBE9C0] rounded-full px-4 py-3 flex-1 max-w-[800px]">
             <Menu className="w-6 h-6 text-[#49454F] flex-shrink-0" />
             <input
               type="text"
@@ -81,7 +81,7 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="bg-[#EBE9C0] rounded-2xl flex items-center p-2 pr-4 gap-3 hover:bg-[#EBE9C0]/80 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden bg-[#4A6F6F]">
+                  <div className="w-8 h-8 aspect-square rounded-full flex items-center justify-center overflow-hidden bg-[#4A6F6F]">
                     <img
                       src={user.avatar || `https://ui-avatars.com/api/?name=${user.fullName}&background=4A6F6F&color=fff&rounded=true`}
                       alt={user.fullName}

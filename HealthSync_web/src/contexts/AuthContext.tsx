@@ -9,6 +9,7 @@ interface User {
   token: string;
   expiresAt: Date;
   isProfileComplete: boolean;
+  avatar?: string; // Avatar URL from backend
 }
 
 interface AuthContextType {

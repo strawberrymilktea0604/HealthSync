@@ -82,7 +82,7 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, AuthResponse>
             IsProfileComplete = user.Profile?.IsComplete() ?? false,
             Roles = roles,
             Permissions = permissions,
-            AvatarUrl = user.Profile?.AvatarUrl
+            AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl // Prioritize ApplicationUser.AvatarUrl
         };
     }
 }

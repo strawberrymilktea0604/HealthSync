@@ -5,6 +5,7 @@ using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
@@ -17,11 +18,13 @@ public class UserProfileController : ControllerBase
 {
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly IMediator _mediator;
+    private readonly IApplicationDbContext _dbContext;
 
-    public UserProfileController(IUserProfileRepository userProfileRepository, IMediator mediator)
+    public UserProfileController(IUserProfileRepository userProfileRepository, IMediator mediator, IApplicationDbContext dbContext)
     {
         _userProfileRepository = userProfileRepository;
         _mediator = mediator;
+        _dbContext = dbContext;
     }
 
     [HttpGet]
@@ -44,6 +47,12 @@ public class UserProfileController : ControllerBase
             return NotFound("Profile not found");
         }
 
+        // FORCE fetch AvatarUrl from ApplicationUser table
+        var user = await _dbContext.ApplicationUsers
+            .Where(u => u.UserId == userId)
+            .Select(u => new { u.AvatarUrl })
+            .FirstOrDefaultAsync();
+
         var dto = new UserProfileDto
         {
             UserId = profile.UserId,
@@ -53,7 +62,8 @@ public class UserProfileController : ControllerBase
             HeightCm = profile.HeightCm,
             WeightKg = profile.WeightKg,
             ActivityLevel = profile.ActivityLevel,
-            AvatarUrl = profile.AvatarUrl
+            // Prioritize ApplicationUser.AvatarUrl over UserProfile.AvatarUrl
+            AvatarUrl = user?.AvatarUrl ?? profile.AvatarUrl
         };
 
         return Ok(dto);
@@ -104,7 +114,7 @@ public class UserProfileController : ControllerBase
     [HttpPost("upload-avatar")]
     public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequest request)
     {
-        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
         {
             return Unauthorized();

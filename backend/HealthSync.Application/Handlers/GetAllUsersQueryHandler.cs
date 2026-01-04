@@ -43,8 +43,8 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
                 Role = u.UserRoles.Select(ur => ur.Role.RoleName).FirstOrDefault() ?? "Customer",
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
-                // FIX: Lấy AvatarUrl từ UserProfiles nếu có, nếu không thì fallback về ApplicationUsers
-                AvatarUrl = (u.Profile != null && u.Profile.AvatarUrl != null) ? u.Profile.AvatarUrl : u.AvatarUrl
+                // FIX: Prioritize ApplicationUser.AvatarUrl, fallback to UserProfile.AvatarUrl
+                AvatarUrl = u.AvatarUrl != null ? u.AvatarUrl : (u.Profile != null ? u.Profile.AvatarUrl : null)
             })
             .ToListAsync(cancellationToken);
 

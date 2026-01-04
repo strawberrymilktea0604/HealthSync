@@ -19,6 +19,7 @@ export default function GoogleCallback() {
       const expiresAt = searchParams.get("expiresAt");
       const requiresPassword = searchParams.get("requiresPassword");
       const isProfileComplete = searchParams.get("isProfileComplete");
+      const avatarUrl = searchParams.get("avatarUrl");
 
       if (!token || !userId || !email || !fullName || !role || !expiresAt) {
         toast({
@@ -40,6 +41,7 @@ export default function GoogleCallback() {
           token,
           expiresAt: new Date(expiresAt),
           isProfileComplete: isProfileComplete === "true",
+          avatar: avatarUrl || undefined,
         };
 
         // Update auth context with user data
@@ -54,7 +56,7 @@ export default function GoogleCallback() {
           navigate("/create-password-google");
           return;
         }
-        
+
         // Check if requiresPassword is missing (error case)
         if (!requiresPassword) {
           toast({
@@ -71,7 +73,7 @@ export default function GoogleCallback() {
           title: "Đăng nhập thành công!",
           description: `Chào mừng ${fullName}`,
         });
-        
+
         if (role === "Admin") {
           navigate("/admin/dashboard");
         } else if (userData.isProfileComplete) {

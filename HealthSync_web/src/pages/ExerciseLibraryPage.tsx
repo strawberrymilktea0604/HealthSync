@@ -156,15 +156,15 @@ export default function ExerciseLibraryPage() {
                                     <h3 className="font-bold text-lg text-gray-900 mb-1">{ex.name}</h3>
                                     <p className="text-xs text-gray-500 mb-3">Nhóm cơ: {ex.muscleGroup}</p>
 
-                                    <div className="flex gap-4 mb-4 text-xs text-gray-500 font-medium">
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            <span>15 phút</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Flame className="w-3 h-3" />
-                                            <span>100 kcal</span>
-                                        </div>
+                                    <div className="flex gap-2 mb-4 text-xs flex-wrap">
+                                        <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-bold uppercase">
+                                            {ex.difficulty}
+                                        </span>
+                                        {ex.equipment && ex.equipment !== 'None' && (
+                                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-medium">
+                                                {ex.equipment}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <Button className="w-full bg-[#5FB25F] hover:bg-[#4E9E4E] text-white rounded-xl font-bold mt-auto">
@@ -244,8 +244,8 @@ export default function ExerciseLibraryPage() {
                                 key={i}
                                 onClick={() => setCurrentPage(i + 1)}
                                 className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${currentPage === i + 1
-                                        ? 'bg-[#5FB25F] text-white shadow-lg shadow-green-200'
-                                        : 'text-gray-400 hover:bg-white'
+                                    ? 'bg-[#5FB25F] text-white shadow-lg shadow-green-200'
+                                    : 'text-gray-400 hover:bg-white'
                                     }`}
                             >
                                 {i + 1}

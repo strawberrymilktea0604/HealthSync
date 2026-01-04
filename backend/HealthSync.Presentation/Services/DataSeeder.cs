@@ -95,6 +95,7 @@ public class DataSeeder
             await SeedExercisesAsync();
             await SeedFoodItemsAsync();
             await SeedFakeUsersAsync();
+            await FixExistingUsersAvatars(); // Fix avatars for existing users
             
             Console.WriteLine("[Success] Data seeding completed.");
         }
@@ -412,8 +413,8 @@ public class DataSeeder
                 // Create UserRole
                 _dbContext.UserRoles.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
                 
-                // Create Goal
-                CreateFakeGoal(user.UserId, user.CreatedAt, profile.WeightKg);
+                // Create 3 Goals: NotStarted, InProgress, Completed
+                Create3Goals(user.UserId, user.CreatedAt, profile.WeightKg);
 
                 processedCount++;
                 if (processedCount % 10 == 0)
@@ -440,12 +441,18 @@ public class DataSeeder
             return;
         }
 
+        // ONLY seed activity for users created more than 1 day ago (existing users)
+        // New users will have empty accounts
+        var oneDayAgo = DateTime.UtcNow.AddDays(-1);
         var users = await _dbContext.ApplicationUsers
             .Include(u => u.WorkoutLogs)
             .Include(u => u.NutritionLogs)
+            .Where(u => u.CreatedAt < oneDayAgo) // Only old users
             .Take(100)
             .ToListAsync();
             
+        Console.WriteLine($"[Seeder] Found {users.Count} existing users (created before {oneDayAgo:yyyy-MM-dd}) to seed activity.");
+        
         var random = new Random();
         int updatedUsers = 0;
 
@@ -453,17 +460,17 @@ public class DataSeeder
         {
             bool hasUpdates = false;
 
-            // Generate Workouts if missing
+            // Generate Workouts if missing (focus on recent dates)
             if (!user.WorkoutLogs.Any())
             {
-                CreateFakeWorkoutLogs(user.UserId, random, exerciseIds);
+                CreateRecentWorkoutLogs(user.UserId, random, exerciseIds);
                 hasUpdates = true;
             }
 
-            // Generate Nutrition logs if missing
+            // Generate Nutrition logs if missing (focus on recent dates)
             if (!user.NutritionLogs.Any())
             {
-                CreateFakeNutritionLogs(user.UserId, random, foodItems);
+                CreateRecentNutritionLogs(user.UserId, random, foodItems);
                 hasUpdates = true;
             }
 
@@ -477,11 +484,11 @@ public class DataSeeder
         if (updatedUsers > 0)
         {
             await _dbContext.SaveChangesAsync();
-            Console.WriteLine($"[Success] Generated activity for {updatedUsers} users.");
+            Console.WriteLine($"[Success] Generated activity for {updatedUsers} existing users.");
         }
         else
         {
-             Console.WriteLine($"[Info] All users already have activity.");
+             Console.WriteLine($"[Info] All existing users already have activity.");
         }
     }
 
@@ -501,21 +508,178 @@ public class DataSeeder
         return customerRole;
     }
 
-    private void CreateFakeGoal(int userId, DateTime createdAt, decimal? weightKg)
+    private void Create3Goals(int userId, DateTime createdAt, decimal? weightKg)
     {
-        var goal = new Goal
+        var faker = new Faker();
+        var currentWeight = weightKg ?? 70;
+        
+        // Goal 1: NotStarted - Future goal for muscle gain
+        var goal1 = new Goal
         {
             UserId = userId,
-            Type = new Faker().PickRandom("WeightLoss", "MuscleGain", "Maintenance"),
-            TargetValue = (weightKg ?? 60) * (decimal)0.9,
-            StartDate = createdAt,
-            EndDate = createdAt.AddMonths(6),
-            Status = "InProgress",
-            Notes = "Mục tiêu 6 tháng đầu năm"
+            Type = "MuscleGain",
+            TargetValue = currentWeight + (decimal)5.0, // Gain 5kg
+            StartDate = DateTime.UtcNow.AddDays(7), // Starts next week
+            EndDate = DateTime.UtcNow.AddMonths(4),
+            Status = "NotStarted",
+            Notes = "Mục tiêu tăng cơ - bắt đầu tuần sau"
         };
-        _dbContext.Goals.Add(goal);
+        _dbContext.Goals.Add(goal1);
+        
+        // Goal 2: InProgress - Current weight loss goal
+        var goal2 = new Goal
+        {
+            UserId = userId,
+            Type = "WeightLoss",
+            TargetValue = currentWeight * (decimal)0.9, // Lose 10% weight
+            StartDate = createdAt.AddDays(-30), // Started 30 days ago
+            EndDate = createdAt.AddMonths(5),
+            Status = "InProgress",
+            Notes = "Mục tiêu giảm cân - đang tiến hành tốt"
+        };
+        _dbContext.Goals.Add(goal2);
+        
+        // Goal 3: Completed - Past maintenance goal
+        var goal3 = new Goal
+        {
+            UserId = userId,
+            Type = "Maintenance",
+            TargetValue = currentWeight, // Maintain current weight
+            StartDate = createdAt.AddMonths(-6),
+            EndDate = createdAt.AddDays(-5), // Ended 5 days ago
+            Status = "Completed",
+            Notes = "Mục tiêu duy trì - hoàn thành thành công!"
+        };
+        _dbContext.Goals.Add(goal3);
     }
 
+    private void CreateRecentWorkoutLogs(int userId, Random random, List<int> exerciseIds)
+    {
+        // Increased workout count: 30-50 workouts, focused on recent dates
+        int workoutCount = random.Next(30, 51);
+        var now = DateTime.UtcNow;
+        
+        for (int w = 0; w < workoutCount; w++)
+        {
+            DateTime workoutDate;
+            
+            // 40% chance for current week (last 7 days)
+            // 30% chance for today/yesterday
+            // 30% chance for older (within 90 days)
+            var rand = random.NextDouble();
+            if (rand < 0.30) // Today or yesterday
+            {
+                workoutDate = now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24));
+            }
+            else if (rand < 0.70) // This week (last 7 days)
+            {
+                workoutDate = now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24));
+            }
+            else // Older data (8-90 days ago)
+            {
+                workoutDate = now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
+            }
+            
+            var workoutLog = new WorkoutLog
+            {
+                UserId = userId,
+                WorkoutDate = workoutDate,
+                DurationMin = random.Next(30, 120),
+                Notes = new Faker().Lorem.Sentence(),
+            };
+            
+            if (exerciseIds.Any())
+            {
+                int sessionCount = random.Next(4, 8); // More exercises per session
+                for (int s = 0; s < sessionCount; s++)
+                {
+                    var exerciseId = exerciseIds[random.Next(exerciseIds.Count)];
+                    workoutLog.ExerciseSessions.Add(new ExerciseSession
+                    {
+                        ExerciseId = exerciseId,
+                        Sets = random.Next(3, 6),
+                        Reps = random.Next(8, 15),
+                        WeightKg = (decimal)random.Next(10, 100),
+                        Rpe = (decimal)random.NextDouble() * 3 + 6 // 6.0 - 9.0
+                    });
+                }
+            }
+            _dbContext.WorkoutLogs.Add(workoutLog);
+        }
+    }
+
+    private void CreateRecentNutritionLogs(int userId, Random random, List<FoodItem> foodItems)
+    {
+        // Increased nutrition count: 60-90 logs, focused on recent dates
+        int nutritionCount = random.Next(60, 91);
+        var now = DateTime.UtcNow;
+        
+        for (int n = 0; n < nutritionCount; n++)
+        {
+            DateTime logDate;
+            
+            // 40% chance for current week
+            // 30% chance for today/yesterday
+            // 30% chance for older
+            var rand = random.NextDouble();
+            if (rand < 0.30) // Today or yesterday
+            {
+                logDate = now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24));
+            }
+            else if (rand < 0.70) // This week
+            {
+                logDate = now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24));
+            }
+            else // Older
+            {
+                logDate = now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
+            }
+            
+            var nutritionLog = new NutritionLog
+            {
+                UserId = userId,
+                LogDate = logDate,
+                Notes = new Faker().PickRandom("Ăn ngon", "Hơi no", "Healthy meal", "Bữa chính", null)
+            };
+
+            if (foodItems.Any())
+            {
+                int entryCount = random.Next(3, 6); // More food entries
+                decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+
+                for (int e = 0; e < entryCount; e++)
+                {
+                    var food = foodItems[random.Next(foodItems.Count)];
+                    var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5); // 0.5 - 2.0 serving
+
+                    var entry = new FoodEntry
+                    {
+                        FoodItemId = food.FoodItemId,
+                        Quantity = qtyRatio * food.ServingSize,
+                        CaloriesKcal = food.CaloriesKcal * qtyRatio,
+                        ProteinG = food.ProteinG * qtyRatio,
+                        CarbsG = food.CarbsG * qtyRatio,
+                        FatG = food.FatG * qtyRatio
+                    };
+
+                    tCal += entry.CaloriesKcal ?? 0;
+                    tP += entry.ProteinG ?? 0;
+                    tC += entry.CarbsG ?? 0;
+                    tF += entry.FatG ?? 0;
+
+                    nutritionLog.FoodEntries.Add(entry);
+                }
+                
+                nutritionLog.TotalCalories = tCal;
+                nutritionLog.ProteinG = tP;
+                nutritionLog.CarbsG = tC;
+                nutritionLog.FatG = tF;
+            }
+            _dbContext.NutritionLogs.Add(nutritionLog);
+        }
+    }
+    
+    // Keep old methods for backward compatibility but unused now
     private void CreateFakeWorkoutLogs(int userId, Random random, List<int> exerciseIds)
     {
         int workoutCount = random.Next(15, 30);
@@ -598,6 +762,35 @@ public class DataSeeder
             }
             _dbContext.NutritionLogs.Add(nutritionLog);
         }
+    }
+
+    private async Task FixExistingUsersAvatars()
+    {
+        // Fix avatars for all existing users who don't have one
+        var usersWithoutAvatar = await _dbContext.ApplicationUsers
+            .Where(u => u.AvatarUrl == null || u.AvatarUrl == "")
+            .ToListAsync();
+
+        if (!usersWithoutAvatar.Any())
+        {
+            Console.WriteLine("[Info] All users already have avatars.");
+            return;
+        }
+
+        Console.WriteLine($"[Seeder] Fixing avatars for {usersWithoutAvatar.Count} users...");
+
+        // Get sample avatars
+        var sampleAvatars = await _avatarSeeder.SeedSampleAvatarsAsync();
+        var random = new Random();
+
+        foreach (var user in usersWithoutAvatar)
+        {
+            // Assign random avatar from sample
+            user.AvatarUrl = sampleAvatars[random.Next(sampleAvatars.Count)];
+        }
+
+        await _dbContext.SaveChangesAsync();
+        Console.WriteLine($"[Success] Fixed avatars for {usersWithoutAvatar.Count} users.");
     }
 
     private static string HashPassword(string password)

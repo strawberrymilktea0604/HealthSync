@@ -66,7 +66,8 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
                 Email = googleUser.Email,
                 PasswordHash = "", // No password for OAuth users
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                AvatarUrl = googleUser.Picture ?? ""
             };
 
             _context.Add(user);
@@ -90,6 +91,7 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
             {
                 UserId = user.UserId,
                 FullName = googleUser.Name,
+                AvatarUrl = googleUser.Picture ?? "",
                 Dob = DateTime.UtcNow.AddYears(-25), // Default age
                 Gender = "Unknown",
                 HeightCm = 170, // Default
@@ -100,13 +102,43 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
             _context.Add(profile);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
         else
         {
             // User exists (either from regular registration or previous Google login)
-            // Allow login regardless of whether they have a password or not
-            // This enables: 
-            // 1. Regular email users with Gmail to login via Google
-            // 2. Previous Google users to login again
+            // Update profile with latest Google info if available
+            if (!string.IsNullOrEmpty(googleUser.Picture))
+            {
+                bool hasUpdates = false;
+
+                if (user.Profile != null)
+                {
+                    // Only update if avatar is NOT set
+                    if (string.IsNullOrEmpty(user.Profile.AvatarUrl))
+                    {
+                        user.Profile.AvatarUrl = googleUser.Picture;
+                        hasUpdates = true;
+                    }
+
+                    if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
+                    {
+                        user.Profile.FullName = googleUser.Name;
+                        hasUpdates = true;
+                    }
+                }
+                
+                // Also update ApplicationUser.AvatarUrl if NOT set
+                if (string.IsNullOrEmpty(user.AvatarUrl))
+                {
+                    user.AvatarUrl = googleUser.Picture;
+                    hasUpdates = true;
+                }
+                
+                if (hasUpdates)
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
         }
 
         // Extract roles and permissions
@@ -140,6 +172,7 @@ public class GoogleLoginMobileCommandHandler : IRequestHandler<GoogleLoginMobile
             UserId = user.UserId,
             Email = user.Email,
             FullName = user.Profile?.FullName ?? user.Email,
+            AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl,
             Role = user.GetRoleName(),
             Token = tokenDto.AccessToken,
             ExpiresAt = DateTime.UtcNow.AddSeconds(tokenDto.ExpiresIn),

@@ -56,7 +56,7 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
             Role = role.RoleName,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            AvatarUrl = user.Profile?.AvatarUrl
+            AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl // Prioritize ApplicationUser.AvatarUrl
         };
     }
 }

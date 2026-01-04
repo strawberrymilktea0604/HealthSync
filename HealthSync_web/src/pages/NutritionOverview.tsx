@@ -8,20 +8,41 @@ import { format } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { dashboardService } from "@/services/dashboardService";
 
 export default function NutritionOverview() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [nutritionLog, setNutritionLog] = useState<NutritionLog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [targetCalories] = useState(2000); // TODO: Fetch from user profile/goals
-  const [targetProtein] = useState(150);
-  const [targetCarbs] = useState(220);
-  const [targetFat] = useState(60);
+
+  // Nutrition targets - Fetch from dashboard API
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetProtein, setTargetProtein] = useState(150);
+  const [targetCarbs, setTargetCarbs] = useState(220);
+  const [targetFat, setTargetFat] = useState(60);
 
   useEffect(() => {
+    loadDashboardTargets();
     loadNutritionLog();
   }, []);
+
+  const loadDashboardTargets = async () => {
+    try {
+      const dashboard = await dashboardService.getCustomerDashboard();
+      const targetCal = dashboard.todayStats.caloriesTarget || 2000;
+
+      setTargetCalories(targetCal);
+      // Calculate macro targets based on standard percentages
+      setTargetProtein(Math.round((targetCal * 0.30) / 4));
+      setTargetCarbs(Math.round((targetCal * 0.45) / 4));
+      setTargetFat(Math.round((targetCal * 0.25) / 9));
+    } catch (error) {
+      console.error('Error loading dashboard targets:', error);
+      // Keep default values on error
+    }
+  };
+
 
   const loadNutritionLog = async () => {
     try {

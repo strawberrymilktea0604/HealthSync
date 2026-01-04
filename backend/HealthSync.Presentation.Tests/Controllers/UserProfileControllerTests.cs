@@ -15,13 +15,15 @@ public class UserProfileControllerTests
 {
     private readonly Mock<IUserProfileRepository> _profileRepositoryMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IApplicationDbContext> _dbContextMock;
     private readonly UserProfileController _controller;
 
     public UserProfileControllerTests()
     {
         _profileRepositoryMock = new Mock<IUserProfileRepository>();
         _mediatorMock = new Mock<IMediator>();
-        _controller = new UserProfileController(_profileRepositoryMock.Object, _mediatorMock.Object);
+        _dbContextMock = new Mock<IApplicationDbContext>();
+        _controller = new UserProfileController(_profileRepositoryMock.Object, _mediatorMock.Object, _dbContextMock.Object);
     }
 
     private void SetupUserClaims(int userId)

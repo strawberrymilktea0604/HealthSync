@@ -66,7 +66,8 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
                 Email = googleUser.Email,
                 PasswordHash = "", // No password for OAuth users
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                AvatarUrl = googleUser.Picture ?? ""
             };
 
             _context.Add(user);
@@ -114,14 +115,37 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
         {
             // User exists (either from regular registration or previous Google login)
             // Update profile with latest Google info if available
-            if (user.Profile != null && !string.IsNullOrEmpty(googleUser.Picture))
+            if (!string.IsNullOrEmpty(googleUser.Picture))
             {
-                user.Profile.AvatarUrl = googleUser.Picture;
-                if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
+                bool hasUpdates = false;
+
+                if (user.Profile != null)
                 {
-                    user.Profile.FullName = googleUser.Name;
+                    // Only update if avatar is NOT set
+                    if (string.IsNullOrEmpty(user.Profile.AvatarUrl))
+                    {
+                        user.Profile.AvatarUrl = googleUser.Picture;
+                        hasUpdates = true;
+                    }
+
+                    if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
+                    {
+                        user.Profile.FullName = googleUser.Name;
+                        hasUpdates = true;
+                    }
                 }
-                await _context.SaveChangesAsync(cancellationToken);
+                
+                // Also update ApplicationUser.AvatarUrl if NOT set
+                if (string.IsNullOrEmpty(user.AvatarUrl))
+                {
+                    user.AvatarUrl = googleUser.Picture;
+                    hasUpdates = true;
+                }
+                
+                if (hasUpdates)
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
             }
         }
 
@@ -162,6 +186,7 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
             UserId = user.UserId,
             Email = user.Email,
             FullName = user.Profile?.FullName ?? googleUser.Name ?? user.Email,
+            AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl,
             Role = user.GetRoleName(),
             Token = tokenDto.AccessToken,
             ExpiresAt = DateTime.UtcNow.AddSeconds(tokenDto.ExpiresIn),

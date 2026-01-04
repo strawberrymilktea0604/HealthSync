@@ -34,7 +34,7 @@ namespace HealthSync.Application.Handlers
                 UserId = user.UserId,
                 FullName = user.Profile?.FullName ?? user.Email,
                 Email = user.Email,
-                AvatarUrl = (user.Profile?.AvatarUrl ?? user.AvatarUrl) ?? ""
+                AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl ?? "" // Prioritize ApplicationUser.AvatarUrl
             };
 
             // Get active goal

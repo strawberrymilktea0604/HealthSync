@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useNavigate } from 'react-router-dom';
 import { format } from "date-fns";
+import { dashboardService } from '@/services/dashboardService';
 
 const NutritionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,16 +25,41 @@ const NutritionPage: React.FC = () => {
   const [mealType, setMealType] = useState<string>('Breakfast');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Targets (TODO: Fetch from user profile)
-  const targetCalories = 2000;
-  const targetProtein = 150;
-  const targetCarbs = 220;
-  const targetFat = 60;
+  // Nutrition targets - Fetch from dashboard API
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetProtein, setTargetProtein] = useState(150);
+  const [targetCarbs, setTargetCarbs] = useState(220);
+  const [targetFat, setTargetFat] = useState(60);
+
+  useEffect(() => {
+    loadDashboardTargets();
+  }, []);
+
 
   useEffect(() => {
     loadNutritionLog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
+
+  const loadDashboardTargets = async () => {
+    try {
+      const dashboard = await dashboardService.getCustomerDashboard();
+      const targetCal = dashboard.todayStats.caloriesTarget || 2000;
+
+      setTargetCalories(targetCal);
+      // Calculate macro targets based on standard percentages
+      // Protein: 30% of calories / 4 cal per gram
+      // Carbs: 45% of calories / 4 cal per gram  
+      // Fat: 25% of calories / 9 cal per gram
+      setTargetProtein(Math.round((targetCal * 0.30) / 4));
+      setTargetCarbs(Math.round((targetCal * 0.45) / 4));
+      setTargetFat(Math.round((targetCal * 0.25) / 9));
+    } catch (error) {
+      console.error('Error loading dashboard targets:', error);
+      // Keep default values on error
+    }
+  };
+
 
   const loadNutritionLog = async () => {
     try {
@@ -317,8 +343,8 @@ const NutritionPage: React.FC = () => {
                       <div
                         key={item.foodItemId}
                         className={`cursor-pointer transition-all p-4 rounded-xl border ${selectedFoodItem?.foodItemId === item.foodItemId
-                            ? 'bg-[#EBE9C0] border-[#4A6F6F]'
-                            : 'bg-white/40 border-transparent hover:bg-white/60'
+                          ? 'bg-[#EBE9C0] border-[#4A6F6F]'
+                          : 'bg-white/40 border-transparent hover:bg-white/60'
                           }`}
                         onClick={() => setSelectedFoodItem(item)}
                       >

@@ -79,19 +79,25 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
             .CountAsync(cancellationToken);
             
         stats.ActiveUsers.Monthly = activeMonthly;
-        // Growth rate for MAU could be calculated if we tracked history, for now mock slight up
-        stats.ActiveUsers.GrowthRate = 5.0; 
-        stats.ActiveUsers.Trend = "up";
+        // Calculate MAU growth from previous month
+        var lastMonthActiveUsers = await _context.WorkoutLogs
+            .Where(w => w.WorkoutDate >= now.AddMonths(-2) && w.WorkoutDate < now.AddMonths(-1))
+            .Select(w => w.UserId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+        
+        stats.ActiveUsers.GrowthRate = CalculateGrowth(activeMonthly, lastMonthActiveUsers);
+        stats.ActiveUsers.Trend = stats.ActiveUsers.GrowthRate >= 0 ? "up" : "down";
 
         // 3. Content Count
         stats.ContentCount.Exercises = await _context.Exercises.CountAsync(cancellationToken);
         stats.ContentCount.FoodItems = await _context.FoodItems.CountAsync(cancellationToken);
 
-        // 4. AI Usage (Mocked or extrapolated from ChatMessages if available)
-        // Assuming ChatMessage table exists
+        // 4. AI Usage (Real data from ChatMessages)
         var aiRequests = await _context.ChatMessages.CountAsync(m => m.Role != "user", cancellationToken);
         stats.AiUsage.TotalRequests = aiRequests;
-        stats.AiUsage.CostEstimate = (decimal)(aiRequests * 0.001); // Arbitrary cost per request
+        // Estimate cost: Gemini Flash ~$0.00001/request (rough approximation)
+        stats.AiUsage.CostEstimate = (decimal)(aiRequests * 0.00001);
         stats.AiUsage.LimitWarning = false;
 
         return stats;
@@ -212,10 +218,8 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
             }
         }
 
-        // 3. Missed Searches (Mocked for now as we don't log search queries yet)
-        insights.MissedSearches.Add(new MissedSearchDto { Keyword = "Keto Bread", Count = 12 });
-        insights.MissedSearches.Add(new MissedSearchDto { Keyword = "Yoga Mat", Count = 8 });
-        insights.MissedSearches.Add(new MissedSearchDto { Keyword = "Vegan Pizza", Count = 5 });
+        // 3. Missed Searches - Not yet implemented (requires search logging)
+        // Future: Query SearchLog table when available
 
         return insights;
     }
@@ -256,23 +260,21 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
             LatencyMs = (int)minioLatency 
         });
 
-        // 3. AI Service (Mock check)
+        // 3. AI Service - Real status check would require calling Gemini API
+        // For now, assume online if ChatMessages exist (indicates API was working recently)
+        var recentAIActivity = await _context.ChatMessages
+            .Where(m => m.CreatedAt >= DateTime.UtcNow.AddHours(-1))
+            .AnyAsync(cancellationToken);
+        
         health.Services.Add(new ServiceStatusDto 
         { 
             Name = "AI Service (Gemini)", 
-            Status = "Online", 
-            LatencyMs = 150 
+            Status = recentAIActivity ? "Online" : "Unknown", 
+            LatencyMs = recentAIActivity ? 150 : 0
         });
 
-        // 4. Recent Errors (Mocked if no ErrorLog table)
-        // If we had a Log table, we'd query it here.
-        health.RecentErrors.Add(new ErrorLogDto 
-        { 
-            Id = Guid.NewGuid().ToString(), 
-            Timestamp = DateTime.UtcNow.AddMinutes(-45), 
-            Message = "Timeout waiting for response from AI Service", 
-            Code = 504 
-        });
+        // 4. Recent Errors - Not yet implemented (requires error logging system)
+        // Future: Query ErrorLog table when available
 
         return health;
     }
