@@ -218,8 +218,12 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Vui lòng nhập cân nặng mục tiêu';
                       }
-                      if (double.tryParse(value) == null) {
+                      final number = double.tryParse(value);
+                      if (number == null) {
                         return 'Vui lòng nhập số hợp lệ';
+                      }
+                      if (number <= 0) {
+                        return 'Cân nặng phải là số dương';
                       }
                       return null;
                     },

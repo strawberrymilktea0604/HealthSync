@@ -13,7 +13,7 @@ class NutritionScreen extends StatefulWidget {
 
 class _NutritionScreenState extends State<NutritionScreen> {
   final NutritionService _nutritionService = NutritionService();
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   NutritionLog? _nutritionLog;
   bool _isLoading = false;
 
@@ -50,7 +50,7 @@ class _NutritionScreenState extends State<NutritionScreen> {
     );
 
     if (result == true) {
-      _loadNutritionLog();
+      await _loadNutritionLog();
     }
   }
 
@@ -648,6 +648,7 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
         foodItemId: _selectedFood!.foodItemId,
         quantity: _quantity,
         mealType: _selectedMealType,
+        logDate: widget.date,
       );
       if (mounted) {
         Navigator.pop(context, true);

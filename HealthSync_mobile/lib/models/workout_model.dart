@@ -168,8 +168,10 @@ class CreateWorkoutLog {
   });
 
   Map<String, dynamic> toJson() {
+    // Convert to UTC date (without time) to avoid timezone issues
+    final utcDate = DateTime.utc(workoutDate.year, workoutDate.month, workoutDate.day);
     return {
-      'workoutDate': workoutDate.toIso8601String(),
+      'workoutDate': utcDate.toIso8601String(),
       'durationMin': durationMin,
       'notes': notes,
       'exerciseSessions': exerciseSessions.map((e) => e.toJson()).toList(),

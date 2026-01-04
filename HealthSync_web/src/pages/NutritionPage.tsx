@@ -138,10 +138,13 @@ const NutritionPage: React.FC = () => {
 
     setIsLoading(true);
     try {
+      // Convert selected date to UTC to avoid timezone issues
+      const utcDate = new Date(Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()));
       await nutritionService.addFoodEntry({
         foodItemId: selectedFoodItem.foodItemId,
         quantity,
         mealType,
+        logDate: utcDate.toISOString(),
       });
 
       toast({

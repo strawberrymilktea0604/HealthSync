@@ -107,8 +107,12 @@ export default function CreateWorkoutPage() {
 
     setIsLoading(true);
     try {
+      // Convert date string to UTC to avoid timezone issues
+      const dateObj = new Date(workoutDate);
+      const utcDate = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+      
       await workoutService.createWorkoutLog({
-        workoutDate,
+        workoutDate: utcDate.toISOString(),
         durationMin,
         notes,
         exerciseSessions: selectedExercises

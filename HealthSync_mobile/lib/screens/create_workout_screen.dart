@@ -103,7 +103,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         sets: 3,
         reps: 10,
         weightKg: 0,
-        restSec: 60,
+        restSec: null,
       ));
     });
 

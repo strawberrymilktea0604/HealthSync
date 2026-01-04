@@ -14,4 +14,6 @@ public class AddFoodEntryDto
     [Required(ErrorMessage = "MealType is required")]
     [RegularExpression("^(Breakfast|Lunch|Dinner|Snack)$", ErrorMessage = "MealType must be one of: Breakfast, Lunch, Dinner, Snack")]
     public string MealType { get; set; } = string.Empty;
+    
+    public DateTime? LogDate { get; set; }
 }

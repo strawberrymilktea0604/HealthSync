@@ -521,7 +521,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
           ),
         ],
       ),
-      floatingActionButton: _goal?.status == 'in_progress'
+      floatingActionButton: (_goal?.status == 'active' || _goal?.status == 'in_progress')
           ? FloatingActionButton.extended(
               onPressed: () async {
                 final result = await Navigator.push(

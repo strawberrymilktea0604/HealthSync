@@ -141,13 +141,15 @@ class NutritionService {
 
   Future<NutritionLog?> getNutritionLogByDate(DateTime date) async {
     try {
+      // Convert to UTC and format as ISO string to match backend expectations
+      final utcDate = DateTime.utc(date.year, date.month, date.day);
+      final dateString = utcDate.toIso8601String();
       final response = await _apiService.get(
         '/nutrition/nutrition-log',
-        queryParameters: {'date': date.toIso8601String()},
+        queryParameters: {'date': dateString},
       );
       return response != null ? NutritionLog.fromJson(response) : null;
     } catch (e) {
-      // print('Error getting nutrition log: $e');
       return null;
     }
   }
@@ -156,19 +158,23 @@ class NutritionService {
     required int foodItemId,
     required double quantity,
     required String mealType,
+    DateTime? logDate,
   }) async {
     try {
+      // Use provided date or current date in UTC
+      final date = logDate ?? DateTime.now();
+      final utcDate = DateTime.utc(date.year, date.month, date.day);
       final response = await _apiService.post(
         '/nutrition/food-entry',
         body: {
           'foodItemId': foodItemId,
           'quantity': quantity,
           'mealType': mealType,
+          'logDate': utcDate.toIso8601String(),
         },
       );
       return response;
     } catch (e) {
-      // print('Error adding food entry: $e');
       rethrow;
     }
   }
@@ -189,10 +195,14 @@ class NutritionService {
     try {
       final queryParams = <String, String>{};
       if (startDate != null) {
-        queryParams['startDate'] = startDate.toIso8601String();
+        // Convert to UTC date to avoid timezone issues
+        final utcDate = DateTime.utc(startDate.year, startDate.month, startDate.day);
+        queryParams['startDate'] = utcDate.toIso8601String();
       }
       if (endDate != null) {
-        queryParams['endDate'] = endDate.toIso8601String();
+        // Convert to UTC date to avoid timezone issues
+        final utcDate = DateTime.utc(endDate.year, endDate.month, endDate.day);
+        queryParams['endDate'] = utcDate.toIso8601String();
       }
       
       final response = await _apiService.get(

@@ -142,11 +142,16 @@ class CreateGoalRequest {
   });
 
   Map<String, dynamic> toJson() {
+    // Convert to UTC dates (without time) to avoid timezone issues
+    final utcStartDate = DateTime.utc(startDate.year, startDate.month, startDate.day);
+    final utcEndDate = endDate != null 
+        ? DateTime.utc(endDate!.year, endDate!.month, endDate!.day)
+        : null;
     return {
       'type': type,
       'targetValue': targetValue,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
+      'startDate': utcStartDate.toIso8601String(),
+      'endDate': utcEndDate?.toIso8601String(),
       'notes': notes,
     };
   }
@@ -168,8 +173,10 @@ class AddProgressRequest {
   });
 
   Map<String, dynamic> toJson() {
+    // Convert to UTC date (without time) to avoid timezone issues
+    final utcDate = DateTime.utc(recordDate.year, recordDate.month, recordDate.day);
     return {
-      'recordDate': recordDate.toIso8601String(),
+      'recordDate': utcDate.toIso8601String(),
       'value': value,
       'notes': notes,
       'weightKg': weightKg,

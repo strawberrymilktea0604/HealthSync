@@ -40,10 +40,19 @@ const CreateGoalPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.type || formData.targetValue <= 0) {
+    if (!formData.type) {
       toast({
         title: 'Lỗi',
-        description: 'Vui lòng điền đầy đủ thông tin',
+        description: 'Vui lòng chọn loại mục tiêu',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.targetValue <= 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Cân nặng mục tiêu phải là số dương',
         variant: 'destructive',
       });
       return;
@@ -51,7 +60,22 @@ const CreateGoalPage = () => {
 
     try {
       setLoading(true);
-      await goalService.createGoal(formData);
+      
+      // Convert dates to UTC to avoid timezone issues
+      const startDateObj = new Date(formData.startDate);
+      const utcStartDate = new Date(Date.UTC(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate()));
+      
+      let utcEndDate = undefined;
+      if (formData.endDate) {
+        const endDateObj = new Date(formData.endDate);
+        utcEndDate = new Date(Date.UTC(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate()));
+      }
+      
+      await goalService.createGoal({
+        ...formData,
+        startDate: utcStartDate.toISOString(),
+        endDate: utcEndDate?.toISOString(),
+      });
       toast({
         title: 'Thành công',
         description: 'Đã tạo mục tiêu mới',
@@ -132,6 +156,7 @@ const CreateGoalPage = () => {
                     id="targetValue"
                     type="number"
                     step="0.1"
+                    min="0.1"
                     value={formData.targetValue || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, targetValue: Number.parseFloat(e.target.value) || 0 })

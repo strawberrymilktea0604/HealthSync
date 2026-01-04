@@ -275,7 +275,7 @@ const GoalDetailsPage = () => {
                 Mục tiêu: {goal.targetValue}kg
               </p>
             </div>
-            {goal.status === 'in_progress' && (
+            {(goal.status === 'in_progress' || goal.status === 'active') && (
               <Button
                 onClick={() => navigate(`/goals/${goalId}/progress`)}
                 className="bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] border-none rounded-xl shadow-sm"
@@ -284,7 +284,7 @@ const GoalDetailsPage = () => {
                 Cập nhật
               </Button>
             )}
-            {goal.status !== 'in_progress' && (
+            {goal.status !== 'in_progress' && goal.status !== 'active' && (
               <Button
                 disabled
                 className="bg-gray-300 text-gray-500 border-none rounded-xl shadow-sm cursor-not-allowed"
@@ -477,9 +477,9 @@ const GoalDetailsPage = () => {
                 <p className="text-gray-600 mb-4">Chưa có bản ghi tiến độ nào</p>
                 <Button
                   onClick={() => navigate(`/goals/${goalId}/progress`)}
-                  disabled={goal.status !== 'in_progress'}
+                  disabled={goal.status !== 'in_progress' && goal.status !== 'active'}
                   className={
-                    goal.status === 'in_progress'
+                    (goal.status === 'in_progress' || goal.status === 'active')
                       ? "bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] rounded-xl"
                       : "bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed"
                   }

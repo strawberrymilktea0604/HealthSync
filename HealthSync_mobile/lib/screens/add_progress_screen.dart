@@ -56,6 +56,22 @@ class _AddProgressScreenState extends State<AddProgressScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Fetch goal to check status first
+      final goal = await _goalService.getGoalById(widget.goalId);
+      
+      // Check if goal status allows progress updates
+      if (goal.status != 'active' && goal.status != 'in_progress') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Chỉ có thể cập nhật tiến độ cho mục tiêu đang hoạt động. Trạng thái hiện tại: ${goal.status}'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+      
       final request = AddProgressRequest(
         recordDate: _recordDate,
         value: double.parse(_valueController.text),

@@ -935,7 +935,7 @@ public class DataSeeder
             var workoutLog = new WorkoutLog
             {
                 UserId = userId,
-                WorkoutDate = workoutDate,
+                WorkoutDate = workoutDate.Date, // Store date only without time
                 DurationMin = random.Next(30, 90),
                 Notes = new Faker().Lorem.Sentence(),
             };
@@ -994,7 +994,7 @@ public class DataSeeder
             var nutritionLog = new NutritionLog
             {
                 UserId = userId,
-                LogDate = logDate,
+                LogDate = logDate.Date, // Store date only without time
                 Notes = new Faker().PickRandom("Ăn ngon", "Hơi no", "Healthy meal", null)
             };
 

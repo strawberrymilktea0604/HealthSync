@@ -39,6 +39,7 @@ export interface AddFoodEntryRequest {
   foodItemId: number;
   quantity: number;
   mealType: string;
+  logDate?: string;
 }
 
 const nutritionService = {
@@ -51,8 +52,10 @@ const nutritionService = {
 
   // Get nutrition log for a specific date
   getNutritionLogByDate: async (date: Date): Promise<NutritionLog | null> => {
+    // Convert to UTC date (without time) to avoid timezone issues
+    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const response = await api.get('/nutrition/nutrition-log', {
-      params: { date: date.toISOString() }
+      params: { date: utcDate.toISOString() }
     });
     return response.data;
   },
@@ -71,8 +74,16 @@ const nutritionService = {
   // Get nutrition logs in a date range
   getNutritionLogs: async (startDate?: Date, endDate?: Date): Promise<NutritionLog[]> => {
     const params: Record<string, string> = {};
-    if (startDate) params.startDate = startDate.toISOString();
-    if (endDate) params.endDate = endDate.toISOString();
+    if (startDate) {
+      // Convert to UTC date (without time) to avoid timezone issues
+      const utcDate = new Date(Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()));
+      params.startDate = utcDate.toISOString();
+    }
+    if (endDate) {
+      // Convert to UTC date (without time) to avoid timezone issues
+      const utcDate = new Date(Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()));
+      params.endDate = utcDate.toISOString();
+    }
     const response = await api.get('/nutrition/nutrition-logs', { params });
     return response.data;
   },

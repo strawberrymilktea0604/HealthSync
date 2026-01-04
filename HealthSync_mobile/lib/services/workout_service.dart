@@ -72,10 +72,14 @@ class WorkoutService {
   }) async {
     final queryParams = <String, String>{};
     if (startDate != null) {
-      queryParams['startDate'] = startDate.toIso8601String();
+      // Convert to UTC date to avoid timezone issues
+      final utcDate = DateTime.utc(startDate.year, startDate.month, startDate.day);
+      queryParams['startDate'] = utcDate.toIso8601String();
     }
     if (endDate != null) {
-      queryParams['endDate'] = endDate.toIso8601String();
+      // Convert to UTC date to avoid timezone issues
+      final utcDate = DateTime.utc(endDate.year, endDate.month, endDate.day);
+      queryParams['endDate'] = utcDate.toIso8601String();
     }
 
     final uri = Uri.parse('$baseUrl/Workout/workout-logs')

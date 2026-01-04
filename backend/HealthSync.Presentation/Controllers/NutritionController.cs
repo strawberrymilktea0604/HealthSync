@@ -85,7 +85,7 @@ public class NutritionController : ControllerBase
         var command = new AddFoodEntryCommand
         {
             UserId = userId,
-            LogDate = DateTime.UtcNow,
+            LogDate = dto.LogDate ?? DateTime.UtcNow,
             FoodItemId = dto.FoodItemId,
             Quantity = dto.Quantity,
             MealType = dto.MealType

@@ -39,13 +39,17 @@ class DashboardService {
         Uri.parse('$baseUrl/Dashboard/customer'),
         headers: headers,
       );
-
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return CustomerDashboardDto.fromJson(data);
+      } else if (response.statusCode == 403) {
+        // Lỗi 403 - Không có quyền truy cập
+        throw Exception(
+            'Bạn không có quyền truy cập dashboard. Vui lòng đăng xuất và đăng nhập lại.');
       } else {
         throw Exception(
-            'Failed to load dashboard: ${response.statusCode} - ${response.body}');
+            'Không thể tải dashboard: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       // Better error handling for network errors

@@ -69,8 +69,47 @@ class _HomeScreenState extends State<HomeScreen> {
           _error = e.toString();
           _isLoading = false;
         });
+        
+        // Nếu là lỗi 403, hiển thị dialog đề nghị đăng xuất
+        if (e.toString().contains('403') || e.toString().contains('không có quyền')) {
+          _showPermissionError();
+        }
       }
     }
+  }
+
+  void _showPermissionError() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lỗi quyền truy cập'),
+        content: const Text(
+          'Tài khoản của bạn không có quyền truy cập dashboard. '
+          'Điều này có thể do:\n'
+          '1. Token đăng nhập đã hết hạn\n'
+          '2. Quyền chưa được cấp đúng\n\n'
+          'Vui lòng đăng xuất và đăng nhập lại để cập nhật quyền.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to profile to logout
+              setState(() => _currentIndex = 0);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
+            child: const Text('Đến Trang Cá Nhân'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _onGoalSelected(int? goalId) async {

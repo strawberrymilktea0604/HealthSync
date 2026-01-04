@@ -45,9 +45,27 @@ const AddProgressPage = () => {
       return;
     }
 
+    // Check if goal status allows progress updates
+    if (goal && goal.status !== 'active' && goal.status !== 'in_progress') {
+      toast({
+        title: 'Lỗi',
+        description: `Chỉ có thể cập nhật tiến độ cho mục tiêu đang hoạt động. Trạng thái hiện tại: ${goal.status}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setLoading(true);
-      await goalService.addProgress(Number.parseInt(goalId), formData);
+      
+      // Convert date to UTC to avoid timezone issues
+      const dateObj = new Date(formData.recordDate);
+      const utcDate = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+      
+      await goalService.addProgress(Number.parseInt(goalId), {
+        ...formData,
+        recordDate: utcDate.toISOString(),
+      });
       toast({
         title: 'Thành công',
         description: 'Đã cập nhật tiến độ',

@@ -27,6 +27,12 @@ public class AddProgressCommandHandler : IRequestHandler<AddProgressCommand, Add
             throw new KeyNotFoundException("Goal not found or does not belong to the user.");
         }
 
+        // Check if goal status allows progress updates (active or in_progress)
+        if (goal.Status != "active" && goal.Status != "in_progress")
+        {
+            throw new InvalidOperationException($"Chỉ có thể cập nhật tiến độ cho mục tiêu đang hoạt động (active/in_progress). Trạng thái hiện tại: {goal.Status}");
+        }
+
         var progressRecord = new ProgressRecord
         {
             GoalId = request.GoalId,
