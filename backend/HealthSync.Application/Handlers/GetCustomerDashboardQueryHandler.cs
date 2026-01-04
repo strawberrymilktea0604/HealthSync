@@ -37,9 +37,9 @@ namespace HealthSync.Application.Handlers
                 AvatarUrl = user.AvatarUrl ?? user.Profile?.AvatarUrl ?? "" // Prioritize ApplicationUser.AvatarUrl
             };
 
-            // Get active goal
+            // Get active goal (in_progress status)
             var activeGoal = user.Goals
-                .Where(g => g.Status == "active")
+                .Where(g => g.Status == "in_progress")
                 .OrderByDescending(g => g.GoalId)
                 .FirstOrDefault();
 
@@ -48,28 +48,45 @@ namespace HealthSync.Application.Handlers
 
             if (activeGoal != null)
             {
-                var latestProgress = activeGoal.ProgressRecords
-                    .OrderByDescending(p => p.RecordDate)
-                    .FirstOrDefault();
+                var sortedRecords = activeGoal.ProgressRecords
+                    .OrderBy(p => p.RecordDate)
+                    .ToList();
 
-                decimal currentValue = latestProgress?.Value ?? activeGoal.TargetValue; // Assuming start with target or something, but need to adjust
+                var firstProgress = sortedRecords.FirstOrDefault();
+                var latestProgress = sortedRecords.LastOrDefault();
+
+                decimal startValue = firstProgress?.Value ?? (user.Profile?.WeightKg ?? 0);
+                decimal currentValue = latestProgress?.Value ?? startValue;
+                decimal targetValue = activeGoal.TargetValue;
+                
                 decimal progress = 0;
                 decimal remaining = 0;
 
                 if (activeGoal.Type.ToLower().Contains("loss") || activeGoal.Type.ToLower().Contains("giảm"))
                 {
-                    progress = (user.Profile?.WeightKg ?? 0) - currentValue; // Use current weight
-                    remaining = currentValue - activeGoal.TargetValue;
+                    // For weight loss: progress is how much we've lost, remaining is how much more to lose
+                    progress = startValue - currentValue;
+                    remaining = currentValue - targetValue;
+                }
+                else if (activeGoal.Type.ToLower().Contains("gain") || activeGoal.Type.ToLower().Contains("tăng"))
+                {
+                    // For weight gain: progress is how much we've gained, remaining is how much more to gain
+                    progress = currentValue - startValue;
+                    remaining = targetValue - currentValue;
                 }
                 else
                 {
-                    progress = currentValue - (user.Profile?.WeightKg ?? 0);
-                    remaining = activeGoal.TargetValue - currentValue;
+                    // For maintenance or other: just track difference
+                    progress = Math.Abs(currentValue - startValue);
+                    remaining = Math.Abs(targetValue - currentValue);
                 }
 
                 goalProgress = new GoalProgressDto
                 {
                     GoalType = activeGoal.Type,
+                    StartValue = startValue,
+                    CurrentValue = currentValue,
+                    TargetValue = targetValue,
                     Status = activeGoal.Status,
                     Progress = progress,
                     Remaining = remaining

@@ -511,46 +511,95 @@ public class DataSeeder
     private void Create3Goals(int userId, DateTime createdAt, decimal? weightKg)
     {
         var faker = new Faker();
+        var random = new Random();
         var currentWeight = weightKg ?? 70;
         
         // Goal 1: NotStarted - Future goal for muscle gain
         var goal1 = new Goal
         {
             UserId = userId,
-            Type = "MuscleGain",
+            Type = "muscle_gain",
             TargetValue = currentWeight + (decimal)5.0, // Gain 5kg
             StartDate = DateTime.UtcNow.AddDays(7), // Starts next week
             EndDate = DateTime.UtcNow.AddMonths(4),
-            Status = "NotStarted",
+            Status = "not_started",
             Notes = "Mục tiêu tăng cơ - bắt đầu tuần sau"
         };
         _dbContext.Goals.Add(goal1);
+        // NotStarted goal: No progress records yet
         
         // Goal 2: InProgress - Current weight loss goal
         var goal2 = new Goal
         {
             UserId = userId,
-            Type = "WeightLoss",
+            Type = "weight_loss",
             TargetValue = currentWeight * (decimal)0.9, // Lose 10% weight
             StartDate = createdAt.AddDays(-30), // Started 30 days ago
             EndDate = createdAt.AddMonths(5),
-            Status = "InProgress",
+            Status = "in_progress",
             Notes = "Mục tiêu giảm cân - đang tiến hành tốt"
         };
         _dbContext.Goals.Add(goal2);
+        
+        // Add progress records for InProgress goal (showing 40-70% progress)
+        var goal2StartWeight = currentWeight;
+        var goal2TargetWeight = currentWeight * (decimal)0.9;
+        var goal2TotalChange = goal2StartWeight - goal2TargetWeight; // e.g., 70 - 63 = 7kg to lose
+        var goal2ProgressCount = random.Next(3, 6); // 3-5 progress records
+        
+        for (int i = 0; i < goal2ProgressCount; i++)
+        {
+            // Progressive weight loss over time
+            var daysFromStart = (30.0 / goal2ProgressCount) * (i + 1); // Spread evenly over 30 days
+            var recordDate = createdAt.AddDays(-30 + daysFromStart);
+            var progressRatio = (decimal)((i + 1) / (double)(goal2ProgressCount + 3)); // 40-70% progress
+            var weightLost = goal2TotalChange * progressRatio;
+            var currentValue = goal2StartWeight - weightLost;
+            
+            goal2.ProgressRecords.Add(new ProgressRecord
+            {
+                RecordDate = recordDate,
+                Value = currentValue,
+                WeightKg = currentValue,
+                WaistCm = 80 - (decimal)(i * 0.5), // Mock waist reduction
+                Notes = i == goal2ProgressCount - 1 ? "Tiến độ tốt!" : null
+            });
+        }
         
         // Goal 3: Completed - Past maintenance goal
         var goal3 = new Goal
         {
             UserId = userId,
-            Type = "Maintenance",
+            Type = "maintenance",
             TargetValue = currentWeight, // Maintain current weight
             StartDate = createdAt.AddMonths(-6),
             EndDate = createdAt.AddDays(-5), // Ended 5 days ago
-            Status = "Completed",
+            Status = "completed",
             Notes = "Mục tiêu duy trì - hoàn thành thành công!"
         };
         _dbContext.Goals.Add(goal3);
+        
+        // Add progress records for Completed goal (showing successful maintenance)
+        var goal3ProgressCount = random.Next(5, 9); // 5-8 progress records over 6 months
+        var goal3Duration = 180.0; // ~6 months in days
+        
+        for (int i = 0; i < goal3ProgressCount; i++)
+        {
+            var daysFromStart = (goal3Duration / goal3ProgressCount) * (i + 1);
+            var recordDate = createdAt.AddMonths(-6).AddDays(daysFromStart);
+            // Fluctuate slightly around target weight (maintenance)
+            var fluctuation = (decimal)(random.NextDouble() * 2 - 1); // ±1 kg
+            var currentValue = currentWeight + fluctuation;
+            
+            goal3.ProgressRecords.Add(new ProgressRecord
+            {
+                RecordDate = recordDate,
+                Value = currentValue,
+                WeightKg = currentValue,
+                WaistCm = 80 + fluctuation * (decimal)0.5m, // Proportional waist change
+                Notes = i == goal3ProgressCount - 1 ? "Hoàn thành mục tiêu!" : null
+            });
+        }
     }
 
     private void CreateRecentWorkoutLogs(int userId, Random random, List<int> exerciseIds)
