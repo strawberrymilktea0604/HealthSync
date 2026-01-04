@@ -39,7 +39,17 @@ public class GeminiAiChatService : IAiChatService
     {
         var history = new ChatHistory();
 
-        // System Prompt with Context Injection
+        // Parse context to extract activity logs
+        var contextObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(userContextData);
+        string activityLogs = "";
+        
+        if (contextObj.TryGetProperty("recentActivityLogs", out var logsElement) && 
+            logsElement.ValueKind == System.Text.Json.JsonValueKind.String)
+        {
+            activityLogs = logsElement.GetString() ?? "";
+        }
+
+        // System Prompt with Context Injection + Activity Logs
         string systemPrompt = $@"
 Bạn là HealthSync Bot - Trợ lý sức khỏe cá nhân chuyên nghiệp và thân thiện. 🏋️‍♂️💪
 
@@ -60,6 +70,11 @@ Bạn là HealthSync Bot - Trợ lý sức khỏe cá nhân chuyên nghiệp và
 ---
 {userContextData}
 ---
+
+**LỊCH SỬ THAO TÁC GẦN ĐÂY (DATA WAREHOUSE - AI CONTEXT):**
+{(string.IsNullOrWhiteSpace(activityLogs) ? "Chưa có dữ liệu thao tác." : activityLogs)}
+
+Dựa vào lịch sử thao tác này để hiểu bối cảnh user (ví dụ: vừa tập xong thì khen ngợi, vừa ăn nhiều thì nhắc nhở, lâu không tập thì động viên).
 
 Hãy phân tích dữ liệu trên và trả lời câu hỏi của người dùng một cách chính xác nhất.";
 

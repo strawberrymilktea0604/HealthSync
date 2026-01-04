@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { dashboardService, CustomerDashboard, GoalSummary } from "@/services/dashboardService";
 import { goalService, Goal } from "@/services/goalService";
 import Header from "@/components/Header";
-import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, TrendingUp, Activity, ChevronRight, BarChart3, ChevronDown } from "lucide-react";
+import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, TrendingUp, Activity, ChevronRight, BarChart3, ChevronDown, Send, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { exerciseService, Exercise } from "@/services/exerciseService";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { chatService } from "@/services/chatService";
+import { ChatMessage } from "@/types/chat";
 // Imports related to Exercise Library removed to clean up UI code
 
 
@@ -26,6 +28,13 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [muscleGroupFilter, setMuscleGroupFilter] = useState("all");
   const [loadingExercises, setLoadingExercises] = useState(false);
+
+  // Chat State
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
@@ -145,6 +154,83 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Failed to load goal details:', error);
     }
+  };
+
+  // Chat functions
+  useEffect(() => {
+    if (showChat) {
+      loadChatHistory();
+    }
+  }, [showChat]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const loadChatHistory = async () => {
+    setLoadingChat(true);
+    try {
+      const history = await chatService.getChatHistory();
+      setMessages(history);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      setLoadingChat(false);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const question = inputMessage.trim();
+    if (!question || isSending) return;
+
+    // Add user message immediately
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: question,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage('');
+    setIsSending(true);
+
+    try {
+      const response = await chatService.sendMessage(question);
+
+      const aiMessage: ChatMessage = {
+        id: response.messageId,
+        role: 'assistant',
+        content: response.response,
+        createdAt: response.timestamp,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      
+      // Add error message to chat
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Xin lỗi, tôi không thể trả lời câu hỏi của bạn lúc này. Vui lòng thử lại sau.',
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
   if (loading) {
@@ -496,18 +582,93 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              className="absolute bottom-20 right-0 w-80 h-96 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 origin-bottom-right"
+              className="absolute bottom-20 right-0 w-96 h-[32rem] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 origin-bottom-right flex flex-col"
             >
-              <div className="bg-[#EBE9C0] p-4 flex justify-between items-center border-b border-gray-100">
+              {/* Header */}
+              <div className="bg-[#EBE9C0] p-4 flex justify-between items-center border-b border-gray-200">
                 <span className="font-bold text-[#2d2d2d] flex items-center gap-2">
                   <Bot className="w-5 h-5" /> Assistant
                 </span>
-                <button onClick={() => setShowChat(false)} className="hover:bg-black/10 p-1 rounded-full text-[#2d2d2d]"><X className="w-4 h-4" /></button>
+                <button onClick={() => setShowChat(false)} className="hover:bg-black/10 p-1 rounded-full text-[#2d2d2d]">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="p-4 h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
-                <Bot className="w-12 h-12 mb-3 opacity-20" />
-                <p className="text-sm">Chat interface coming soon...</p>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                {loadingChat ? (
+                  <div className="flex justify-center items-center h-full">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#D4C5A9]" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                    <Bot className="w-16 h-16 mb-3 opacity-20" />
+                    <p className="text-sm">Bắt đầu cuộc trò chuyện</p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {message.role === 'assistant' && (
+                        <div className="w-8 h-8 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+
+                      <div
+                        className={`max-w-[75%] rounded-2xl px-3 py-2 ${
+                          message.role === 'user'
+                            ? 'bg-[#2d2d2d] text-white'
+                            : 'bg-white border border-gray-200'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            message.role === 'user' ? 'text-white/70' : 'text-gray-500'
+                          }`}
+                        >
+                          {formatTime(message.createdAt)}
+                        </p>
+                      </div>
+
+                      {message.role === 'user' && (
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
               </div>
+
+              {/* Input Form */}
+              <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-200">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    placeholder="Nhập câu hỏi của bạn..."
+                    disabled={isSending}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D4C5A9] focus:border-transparent text-sm disabled:bg-gray-100"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSending || !inputMessage.trim()}
+                    className="w-10 h-10 bg-[#2d2d2d] text-[#EBE9C0] rounded-full flex items-center justify-center hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  >
+                    {isSending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           )}
         </AnimatePresence>

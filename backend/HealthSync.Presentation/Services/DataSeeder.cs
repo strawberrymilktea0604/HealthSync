@@ -97,6 +97,9 @@ public class DataSeeder
             await SeedFakeUsersAsync();
             await FixExistingUsersAvatars(); // Fix avatars for existing users
             
+            // ===> THÊM MỚI: Seed Action Logs cho Data Warehouse <===
+            await SeedUserActionsAsync();
+            
             Console.WriteLine("[Success] Data seeding completed.");
         }
         finally
@@ -1104,6 +1107,122 @@ public class DataSeeder
         using var sha256 = SHA256.Create();
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
+    }
+
+    // ===> PHƯƠNG THỨC MỚI ĐỂ SEED ACTION LOGS (DATA WAREHOUSE LITE) <===
+    private async Task SeedUserActionsAsync()
+    {
+        // Check xem đã có log chưa
+        if (await _dbContext.UserActionLogs.AnyAsync())
+        {
+            Console.WriteLine("[Info] User action logs already exist. Skipping.");
+            return;
+        }
+
+        Console.WriteLine("[Seeder] Generating User Action Logs (Data Warehouse Lite)...");
+
+        // Lấy danh sách user cũ để seed (giới hạn 50 users để tránh quá tải)
+        var users = await _dbContext.ApplicationUsers
+            .Include(u => u.WorkoutLogs)
+            .Include(u => u.NutritionLogs)
+            .Include(u => u.Goals)
+            .Take(50)
+            .ToListAsync();
+
+        var actionLogs = new List<UserActionLog>();
+        var faker = new Faker("vi");
+        var random = new Random();
+
+        foreach (var user in users)
+        {
+            // 1. Tạo Log Đăng nhập/Đăng xuất (Rải rác trong 30 ngày)
+            for (int i = 0; i < 20; i++)
+            {
+                var time = DateTime.UtcNow.AddDays(-random.Next(0, 30)).AddHours(random.Next(6, 22));
+                actionLogs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "UserLogin",
+                    Description = "Người dùng đăng nhập vào hệ thống",
+                    Timestamp = time
+                });
+            }
+
+            // 2. Tạo Log dựa trên Workout thật đã seed
+            foreach (var workout in user.WorkoutLogs)
+            {
+                // Log lúc bắt đầu tập
+                actionLogs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "CreateWorkoutLog",
+                    Description = $"Đã ghi nhận buổi tập: {workout.DurationMin} phút",
+                    Timestamp = workout.WorkoutDate.AddMinutes(workout.DurationMin + 5) // Log sau khi tập xong
+                });
+            }
+
+            // 3. Tạo Log dựa trên Nutrition thật đã seed
+            foreach (var nutrition in user.NutritionLogs)
+            {
+                actionLogs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "CreateNutritionLog",
+                    Description = $"Đã ghi nhật ký ăn uống: {nutrition.TotalCalories:F0} kcal",
+                    Timestamp = nutrition.LogDate.AddHours(random.Next(8, 20))
+                });
+            }
+
+            // 4. Tạo Log Mục tiêu (Goals)
+            foreach (var goal in user.Goals)
+            {
+                actionLogs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "CreateGoal",
+                    Description = $"Đặt mục tiêu mới: {goal.Type} - {goal.TargetValue}kg",
+                    Timestamp = goal.StartDate
+                });
+
+                if (goal.Status == "completed")
+                {
+                    actionLogs.Add(new UserActionLog
+                    {
+                        UserId = user.UserId,
+                        ActionType = "CompleteGoal",
+                        Description = $"Chúc mừng! Đã hoàn thành mục tiêu {goal.Type}",
+                        Timestamp = goal.EndDate ?? DateTime.UtcNow
+                    });
+                }
+            }
+
+            // 5. Tạo các Log tương tác AI (Fake history chat)
+            int chatCount = random.Next(3, 8);
+            for (int k = 0; k < chatCount; k++)
+            {
+                actionLogs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "ChatWithAI",
+                    Description = "Đã tương tác với AI Chatbot để được tư vấn",
+                    Timestamp = DateTime.UtcNow.AddDays(-random.Next(1, 10))
+                });
+            }
+        }
+
+        // Sắp xếp lại theo thời gian cho chuẩn Data Warehouse
+        var sortedLogs = actionLogs.OrderBy(l => l.Timestamp).ToList();
+
+        // Chunk insert để tránh lỗi SQL quá tải params
+        var batchSize = 1000;
+        for (int i = 0; i < sortedLogs.Count; i += batchSize)
+        {
+            var batch = sortedLogs.Skip(i).Take(batchSize).ToList();
+            _dbContext.UserActionLogs.AddRange(batch);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        Console.WriteLine($"[Success] Seeded {sortedLogs.Count} action logs for AI Context.");
     }
 }
 

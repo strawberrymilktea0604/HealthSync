@@ -1,4 +1,5 @@
 using HealthSync.Application.Services;
+using HealthSync.Application.Common.Interfaces;
 using HealthSync.Domain.Constants;
 using HealthSync.Domain.Interfaces;
 using HealthSync.Infrastructure.Authorization;
@@ -46,6 +47,9 @@ public static class ServiceCollectionExtensions
 
         // Register OtpService
         services.AddSingleton<IOtpService, OtpService>();
+        
+        // ===> THÊM MỚI: Register CurrentUserService cho AuditLogBehavior <===
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Register GoogleAuthService
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();

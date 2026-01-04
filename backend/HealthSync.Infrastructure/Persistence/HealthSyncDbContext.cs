@@ -27,6 +27,7 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<UserActionLog> UserActionLogs { get; set; }
 
     IQueryable<ApplicationUser> IApplicationDbContext.ApplicationUsers => ApplicationUsers;
     IQueryable<UserProfile> IApplicationDbContext.UserProfiles => UserProfiles;
@@ -43,6 +44,7 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
     IQueryable<RolePermission> IApplicationDbContext.RolePermissions => RolePermissions;
     IQueryable<UserRole> IApplicationDbContext.UserRoles => UserRoles;
     IQueryable<ChatMessage> IApplicationDbContext.ChatMessages => ChatMessages;
+    IQueryable<UserActionLog> IApplicationDbContext.UserActionLogs => UserActionLogs;
 
     void IApplicationDbContext.Add<T>(T entity)
     {
@@ -252,6 +254,19 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+        });
+
+        // --- UserActionLog (Data Warehouse & AI Context) ---
+        modelBuilder.Entity<UserActionLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.ActionType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => new { e.UserId, e.Timestamp });
         });
 
         // NOTE: FoodItems are now seeded by DataSeeder with ImageUrl from MinIO

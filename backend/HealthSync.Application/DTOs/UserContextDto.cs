@@ -5,6 +5,9 @@ public class UserContextDto
     public ProfileContextDto Profile { get; set; } = new();
     public GoalContextDto? Goal { get; set; }
     public List<DailyLogContextDto> RecentLogsLast7Days { get; set; } = new();
+    
+    // NEW: Lịch sử thao tác gần đây từ Data Warehouse
+    public string? RecentActivityLogs { get; set; }
 }
 
 public class ProfileContextDto

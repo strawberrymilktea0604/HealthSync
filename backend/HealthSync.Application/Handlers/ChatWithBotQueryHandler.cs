@@ -117,6 +117,25 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
             }
         }
 
+        // === NEW: Get Recent User Action Logs (Data Warehouse Lite) ===
+        var recentActions = await _context.UserActionLogs
+            .AsNoTracking()
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.Timestamp)
+            .Take(50) // Lấy 50 action gần nhất
+            .Select(a => new { a.Timestamp, a.ActionType, a.Description })
+            .ToListAsync(cancellationToken);
+
+        // Thêm vào context để pass cho AI (format dạng text)
+        if (recentActions.Any())
+        {
+            var actionLogsSummary = string.Join("\n", recentActions.Select(a => 
+                $"- [{a.Timestamp:dd/MM HH:mm}] {a.Description}"));
+            
+            // Thêm trường mới vào UserContextDto (sẽ tạo sau)
+            context.RecentActivityLogs = actionLogsSummary;
+        }
+
         // Get Last 7 Days Logs
         var sevenDaysAgo = DateTime.UtcNow.AddDays(-7).Date;
         var today = DateTime.UtcNow.Date;

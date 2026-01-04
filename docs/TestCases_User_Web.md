@@ -110,9 +110,30 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | TC-DASH-006 | Responsive Dashboard trên mobile | 1. Mở Dashboard trên màn hình mobile<br>2. Kiểm tra layout | Viewport: 375px | Layout responsive, các card xếp dọc | | | |
 | TC-DASH-007 | **[MỚI]** Nút Ghi bữa ăn navigate | 1. Nhấn nút "Ghi bữa ăn"<br>2. Kiểm tra navigation | N/A | Chuyển đến trang /nutrition | | | |
 | TC-DASH-008 | **[MỚI]** Nút Ghi buổi tập navigate | 1. Nhấn nút "Ghi buổi tập"<br>2. Kiểm tra navigation | N/A | Chuyển đến trang /create-workout | | | |
-| TC-DASH-009 | **[MỚI]** Chat Bot FAB button | 1. Kiểm tra Dashboard<br>2. Nhấn nút chat bot ở góc phải dưới | N/A | Modal chat hiển thị với header "Assistant" và message "Chat interface coming soon..." | | | |
+| TC-DASH-009 | **[MỚI]** Chat Bot FAB button | 1. Kiểm tra Dashboard<br>2. Nhấn nút chat bot ở góc phải dưới | N/A | Modal chat hiển thị với giao diện chat đầy đủ | | | **Component: Dashboard.tsx - Chat Modal** |
 | TC-DASH-010 | **[MỚI]** Fetch dashboard data từ API | 1. Load Dashboard<br>2. Kiểm tra API call | N/A | Gọi API GET /dashboard/customer và hiển thị: userInfo, goalProgress, weightProgress, todayStats | | | **API: GET /dashboard/customer** |
 | TC-DASH-011 | **[MỚI]** Header avatar hiển thị | 1. Load Dashboard<br>2. Kiểm tra avatar trong Header | N/A | Avatar user hiển thị tròn hoàn hảo, fetch từ user.avatar hoặc UI Avatars fallback | | | **Component: Header.tsx** |
+
+### Chức năng 3.2: AI Chatbot Assistant
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-CHAT-001 | **[MỚI]** Mở modal chatbot | 1. Ở Dashboard<br>2. Nhấn FAB button chatbot góc phải dưới | N/A | Modal chat hiển thị với animation smooth, header "Assistant" với icon Bot, nút đóng X | | | **Port: 8080** |
+| TC-CHAT-002 | **[MỚI]** Load chat history khi mở modal | 1. Mở modal chatbot | N/A | Gọi API GET /api/Chat/history (port 8080), hiển thị loading spinner khi đang fetch | | | **API: GET /api/Chat/history?pageSize=20&pageNumber=1** |
+| TC-CHAT-003 | **[MỚI]** Hiển thị chat history | 1. Mở modal chatbot<br>2. Kiểm tra messages hiển thị | N/A | Messages hiển thị theo đúng role (user/assistant), user bên phải với bg đen, assistant bên trái với bg trắng, có avatar và timestamp | | | |
+| TC-CHAT-004 | **[MỚI]** Empty state khi chưa có tin nhắn | 1. Mở modal chatbot lần đầu (chưa có lịch sử)<br>2. Kiểm tra empty state | N/A | Hiển thị Bot icon mờ và text "Bắt đầu cuộc trò chuyện" ở giữa | | | |
+| TC-CHAT-005 | **[MỚI]** Gửi tin nhắn cho AI | 1. Mở modal chatbot<br>2. Nhập câu hỏi: "Tôi muốn giảm cân"<br>3. Nhấn nút Send hoặc Enter | Question: "Tôi muốn giảm cân" | User message hiển thị ngay lập tức, gọi API POST /api/Chat/ask (port 8080), hiển thị loading spinner trên nút send | | | **API: POST /api/Chat/ask** |
+| TC-CHAT-006 | **[MỚI]** Nhận phản hồi từ AI | 1. Sau khi gửi tin nhắn<br>2. Chờ response | N/A | AI response hiển thị dưới user message với avatar Bot, content từ API, timestamp đúng định dạng HH:mm | | | |
+| TC-CHAT-007 | **[MỚI]** Auto scroll to bottom | 1. Gửi tin nhắn mới<br>2. Kiểm tra scroll behavior | N/A | Chat tự động scroll xuống message mới nhất với smooth behavior | | | |
+| TC-CHAT-008 | **[MỚI]** Disable input khi đang gửi | 1. Gửi tin nhắn<br>2. Kiểm tra trạng thái input và button | N/A | Input và button bị disable khi isSending=true, button hiển thị loading spinner thay vì Send icon | | | |
+| TC-CHAT-009 | **[MỚI]** Validate empty message | 1. Không nhập gì<br>2. Nhấn Send | Input: "" (empty) | Button Send bị disable khi input trống hoặc chỉ có whitespace | | | |
+| TC-CHAT-010 | **[MỚI]** Error handling khi API fail | 1. Gửi tin nhắn khi backend không available<br>2. Kiểm tra error handling | N/A | Hiển thị error message từ AI: "Xin lỗi, tôi không thể trả lời câu hỏi của bạn lúc này. Vui lòng thử lại sau." | | | |
+| TC-CHAT-011 | **[MỚI]** Đóng modal chatbot | 1. Mở modal<br>2. Nhấn nút X hoặc click FAB button lại | N/A | Modal đóng với animation smooth, chat history vẫn được giữ | | | |
+| TC-CHAT-012 | **[MỚI]** Responsive chatbot modal | 1. Mở modal trên màn hình khác nhau | Viewport: 1920px, 1366px, 768px | Modal size: 384px width, 32rem height, responsive với màn hình nhỏ | | | |
+| TC-CHAT-013 | **[MỚI]** Bearer token authentication | 1. Gửi tin nhắn<br>2. Kiểm tra request header | N/A | Request chứa Authorization header với Bearer token từ localStorage | | | **chatService.ts interceptor** |
+| TC-CHAT-014 | **[MỚI]** Format timestamp | 1. Xem tin nhắn trong chat<br>2. Kiểm tra timestamp | CreatedAt: "2026-01-05T10:30:00Z" | Hiển thị format "HH:mm" theo locale vi-VN, ví dụ: "10:30" | | | |
+| TC-CHAT-015 | **[MỚI]** Message content với line breaks | 1. AI trả lời với multi-line content<br>2. Kiểm tra hiển thị | Content có \n | Text hiển thị đúng line breaks với whitespace-pre-wrap | | | |
+| TC-CHAT-016 | **[MỚI]** Chatbot API base URL | 1. Kiểm tra chatService config | N/A | API_BASE_URL = http://localhost:8080, endpoint = /api/Chat | | | **chatService.ts** |
 
 ---
 

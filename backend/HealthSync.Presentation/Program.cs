@@ -43,6 +43,9 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddScoped<DataSeeder>();
 
+// ===> THÊM MỚI: Register HttpContextAccessor cho CurrentUserService <===
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
 
 builder.Services.AddCors(options =>

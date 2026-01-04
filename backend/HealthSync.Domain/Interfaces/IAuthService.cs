@@ -26,6 +26,7 @@ public interface IApplicationDbContext
     IQueryable<RolePermission> RolePermissions { get; }
     IQueryable<UserRole> UserRoles { get; }
     IQueryable<ChatMessage> ChatMessages { get; }
+    IQueryable<UserActionLog> UserActionLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     void Add<T>(T entity) where T : class;
     void Update<T>(T entity) where T : class;

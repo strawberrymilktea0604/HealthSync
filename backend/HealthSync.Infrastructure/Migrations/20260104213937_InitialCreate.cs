@@ -175,6 +175,29 @@ namespace HealthSync.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserActionLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ActionType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    MetaDataJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserActionLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserActionLogs_ApplicationUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "ApplicationUsers",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserProfiles",
                 columns: table => new
                 {
@@ -362,32 +385,32 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "Id", "Category", "CreatedAt", "Description", "PermissionCode" },
                 values: new object[,]
                 {
-                    { 101, "User", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8578), "Xem danh sách người dùng", "USER_READ" },
-                    { 102, "User", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8585), "Khóa tài khoản người dùng", "USER_BAN" },
-                    { 103, "User", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8587), "Cập nhật vai trò người dùng", "USER_UPDATE_ROLE" },
-                    { 104, "User", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8588), "Xóa người dùng", "USER_DELETE" },
-                    { 201, "Exercise", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8590), "Xem thư viện bài tập", "EXERCISE_READ" },
-                    { 202, "Exercise", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8591), "Thêm bài tập mới", "EXERCISE_CREATE" },
-                    { 203, "Exercise", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8592), "Cập nhật bài tập", "EXERCISE_UPDATE" },
-                    { 204, "Exercise", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8593), "Xóa bài tập", "EXERCISE_DELETE" },
-                    { 301, "Food", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8594), "Xem thư viện thực phẩm", "FOOD_READ" },
-                    { 302, "Food", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8595), "Thêm thực phẩm mới", "FOOD_CREATE" },
-                    { 303, "Food", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8596), "Cập nhật thực phẩm", "FOOD_UPDATE" },
-                    { 304, "Food", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8597), "Xóa thực phẩm", "FOOD_DELETE" },
-                    { 401, "WorkoutLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8599), "Xem nhật ký tập luyện", "WORKOUT_LOG_READ" },
-                    { 402, "WorkoutLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8600), "Tạo nhật ký tập luyện", "WORKOUT_LOG_CREATE" },
-                    { 403, "WorkoutLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8601), "Cập nhật nhật ký tập luyện", "WORKOUT_LOG_UPDATE" },
-                    { 404, "WorkoutLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8602), "Xóa nhật ký tập luyện", "WORKOUT_LOG_DELETE" },
-                    { 501, "NutritionLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8603), "Xem nhật ký dinh dưỡng", "NUTRITION_LOG_READ" },
-                    { 502, "NutritionLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8605), "Tạo nhật ký dinh dưỡng", "NUTRITION_LOG_CREATE" },
-                    { 503, "NutritionLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9302), "Cập nhật nhật ký dinh dưỡng", "NUTRITION_LOG_UPDATE" },
-                    { 504, "NutritionLog", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9309), "Xóa nhật ký dinh dưỡng", "NUTRITION_LOG_DELETE" },
-                    { 601, "Goal", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9310), "Xem mục tiêu", "GOAL_READ" },
-                    { 602, "Goal", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9311), "Tạo mục tiêu", "GOAL_CREATE" },
-                    { 603, "Goal", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9313), "Cập nhật mục tiêu", "GOAL_UPDATE" },
-                    { 604, "Goal", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9315), "Xóa mục tiêu", "GOAL_DELETE" },
-                    { 701, "Dashboard", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9316), "Xem dashboard cá nhân", "DASHBOARD_VIEW" },
-                    { 702, "Dashboard", new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(9317), "Xem dashboard admin", "DASHBOARD_ADMIN" }
+                    { 101, "User", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5199), "Xem danh sách người dùng", "USER_READ" },
+                    { 102, "User", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5208), "Khóa tài khoản người dùng", "USER_BAN" },
+                    { 103, "User", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5209), "Cập nhật vai trò người dùng", "USER_UPDATE_ROLE" },
+                    { 104, "User", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5211), "Xóa người dùng", "USER_DELETE" },
+                    { 201, "Exercise", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5212), "Xem thư viện bài tập", "EXERCISE_READ" },
+                    { 202, "Exercise", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5214), "Thêm bài tập mới", "EXERCISE_CREATE" },
+                    { 203, "Exercise", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5215), "Cập nhật bài tập", "EXERCISE_UPDATE" },
+                    { 204, "Exercise", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5217), "Xóa bài tập", "EXERCISE_DELETE" },
+                    { 301, "Food", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5218), "Xem thư viện thực phẩm", "FOOD_READ" },
+                    { 302, "Food", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5220), "Thêm thực phẩm mới", "FOOD_CREATE" },
+                    { 303, "Food", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5221), "Cập nhật thực phẩm", "FOOD_UPDATE" },
+                    { 304, "Food", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5223), "Xóa thực phẩm", "FOOD_DELETE" },
+                    { 401, "WorkoutLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5225), "Xem nhật ký tập luyện", "WORKOUT_LOG_READ" },
+                    { 402, "WorkoutLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5226), "Tạo nhật ký tập luyện", "WORKOUT_LOG_CREATE" },
+                    { 403, "WorkoutLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5227), "Cập nhật nhật ký tập luyện", "WORKOUT_LOG_UPDATE" },
+                    { 404, "WorkoutLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5228), "Xóa nhật ký tập luyện", "WORKOUT_LOG_DELETE" },
+                    { 501, "NutritionLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5230), "Xem nhật ký dinh dưỡng", "NUTRITION_LOG_READ" },
+                    { 502, "NutritionLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5231), "Tạo nhật ký dinh dưỡng", "NUTRITION_LOG_CREATE" },
+                    { 503, "NutritionLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5232), "Cập nhật nhật ký dinh dưỡng", "NUTRITION_LOG_UPDATE" },
+                    { 504, "NutritionLog", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5234), "Xóa nhật ký dinh dưỡng", "NUTRITION_LOG_DELETE" },
+                    { 601, "Goal", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5235), "Xem mục tiêu", "GOAL_READ" },
+                    { 602, "Goal", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5293), "Tạo mục tiêu", "GOAL_CREATE" },
+                    { 603, "Goal", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5294), "Cập nhật mục tiêu", "GOAL_UPDATE" },
+                    { 604, "Goal", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5295), "Xóa mục tiêu", "GOAL_DELETE" },
+                    { 701, "Dashboard", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5297), "Xem dashboard cá nhân", "DASHBOARD_VIEW" },
+                    { 702, "Dashboard", new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5298), "Xem dashboard admin", "DASHBOARD_ADMIN" }
                 });
 
             migrationBuilder.InsertData(
@@ -395,8 +418,8 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "RoleName" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8214), "Quản trị viên hệ thống, có toàn quyền", "Admin" },
-                    { 2, new DateTime(2026, 1, 4, 9, 24, 48, 761, DateTimeKind.Utc).AddTicks(8229), "Người dùng cuối sử dụng app", "Customer" }
+                    { 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(4778), "Quản trị viên hệ thống, có toàn quyền", "Admin" },
+                    { 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(4792), "Người dùng cuối sử dụng app", "Customer" }
                 });
 
             migrationBuilder.InsertData(
@@ -404,47 +427,47 @@ namespace HealthSync.Infrastructure.Migrations
                 columns: new[] { "PermissionId", "RoleId", "GrantedAt" },
                 values: new object[,]
                 {
-                    { 101, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(669) },
-                    { 102, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(672) },
-                    { 103, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(673) },
-                    { 104, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(674) },
-                    { 201, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(675) },
-                    { 202, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(675) },
-                    { 203, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(676) },
-                    { 204, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(677) },
-                    { 301, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(678) },
-                    { 302, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(679) },
-                    { 303, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(679) },
-                    { 304, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(680) },
-                    { 401, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(681) },
-                    { 402, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(682) },
-                    { 403, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(682) },
-                    { 404, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(683) },
-                    { 501, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(684) },
-                    { 502, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(686) },
-                    { 503, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(686) },
-                    { 504, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(687) },
-                    { 601, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(688) },
-                    { 602, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(689) },
-                    { 603, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(689) },
-                    { 604, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(690) },
-                    { 701, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(691) },
-                    { 702, 1, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(691) },
-                    { 201, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(692) },
-                    { 301, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(693) },
-                    { 401, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(695) },
-                    { 402, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(695) },
-                    { 403, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(696) },
-                    { 404, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(697) },
-                    { 501, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(698) },
-                    { 502, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(699) },
-                    { 503, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(700) },
-                    { 504, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(700) },
-                    { 601, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(701) },
-                    { 602, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(702) },
-                    { 603, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(703) },
-                    { 604, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(703) },
-                    { 701, 2, new DateTime(2026, 1, 4, 9, 24, 48, 762, DateTimeKind.Utc).AddTicks(704) }
+                    { 101, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5354) },
+                    { 102, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5357) },
+                    { 103, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5358) },
+                    { 104, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5359) },
+                    { 201, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5360) },
+                    { 202, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5361) },
+                    { 203, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5362) },
+                    { 204, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5363) },
+                    { 301, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5364) },
+                    { 302, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5364) },
+                    { 303, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5365) },
+                    { 304, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5366) },
+                    { 401, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5367) },
+                    { 402, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5368) },
+                    { 403, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5370) },
+                    { 404, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5370) },
+                    { 501, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5371) },
+                    { 502, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5371) },
+                    { 503, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5372) },
+                    { 504, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5373) },
+                    { 601, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5373) },
+                    { 602, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5374) },
+                    { 603, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5375) },
+                    { 604, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5376) },
+                    { 701, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5377) },
+                    { 702, 1, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5378) },
+                    { 201, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5379) },
+                    { 301, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5379) },
+                    { 401, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5380) },
+                    { 402, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5381) },
+                    { 403, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5382) },
+                    { 404, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5383) },
+                    { 501, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5383) },
+                    { 502, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5384) },
+                    { 503, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5385) },
+                    { 504, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5385) },
+                    { 601, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5386) },
+                    { 602, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5388) },
+                    { 603, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5389) },
+                    { 604, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5389) },
+                    { 701, 2, new DateTime(2026, 1, 4, 21, 39, 36, 439, DateTimeKind.Utc).AddTicks(5390) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -523,6 +546,11 @@ namespace HealthSync.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserActionLogs_UserId_Timestamp",
+                table: "UserActionLogs",
+                columns: new[] { "UserId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_RoleId",
                 table: "UserRoles",
                 column: "RoleId");
@@ -550,6 +578,9 @@ namespace HealthSync.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "RolePermissions");
+
+            migrationBuilder.DropTable(
+                name: "UserActionLogs");
 
             migrationBuilder.DropTable(
                 name: "UserProfiles");
