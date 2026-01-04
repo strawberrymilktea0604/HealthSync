@@ -9,6 +9,7 @@ export interface FoodItem {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  imageUrl?: string;
 }
 
 export interface FoodEntry {
@@ -21,6 +22,7 @@ export interface FoodEntry {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  imageUrl?: string;
 }
 
 export interface NutritionLog {

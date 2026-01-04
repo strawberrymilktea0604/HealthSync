@@ -10,9 +10,18 @@ export interface GoalProgress {
   startValue: number;
   currentValue: number;
   targetValue: number;
-  progress: number;
+  progress: number; // Phần trăm tiến độ (0-100)
+  progressAmount: number; // Số kg đã tăng/giảm
   remaining: number;
   status: string;
+}
+
+export interface GoalSummary {
+  goalId: number;
+  type: string;
+  notes: string;
+  targetValue: number;
+  progress: number;
 }
 
 export interface WeightDataPoint {
@@ -46,6 +55,7 @@ export interface ExerciseStreak {
 export interface CustomerDashboard {
   userInfo: UserInfo;
   goalProgress: GoalProgress | null;
+  activeGoals: GoalSummary[];
   weightProgress: WeightProgress | null;
   todayStats: TodayStats;
   exerciseStreak: ExerciseStreak;

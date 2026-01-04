@@ -50,9 +50,20 @@ const FoodSearch = () => {
 
   // Client-side filtering logic to match the UI selectors
   const filteredItems = foodItems.filter(item => {
-    // 1. Category filter (Mock implementation if API doesn't support)
-    // Assuming backend might not have 'category' field yet based on interface, 
-    // but the UI needs it. We'll skip if no category field in data.
+    // 1. Category filter - based on food name patterns (Vietnamese food)
+    if (category !== 'all') {
+      const name = item.name.toLowerCase();
+      if (category === 'main') {
+        // Main dishes: rice, noodles, pho, etc.
+        if (!/(cơm|phở|bún|miến|hủ tiếu|bánh mì|mì|canh|lẩu)/.test(name)) return false;
+      } else if (category === 'side') {
+        // Side dishes: vegetables, soups
+        if (!/(rau|canh|súp|xào|luộc|gỏi|salad)/.test(name)) return false;
+      } else if (category === 'snack') {
+        // Snacks: fruits, desserts
+        if (!/(trái cây|bánh|chè|kem|sữa chua|trà|nước)/.test(name)) return false;
+      }
+    }
 
     // 2. Calorie Range
     if (calorieRange !== 'all') {
@@ -67,6 +78,13 @@ const FoodSearch = () => {
       const p = item.proteinG;
       if (proteinRange === 'high' && p < 20) return false;
       if (proteinRange === 'low' && p >= 20) return false;
+    }
+
+    // 4. Carb Range
+    if (carbRange !== 'all') {
+      const c = item.carbsG;
+      if (carbRange === 'low' && c > 30) return false;
+      if (carbRange === 'high' && c <= 30) return false;
     }
 
     return true;
@@ -204,13 +222,13 @@ const FoodSearch = () => {
                       {item.caloriesKcal.toFixed(0)} kcal
                     </span>
                     <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
-                      P: {item.proteinG.toFixed(0)}g
+                      P: {item.proteinG.toFixed(1)}g
                     </span>
                     <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
-                      C: {item.carbsG.toFixed(0)}g
+                      C: {item.carbsG.toFixed(1)}g
                     </span>
                     <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
-                      F: {item.fatG.toFixed(0)}g
+                      F: {item.fatG.toFixed(1)}g
                     </span>
                   </div>
                 </div>

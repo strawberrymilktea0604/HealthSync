@@ -152,6 +152,7 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
                 .WithMany(fi => fi.FoodEntries)
                 .HasForeignKey(e => e.FoodItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.MealType).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Quantity).HasPrecision(8, 2);
             entity.Property(e => e.CaloriesKcal).HasPrecision(8, 2);
             entity.Property(e => e.ProteinG).HasPrecision(8, 2);
@@ -253,49 +254,9 @@ public class HealthSyncDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => new { e.UserId, e.CreatedAt });
         });
 
-        // Seed data for FoodItems
-        modelBuilder.Entity<FoodItem>().HasData(
-            new FoodItem { FoodItemId = 1, Name = "Chicken Breast", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 165, ProteinG = 31, CarbsG = 0, FatG = 3.6m },
-            new FoodItem { FoodItemId = 2, Name = "Brown Rice", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 111, ProteinG = 2.6m, CarbsG = 23, FatG = 0.9m },
-            new FoodItem { FoodItemId = 3, Name = "Banana", ServingSize = 118, ServingUnit = "g", CaloriesKcal = 105, ProteinG = 1.3m, CarbsG = 27, FatG = 0.4m },
-            new FoodItem { FoodItemId = 4, Name = "Greek Yogurt", ServingSize = 170, ServingUnit = "g", CaloriesKcal = 100, ProteinG = 17, CarbsG = 6, FatG = 0 },
-            new FoodItem { FoodItemId = 5, Name = "Spinach", ServingSize = 30, ServingUnit = "g", CaloriesKcal = 7, ProteinG = 0.9m, CarbsG = 1.1m, FatG = 0.1m },
-            new FoodItem { FoodItemId = 6, Name = "Salmon", ServingSize = 100, ServingUnit = "g", CaloriesKcal = 208, ProteinG = 20, CarbsG = 0, FatG = 13m },
-            new FoodItem { FoodItemId = 7, Name = "Sweet Potato", ServingSize = 130, ServingUnit = "g", CaloriesKcal = 112, ProteinG = 2.1m, CarbsG = 26, FatG = 0.1m },
-            new FoodItem { FoodItemId = 8, Name = "Eggs", ServingSize = 50, ServingUnit = "g", CaloriesKcal = 72, ProteinG = 6.3m, CarbsG = 0.4m, FatG = 4.8m },
-            new FoodItem { FoodItemId = 9, Name = "Oatmeal", ServingSize = 40, ServingUnit = "g", CaloriesKcal = 150, ProteinG = 5.3m, CarbsG = 27, FatG = 2.8m },
-            new FoodItem { FoodItemId = 10, Name = "Broccoli", ServingSize = 91, ServingUnit = "g", CaloriesKcal = 31, ProteinG = 2.5m, CarbsG = 6, FatG = 0.3m }
-        );
-
-        // Seed data for Exercises
-        modelBuilder.Entity<Exercise>().HasData(
-            // Chest Exercises
-            new Exercise { ExerciseId = 1, Name = "Push-ups", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Classic bodyweight chest exercise" },
-            new Exercise { ExerciseId = 2, Name = "Bench Press", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound chest exercise with barbell" },
-            new Exercise { ExerciseId = 3, Name = "Dumbbell Fly", MuscleGroup = SystemConstants.MuscleGroups.Chest, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation exercise for chest" },
-            
-            // Back Exercises
-            new Exercise { ExerciseId = 4, Name = "Pull-ups", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.PullUpBar, Description = "Bodyweight back exercise" },
-            new Exercise { ExerciseId = 5, Name = "Deadlift", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Advanced, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound full-body exercise" },
-            new Exercise { ExerciseId = 6, Name = "Bent-over Row", MuscleGroup = SystemConstants.MuscleGroups.Back, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Barbell, Description = "Compound back exercise" },
-            
-            // Legs Exercises
-            new Exercise { ExerciseId = 7, Name = "Squats", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Fundamental leg exercise" },
-            new Exercise { ExerciseId = 8, Name = "Lunges", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Unilateral leg exercise" },
-            new Exercise { ExerciseId = 9, Name = "Leg Press", MuscleGroup = SystemConstants.MuscleGroups.Legs, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Machine, Description = "Machine-based leg exercise" },
-            
-            // Shoulders Exercises
-            new Exercise { ExerciseId = 10, Name = "Shoulder Press", MuscleGroup = SystemConstants.MuscleGroups.Shoulders, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Overhead pressing movement" },
-            new Exercise { ExerciseId = 11, Name = "Lateral Raise", MuscleGroup = SystemConstants.MuscleGroups.Shoulders, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation shoulder exercise" },
-            
-            // Arms Exercises
-            new Exercise { ExerciseId = 12, Name = "Bicep Curls", MuscleGroup = SystemConstants.MuscleGroups.Arms, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.Dumbbells, Description = "Isolation bicep exercise" },
-            new Exercise { ExerciseId = 13, Name = "Tricep Dips", MuscleGroup = SystemConstants.MuscleGroups.Arms, Difficulty = SystemConstants.Difficulty.Intermediate, Equipment = SystemConstants.Equipment.ParallelBars, Description = "Bodyweight tricep exercise" },
-            
-            // Core Exercises
-            new Exercise { ExerciseId = 14, Name = "Plank", MuscleGroup = SystemConstants.MuscleGroups.Core, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Isometric core exercise" },
-            new Exercise { ExerciseId = 15, Name = "Crunches", MuscleGroup = SystemConstants.MuscleGroups.Core, Difficulty = SystemConstants.Difficulty.Beginner, Equipment = SystemConstants.Equipment.None, Description = "Basic abdominal exercise" }
-        );
+        // NOTE: FoodItems are now seeded by DataSeeder with ImageUrl from MinIO
+        // NOTE: Exercises are now seeded by DataSeeder with ImageUrl from MinIO
+        // No longer using HasData here to avoid conflict
 
         // Seed data for Roles
         modelBuilder.Entity<Role>().HasData(

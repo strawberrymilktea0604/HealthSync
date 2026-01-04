@@ -32,6 +32,9 @@ import CreateGoalPage from "./pages/CreateGoalPage";
 import AddProgressPage from "./pages/AddProgressPage";
 import GoalDetailsPage from "./pages/GoalDetailsPage";
 import NutritionPage from "./pages/NutritionPage";
+import NutritionOverview from "./pages/NutritionOverview";
+import NutritionHistory from "./pages/NutritionHistory";
+import NutritionDiary from "./pages/NutritionDiary";
 import CreateWorkoutPage from "./pages/CreateWorkoutPage";
 import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
 import FoodList from "./pages/FoodList";
@@ -318,6 +321,42 @@ function AppContent() {
               transition={{ duration: 0.4 }}
             >
               <NutritionPage />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition-overview" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              <NutritionOverview />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition-history" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <NutritionHistory />
+            </motion.div>
+          </ProtectedRoute>
+        } />
+        <Route path="/nutrition-diary" element={
+          <ProtectedRoute>
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.4 }}
+            >
+              <NutritionDiary />
             </motion.div>
           </ProtectedRoute>
         } />

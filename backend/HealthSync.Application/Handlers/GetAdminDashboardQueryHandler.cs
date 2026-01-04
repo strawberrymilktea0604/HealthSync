@@ -124,17 +124,17 @@ public class GetAdminDashboardQueryHandler : IRequestHandler<GetAdminDashboardQu
         var goals = await _context.Goals.ToListAsync(cancellationToken);
         if (goals.Any())
         {
-            var completed = goals.Count(g => g.Status == "Completed");
-            var failed = goals.Count(g => g.Status == "Failed");
-            var inProgress = goals.Count(g => g.Status == "InProgress");
+            var completed = goals.Count(g => g.Status?.ToLower() == "completed");
+            var failed = goals.Count(g => g.Status?.ToLower() != "completed" && g.EndDate.HasValue && g.EndDate.Value < now);
+            var inProgress = goals.Count(g => (g.Status?.ToLower() == "in_progress" || g.Status?.ToLower() == "active") && (!g.EndDate.HasValue || g.EndDate.Value >= now));
             
             charts.GoalSuccessRate.TotalGoals = goals.Count;
             charts.GoalSuccessRate.Labels = new List<string> { "Completed", "In Progress", "Failed" };
             charts.GoalSuccessRate.Data = new List<double> 
             { 
-                (double)completed / goals.Count * 100,
-                (double)inProgress / goals.Count * 100,
-                (double)failed / goals.Count * 100 
+                (double)completed,
+                (double)inProgress,
+                (double)failed
             };
         }
 

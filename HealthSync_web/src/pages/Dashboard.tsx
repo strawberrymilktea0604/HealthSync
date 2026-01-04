@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { dashboardService, CustomerDashboard } from "@/services/dashboardService";
+import { dashboardService, CustomerDashboard, GoalSummary } from "@/services/dashboardService";
+import { goalService, Goal } from "@/services/goalService";
 import Header from "@/components/Header";
-import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, Activity, ChevronRight } from "lucide-react";
+import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, TrendingUp, Activity, ChevronRight, BarChart3, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { exerciseService, Exercise } from "@/services/exerciseService";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 // Imports related to Exercise Library removed to clean up UI code
 
 
@@ -16,6 +18,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [selectedGoalId, setSelectedGoalId] = useState<number | null>(null);
+  const [selectedGoalDetails, setSelectedGoalDetails] = useState<any>(null);
 
   // Exercise State
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -28,7 +32,23 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboard();
     loadExercises();
+
+    // Auto-refresh dashboard every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadDashboard();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(refreshInterval);
   }, []);
+
+  // Load selected goal details when a goal is selected
+  useEffect(() => {
+    if (selectedGoalId) {
+      loadSelectedGoalDetails(selectedGoalId);
+    } else {
+      setSelectedGoalDetails(null);
+    }
+  }, [selectedGoalId]);
 
   // Use exercises state to prevent unused variable check, as requested to keep data fetching
   useEffect(() => {
@@ -78,6 +98,55 @@ export default function Dashboard() {
     }
   };
 
+  const loadSelectedGoalDetails = async (goalId: number) => {
+    try {
+      const goals = await goalService.getGoals();
+      const goal = goals.find((g: Goal) => g.goalId === goalId);
+      
+      if (!goal) return;
+
+      // Calculate progress from goal's progress records
+      const sortedRecords = goal.progressRecords.sort((a, b) => 
+        new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
+      );
+      
+      const firstRecord = sortedRecords[0];
+      const latestRecord = sortedRecords[sortedRecords.length - 1];
+      
+      const startValue = firstRecord?.weightKg || firstRecord?.value || 0;
+      const currentValue = latestRecord?.weightKg || latestRecord?.value || startValue;
+      const targetValue = goal.targetValue;
+      
+      const isDecreaseGoal = goal.type.toLowerCase().includes('loss') || 
+                            goal.type.toLowerCase().includes('giảm') ||
+                            targetValue < startValue;
+      
+      const progressAmount = isDecreaseGoal 
+        ? startValue - currentValue 
+        : currentValue - startValue;
+      
+      const remaining = isDecreaseGoal
+        ? currentValue - targetValue
+        : targetValue - currentValue;
+      
+      const totalChange = Math.abs(targetValue - startValue);
+      const progress = totalChange > 0 ? (Math.abs(progressAmount) / totalChange) * 100 : 0;
+      
+      setSelectedGoalDetails({
+        goalType: goal.type,
+        startValue,
+        currentValue,
+        targetValue,
+        progress: Math.min(100, Math.max(0, progress)),
+        progressAmount,
+        remaining,
+        status: goal.status
+      });
+    } catch (error) {
+      console.error('Failed to load goal details:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FDFBD4] flex items-center justify-center">
@@ -95,8 +164,52 @@ export default function Dashboard() {
     );
   }
 
-  const { userInfo, goalProgress, weightProgress, todayStats } = dashboard;
+  const { userInfo, goalProgress, activeGoals, weightProgress, todayStats } = dashboard;
   const today = new Date();
+
+  // Helper để lấy tên hiển thị của goal type
+  const getGoalTypeDisplay = (type: string) => {
+    const types: Record<string, string> = {
+      'weight_loss': 'Giảm cân',
+      'weight_gain': 'Tăng cân',
+      'muscle_gain': 'Tăng cơ',
+      'fat_loss': 'Giảm mỡ',
+    };
+    return types[type] || type;
+  };
+
+  // Lấy goal đã chọn hoặc goal mặc định
+  const displayedGoal = selectedGoalId && activeGoals?.length > 0
+    ? activeGoals.find((g: GoalSummary) => g.goalId === selectedGoalId)
+    : null;
+
+  // Hàm tính toán chi tiết progress cho goal được chọn
+  const calculateGoalProgress = (goalSummary: GoalSummary) => {
+    if (!goalSummary) return null;
+
+    // Lấy goal details từ activeGoals để tính toán
+    const isDecreaseGoal = goalSummary.type.toLowerCase().includes('loss') || 
+                          goalSummary.type.toLowerCase().includes('giảm') ||
+                          goalSummary.targetValue < (goalSummary as any).startValue;
+    
+    // Nếu đã có cached details, dùng luôn
+    if (selectedGoalDetails && selectedGoalDetails.goalId === goalSummary.goalId) {
+      return selectedGoalDetails;
+    }
+
+    // Giả sử progress là % đã hoàn thành, tính ngược lại các giá trị
+    // Đây là workaround vì API không trả về đầy đủ thông tin
+    return {
+      goalType: goalSummary.type,
+      targetValue: goalSummary.targetValue,
+      progress: goalSummary.progress,
+      // Những giá trị này cần load từ API riêng hoặc cache
+      startValue: 0,
+      currentValue: 0,
+      progressAmount: 0,
+      remaining: 0
+    };
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
@@ -133,7 +246,7 @@ export default function Dashboard() {
 
         {/* Goals Section */}
         <section className="bg-white/30 rounded-[2.5rem] p-6 md:p-8 mb-8 shadow-sm border border-white/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-xl text-gray-800 uppercase tracking-wide flex items-center gap-2">
               <Activity className="w-5 h-5 text-[#4A6F6F]" />
               Tiến độ mục tiêu
@@ -145,6 +258,42 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* Goal Selector - Hiển thị nếu có nhiều mục tiêu */}
+          {activeGoals && activeGoals.length > 1 && (
+            <div className="mb-6">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-auto justify-between rounded-xl border-gray-300 hover:bg-gray-50">
+                    <span className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      {displayedGoal ? getGoalTypeDisplay(displayedGoal.type) : 'Chọn mục tiêu để xem'}
+                    </span>
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[250px]">
+                  {activeGoals.map((goal: GoalSummary) => (
+                    <DropdownMenuItem
+                      key={goal.goalId}
+                      onClick={() => setSelectedGoalId(goal.goalId)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex flex-col w-full">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{getGoalTypeDisplay(goal.type)}</span>
+                          <span className="text-xs text-gray-500">{goal.progress.toFixed(0)}%</span>
+                        </div>
+                        {goal.notes && (
+                          <span className="text-xs text-gray-500 truncate">{goal.notes}</span>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Main Goal Card */}
             <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
@@ -152,10 +301,14 @@ export default function Dashboard() {
               <div className="flex-1 flex flex-col items-center justify-center">
                 <div className="text-center">
                   <p className="text-5xl font-black mb-1 text-[#2d2d2d] leading-none tracking-tighter">
-                    {goalProgress ? 'Giảm' : '---'}
+                    {(selectedGoalDetails || goalProgress) ? (
+                      (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') || 
+                      (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
+                      ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? 'Giảm' : 'Tăng'
+                    ) : '---'}
                   </p>
                   <p className="text-4xl font-extrabold text-[#2d2d2d]/90 tracking-tight">
-                    {goalProgress ? `${(goalProgress.startValue - goalProgress.targetValue).toFixed(1)}kg` : ''}
+                    {(selectedGoalDetails || goalProgress) ? `${Math.abs((selectedGoalDetails?.startValue || goalProgress?.startValue || 0) - (selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0)).toFixed(1)}kg` : ''}
                   </p>
                 </div>
               </div>
@@ -166,15 +319,23 @@ export default function Dashboard() {
             <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
               <p className="text-sm font-semibold opacity-60 uppercase tracking-wider text-[#3d3d3d]">Tiến độ hiện tại</p>
               <div className="flex-1 flex flex-col items-center justify-center">
-                {goalProgress ? (
+                {(selectedGoalDetails || goalProgress) ? (
                   <div className="text-center">
                     <p className="text-2xl font-semibold mb-3 text-[#2d2d2d]">
-                      Đã giảm <span className="font-black text-4xl block mt-1">{goalProgress.progress.toFixed(1)}<span className="text-2xl font-bold text-[#2d2d2d]/60">kg</span></span>
+                      {(selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') || 
+                       (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
+                       ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? 'Đã giảm' : 'Đã tăng'} <span className="font-black text-4xl block mt-1">{(selectedGoalDetails?.progressAmount || goalProgress?.progressAmount || 0).toFixed(1)}<span className="text-2xl font-bold text-[#2d2d2d]/60">kg</span></span>
                     </p>
                     <div className="inline-flex items-center gap-2 bg-black/5 px-3 py-1 rounded-full">
-                      <TrendingDown className="w-4 h-4 text-[#4A6F6F]" />
+                      {(selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') || 
+                       (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
+                       ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? (
+                        <TrendingDown className="w-4 h-4 text-[#4A6F6F]" />
+                      ) : (
+                        <TrendingUp className="w-4 h-4 text-[#4A6F6F]" />
+                      )}
                       <p className="text-sm font-medium text-[#2d2d2d]">
-                        Còn <span className="font-bold">{goalProgress.remaining.toFixed(1)}kg</span>
+                        Còn <span className="font-bold">{Math.abs((selectedGoalDetails?.remaining || goalProgress?.remaining || 0)).toFixed(1)}kg</span>
                       </p>
                     </div>
                   </div>
@@ -244,41 +405,53 @@ export default function Dashboard() {
 
           {/* Nutrition Card */}
           <div className="group bg-[#EBE9C0]/50 rounded-[2.5rem] p-8 flex flex-col items-center justify-between min-h-[340px] relative border border-white/40 backdrop-blur-sm hover:bg-[#EBE9C0]/80 transition-all duration-300">
-            <div className="w-full">
-              <p className="text-center font-bold text-gray-800 mb-2 text-lg uppercase tracking-wide">Dinh dưỡng</p>
-              <p className="text-center text-sm text-gray-500 mb-6">Theo dõi calo nạp vào</p>
+            <div className="w-full flex justify-between items-center mb-4">
+              <div>
+                <p className="text-center font-bold text-gray-800 mb-1 text-lg uppercase tracking-wide">Dinh dưỡng</p>
+                <p className="text-center text-sm text-gray-500">Theo dõi calo nạp vào</p>
+              </div>
+              <Link to="/nutrition-overview" className="text-sm font-semibold text-[#4A6F6F] hover:underline flex items-center gap-1">
+                Chi tiết <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
 
             {/* Visual Representation */}
-            <div className="flex items-end justify-center gap-4 h-40 mb-8 w-full max-w-[240px]">
-              <motion.div
-                initial={{ height: 0 }} animate={{ height: '6rem' }} transition={{ delay: 0.2 }}
-                className="w-12 bg-[#2d2d2d] rounded-xl shadow-lg"
-              ></motion.div>
-              <motion.div
-                initial={{ height: 0 }} animate={{ height: '8rem' }} transition={{ delay: 0.1 }}
-                className="w-12 bg-transparent border-[3px] border-[#2d2d2d] rounded-xl"
-              ></motion.div>
-              <motion.div
-                initial={{ height: 0 }} animate={{ height: '5rem' }} transition={{ delay: 0.3 }}
-                className="w-12 bg-transparent border-[3px] border-[#2d2d2d] rounded-xl opacity-60"
-              ></motion.div>
+            <div className="flex w-full items-center justify-center gap-6 mb-6">
+              <div className="relative w-32 h-32 flex items-center justify-center bg-[#ffab91] rounded-full text-center p-2 shadow-xl border-4 border-[#FDFBD4] group-hover:rotate-6 transition-transform duration-500">
+                <div className="text-white flex flex-col items-center">
+                  <span className="text-3xl font-black">{Math.round(todayStats.caloriesConsumed || 0)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">/ {todayStats.caloriesTarget || 2000} kcal</span>
+                </div>
+              </div>
             </div>
 
-            <Button
-              className="rounded-full bg-[#FDFBD4] text-[#2d2d2d] hover:bg-[#2d2d2d] hover:text-[#FDFBD4] border-2 border-[#2d2d2d] px-10 py-6 text-lg font-bold w-full max-w-[280px] flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-sm"
-              onClick={() => navigate('/nutrition')}
-            >
-              <Utensils className="w-5 h-5" />
-              Ghi bữa ăn
-            </Button>
+            <div className="flex gap-3 w-full max-w-[280px]">
+              <Button
+                className="rounded-full bg-[#FDFBD4] text-[#2d2d2d] hover:bg-[#2d2d2d] hover:text-[#FDFBD4] border-2 border-[#2d2d2d] px-8 py-6 text-lg font-bold flex-1 flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-sm"
+                onClick={() => navigate('/nutrition')}
+              >
+                <Utensils className="w-5 h-5" />
+                Ghi bữa ăn
+              </Button>
+              <div
+                className="rounded-full border-2 border-[#4A6F6F] bg-white text-[#4A6F6F] hover:bg-[#4A6F6F] hover:text-white w-14 h-14 flex items-center justify-center transition-all hover:scale-110 shadow-md cursor-pointer font-bold text-xl"
+                onClick={() => navigate('/nutrition-history')}
+              >
+                📊
+              </div>
+            </div>
           </div>
 
           {/* Workout Card */}
           <div className="group bg-[#EBE9C0]/50 rounded-[2.5rem] p-8 flex flex-col items-center justify-between min-h-[340px] relative border border-white/40 backdrop-blur-sm hover:bg-[#EBE9C0]/80 transition-all duration-300">
-            <div className="w-full">
-              <p className="text-center font-bold text-gray-800 mb-2 text-lg uppercase tracking-wide">Luyện tập</p>
-              <p className="text-center text-sm text-gray-500 mb-6">Theo dõi vận động</p>
+            <div className="w-full flex justify-between items-center mb-4">
+              <div>
+                <p className="text-center font-bold text-gray-800 mb-1 text-lg uppercase tracking-wide">Luyện tập</p>
+                <p className="text-center text-sm text-gray-500">Theo dõi vận động</p>
+              </div>
+              <Link to="/workout-history" className="text-sm font-semibold text-[#4A6F6F] hover:underline flex items-center gap-1">
+                Lịch sử <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
 
             <div className="flex w-full items-center justify-center gap-6 mb-6">

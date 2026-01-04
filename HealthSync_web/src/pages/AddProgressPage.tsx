@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, TrendingUp, Flag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
 
 const AddProgressPage = () => {
   const { goalId } = useParams<{ goalId: string }>();
@@ -65,14 +66,16 @@ const AddProgressPage = () => {
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#E8E4D9' }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <div className="max-w-2xl mx-auto py-8 px-4 md:px-8">
         {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate(`/goals/${goalId}`)}
-            className="mb-4 -ml-2"
+            className="mb-4 -ml-2 rounded-full hover:bg-black/5"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
@@ -84,26 +87,27 @@ const AddProgressPage = () => {
         </div>
 
         {/* Form Card */}
-        <Card className="bg-white shadow-lg">
-          <CardHeader className="border-b" style={{ backgroundColor: '#F5F3ED' }}>
+        <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white/30">
             <CardTitle className="flex items-center text-xl">
-              <TrendingUp className="w-5 h-5 mr-2 text-[#5FCCB4]" />
+              <TrendingUp className="w-5 h-5 mr-2 text-[#4A6F6F]" />
               Ghi lại tiến độ
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Current Goal Display (Read-only) */}
-              <div className="bg-gray-50 p-4 rounded-lg border flex items-center gap-3">
-                <div className="bg-white p-2 rounded-full shadow-sm">
-                  <Flag className="w-5 h-5 text-[#5FCCB4]" />
+              <div className="bg-white/40 p-4 rounded-2xl border border-white/50 flex items-center gap-3 backdrop-blur-sm">
+                <div className="bg-[#4A6F6F]/10 p-2 rounded-full">
+                  <Flag className="w-5 h-5 text-[#4A6F6F]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Mục tiêu hiện tại</p>
                   <p className="font-bold text-gray-900">
                     {goal ? (
                       <>
-                        {goal.type === 'weight_loss' ? 'Giảm' : 'Mục tiêu'} <span className="text-[#5FCCB4]">{goal.targetValue}kg</span>
+                        {goal.type === 'weight_loss' || goal.type === 'fat_loss' ? 'Giảm' : 
+                         goal.type === 'weight_gain' || goal.type === 'muscle_gain' ? 'Tăng' : 'Mục tiêu'} <span className="text-[#4A6F6F]">{goal.targetValue}kg</span>
                       </>
                     ) : '...'}
                   </p>
@@ -125,7 +129,7 @@ const AddProgressPage = () => {
                       setFormData({ ...formData, value: Number.parseFloat(e.target.value) || 0 })
                     }
                     placeholder="Nhập cân nặng hiện tại"
-                    className="pr-12 bg-white"
+                    className="pr-12 bg-white/60 border-black/10 rounded-xl"
                     required
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -146,7 +150,7 @@ const AddProgressPage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, recordDate: e.target.value })
                   }
-                  className="bg-white"
+                  className="bg-white/60 border-black/10 rounded-xl"
                   max={new Date().toISOString().split('T')[0]}
                 />
               </div>
@@ -169,7 +173,7 @@ const AddProgressPage = () => {
                       })
                     }
                     placeholder="Nhập cân nặng"
-                    className="pr-12 bg-white"
+                    className="pr-12 bg-white/60 border-black/10 rounded-xl"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                     kg
@@ -195,7 +199,7 @@ const AddProgressPage = () => {
                       })
                     }
                     placeholder="Nhập vòng eo"
-                    className="pr-12 bg-white"
+                    className="pr-12 bg-white/60 border-black/10 rounded-xl"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                     cm
@@ -215,7 +219,7 @@ const AddProgressPage = () => {
                     setFormData({ ...formData, notes: e.target.value })
                   }
                   placeholder="Thêm ghi chú về tiến độ hôm nay..."
-                  className="bg-white resize-none"
+                  className="bg-white/60 border-black/10 rounded-xl resize-none"
                   rows={4}
                 />
               </div>
@@ -225,7 +229,7 @@ const AddProgressPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#E8E4D9] hover:bg-[#d6d2c4] text-gray-900 py-3 text-lg font-bold border-2 border-gray-900/10"
+                  className="w-full bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] py-6 text-lg font-bold rounded-xl shadow-lg"
                 >
                   {loading ? 'Đang cập nhật...' : 'Cập nhật tiến độ'}
                 </Button>

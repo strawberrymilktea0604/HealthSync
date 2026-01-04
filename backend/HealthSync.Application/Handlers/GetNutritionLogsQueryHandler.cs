@@ -40,6 +40,9 @@ public class GetNutritionLogsQueryHandler : IRequestHandler<GetNutritionLogsQuer
                 UserId = n.UserId,
                 LogDate = n.LogDate,
                 TotalCalories = n.TotalCalories,
+                ProteinG = n.FoodEntries.Sum(fe => fe.ProteinG ?? 0),
+                CarbsG = n.FoodEntries.Sum(fe => fe.CarbsG ?? 0),
+                FatG = n.FoodEntries.Sum(fe => fe.FatG ?? 0),
                 FoodEntries = n.FoodEntries.Select(fe => new FoodEntryDto
                 {
                     FoodEntryId = fe.FoodEntryId,
@@ -50,7 +53,8 @@ public class GetNutritionLogsQueryHandler : IRequestHandler<GetNutritionLogsQuer
                     CaloriesKcal = fe.CaloriesKcal ?? 0,
                     ProteinG = fe.ProteinG ?? 0,
                     CarbsG = fe.CarbsG ?? 0,
-                    FatG = fe.FatG ?? 0
+                    FatG = fe.FatG ?? 0,
+                    ImageUrl = fe.FoodItem.ImageUrl
                 }).ToList()
             })
             .ToListAsync(cancellationToken);

@@ -29,6 +29,7 @@ public class GetNutritionLogByDateHandler : IRequestHandler<GetNutritionLogByDat
         return new NutritionLogDto
         {
             NutritionLogId = nutritionLog.NutritionLogId,
+            UserId = nutritionLog.UserId,
             LogDate = nutritionLog.LogDate,
             TotalCalories = nutritionLog.TotalCalories,
             ProteinG = nutritionLog.ProteinG,
@@ -44,7 +45,8 @@ public class GetNutritionLogByDateHandler : IRequestHandler<GetNutritionLogByDat
                 CaloriesKcal = fe.CaloriesKcal ?? 0,
                 ProteinG = fe.ProteinG ?? 0,
                 CarbsG = fe.CarbsG ?? 0,
-                FatG = fe.FatG ?? 0
+                FatG = fe.FatG ?? 0,
+                ImageUrl = fe.FoodItem.ImageUrl
             }).ToList()
         };
     }

@@ -16,6 +16,7 @@ import {
 import { ArrowLeft, Target } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
 
 const CreateGoalPage = () => {
   const navigate = useNavigate();
@@ -69,14 +70,16 @@ const CreateGoalPage = () => {
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#E8E4D9' }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <div className="max-w-2xl mx-auto py-8 px-4 md:px-8">
         {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate('/goals')}
-            className="mb-4 -ml-2"
+            className="mb-4 -ml-2 rounded-full hover:bg-black/5"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
@@ -88,10 +91,10 @@ const CreateGoalPage = () => {
         </div>
 
         {/* Form Card */}
-        <Card className="bg-white shadow-lg">
-          <CardHeader className="border-b" style={{ backgroundColor: '#F5F3ED' }}>
+        <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white/30">
             <CardTitle className="flex items-center text-xl">
-              <Target className="w-5 h-5 mr-2 text-[#5FCCB4]" />
+              <Target className="w-5 h-5 mr-2 text-[#4A6F6F]" />
               Thông tin mục tiêu
             </CardTitle>
           </CardHeader>
@@ -106,7 +109,7 @@ const CreateGoalPage = () => {
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-white/60 border-black/10 rounded-xl">
                     <SelectValue placeholder="Chọn loại mục tiêu" />
                   </SelectTrigger>
                   <SelectContent>
@@ -134,7 +137,7 @@ const CreateGoalPage = () => {
                       setFormData({ ...formData, targetValue: Number.parseFloat(e.target.value) || 0 })
                     }
                     placeholder="ví dụ: 60kg hoặc 10km"
-                    className="pr-12 bg-white"
+                    className="pr-12 bg-white/60 border-black/10 rounded-xl"
                     required
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -156,7 +159,7 @@ const CreateGoalPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, startDate: e.target.value })
                     }
-                    className="bg-white"
+                    className="bg-white/60 border-black/10 rounded-xl"
                   />
                 </div>
 
@@ -171,7 +174,7 @@ const CreateGoalPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, endDate: e.target.value })
                     }
-                    className="bg-white"
+                    className="bg-white/60 border-black/10 rounded-xl"
                     min={formData.startDate}
                   />
                 </div>
@@ -189,7 +192,7 @@ const CreateGoalPage = () => {
                     setFormData({ ...formData, notes: e.target.value })
                   }
                   placeholder="Thêm ghi chú về mục tiêu của bạn..."
-                  className="bg-white resize-none"
+                  className="bg-white/60 border-black/10 rounded-xl resize-none"
                   rows={4}
                 />
               </div>
@@ -199,7 +202,7 @@ const CreateGoalPage = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#5FCCB4] hover:bg-[#4DB89E] text-white py-3 text-lg font-semibold"
+                  className="w-full bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] py-6 text-lg font-bold rounded-xl shadow-lg"
                 >
                   {loading ? 'Đang lưu...' : 'Lưu mục tiêu'}
                 </Button>

@@ -23,6 +23,7 @@ import {
   AreaChart,
   Line
 } from 'recharts';
+import Header from '@/components/Header';
 
 const GoalDetailsPage = () => {
   const { goalId } = useParams<{ goalId: string }>();
@@ -49,7 +50,7 @@ const GoalDetailsPage = () => {
     try {
       setLoading(true);
       const goals = await goalService.getGoals();
-      const foundGoal = goals.find(g => g.goalId === Number.parseInt(goalId));
+      const foundGoal = goals.find((g: Goal) => g.goalId === Number.parseInt(goalId));
       if (foundGoal) {
         setGoal(foundGoal);
       }
@@ -77,15 +78,26 @@ const GoalDetailsPage = () => {
       (a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
     );
 
-    const startValue = sortedRecords[0].value;
-    const currentValue = sortedRecords.at(-1)?.value ?? 0;
+    const startValue = sortedRecords[0].weightKg || sortedRecords[0].value;
+    const currentValue = sortedRecords.at(-1)?.weightKg || sortedRecords.at(-1)?.value || 0;
     const targetValue = goal.targetValue;
 
-    if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
-      const progress = ((startValue - currentValue) / (startValue - targetValue)) * 100;
+    // Determine if this is a decrease goal or increase goal
+    const isDecreaseGoal = goal.type === 'weight_loss' || 
+                          goal.type === 'fat_loss' || 
+                          targetValue < startValue;
+
+    if (isDecreaseGoal) {
+      // For decrease goals: (start - current) / (start - target) * 100
+      const totalChangeNeeded = startValue - targetValue;
+      if (totalChangeNeeded <= 0) return 100;
+      const progress = ((startValue - currentValue) / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
     } else {
-      const progress = ((currentValue - startValue) / (targetValue - startValue)) * 100;
+      // For increase goals: (current - start) / (target - start) * 100
+      const totalChangeNeeded = targetValue - startValue;
+      if (totalChangeNeeded <= 0) return 100;
+      const progress = ((currentValue - startValue) / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
     }
   };
@@ -113,7 +125,7 @@ const GoalDetailsPage = () => {
         month: 'short',
         day: 'numeric'
       }),
-      value: record.value,
+      value: record.weightKg || record.value,
       weight: record.weightKg,
       waist: record.waistCm,
     }));
@@ -128,20 +140,77 @@ const GoalDetailsPage = () => {
       (a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
     );
 
-    const startValue = sortedRecords[0].value;
-    const currentValue = sortedRecords.at(-1)?.value ?? 0;
+    const startValue = sortedRecords[0].weightKg || sortedRecords[0].value;
+    const currentValue = sortedRecords.at(-1)?.weightKg || sortedRecords.at(-1)?.value || 0;
     const targetValue = goal.targetValue;
 
-    const change = currentValue - startValue;
-    const changePercent = ((change / startValue) * 100);
-    const remaining = targetValue - currentValue;
+    // Determine if this is a decrease goal or increase goal
+    const isDecreaseGoal = goal.type === 'weight_loss' || 
+                          goal.type === 'fat_loss' || 
+                          targetValue < startValue;
+
+    let change = 0;
+    let remaining = 0;
+
+    if (isDecreaseGoal) {
+      // For decrease goals: change is how much we've decreased (start - current)
+      // Remaining is how much more we need to decrease (current - target)
+      change = startValue - currentValue;
+      remaining = currentValue - targetValue;
+    } else {
+      // For increase goals: change is how much we've increased (current - start)
+      // Remaining is how much more we need to increase (target - current)
+      change = currentValue - startValue;
+      remaining = targetValue - currentValue;
+    }
+
+    const changePercent = startValue !== 0 ? ((change / startValue) * 100) : 0;
 
     return { change, changePercent, remaining };
   };
 
+  const getGoalStatusInfo = () => {
+    if (!goal) return { label: '', className: '' };
+
+    const now = new Date();
+    const startDate = new Date(goal.startDate);
+    const status = goal.status?.toLowerCase() || '';
+
+    // Check for future start date
+    if (startDate > now && status !== 'completed') {
+      return {
+        label: 'Sắp diễn ra',
+        className: 'bg-yellow-100 text-yellow-800'
+      };
+    }
+
+    if (status === 'active' || status === 'in_progress') {
+      return {
+        label: 'Đang tiến hành',
+        className: 'bg-blue-100 text-blue-800'
+      };
+    }
+
+    if (status === 'completed') {
+      return {
+        label: 'Đã hoàn thành',
+        className: 'bg-green-100 text-green-800'
+      };
+    }
+
+    // Fallback
+    return {
+      // If status is empty/null, default to In Progress if within dates? 
+      // User said "ghi mac dinh la Dang hoan thanh" (writes default as Completed).
+      // We'll show the raw status or 'Unknown' to avoid misleading 'Completed'.
+      label: goal.status || 'Không xác định',
+      className: 'bg-gray-100 text-gray-600'
+    };
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#E8E4D9' }}>
+      <div className="min-h-screen bg-[#FDFBD4] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">Đang tải...</p>
@@ -152,14 +221,15 @@ const GoalDetailsPage = () => {
 
   if (!goal) {
     return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: '#E8E4D9' }}>
-        <div className="max-w-7xl mx-auto">
-          <Card className="bg-white">
+      <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+        <Header />
+        <div className="max-w-7xl mx-auto py-8 px-4 md:px-8">
+          <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden">
             <CardContent className="py-12 text-center">
               <p className="text-gray-600">Không tìm thấy mục tiêu</p>
               <Button
                 onClick={() => navigate('/goals')}
-                className="mt-4 bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
+                className="mt-4 bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] rounded-xl"
               >
                 Quay lại danh sách
               </Button>
@@ -172,6 +242,7 @@ const GoalDetailsPage = () => {
 
   const progress = calculateProgress();
   const stats = getStatistics();
+  const statusInfo = getGoalStatusInfo();
   const chartData = getChartData();
   const latestRecord = goal.progressRecords.length > 0
     ? [...goal.progressRecords].sort((a, b) =>
@@ -180,14 +251,16 @@ const GoalDetailsPage = () => {
     : null;
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#E8E4D9' }}>
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
+      <Header />
+
+      <div className="max-w-7xl mx-auto py-8 px-4 md:px-8">
         {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate('/goals')}
-            className="mb-4 -ml-2"
+            className="mb-4 -ml-2 rounded-full hover:bg-black/5"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
@@ -195,8 +268,8 @@ const GoalDetailsPage = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Mục tiêu chính</p>
-              <h1 className="text-3xl font-bold text-[#5FCCB4] mb-1">
-                {getGoalTypeDisplay(goal.type)} {Math.abs(goal.targetValue - (goal.progressRecords[0]?.value || 0))}kg
+              <h1 className="text-3xl font-bold text-[#4A6F6F] mb-1">
+                {getGoalTypeDisplay(goal.type)} {Math.abs(goal.targetValue - (goal.progressRecords[0]?.value || 0)).toFixed(1)}kg
               </h1>
               <p className="text-gray-400 text-sm">
                 Mục tiêu: {goal.targetValue}kg
@@ -204,7 +277,7 @@ const GoalDetailsPage = () => {
             </div>
             <Button
               onClick={() => navigate(`/goals/${goalId}/progress`)}
-              className="bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 shadow-sm"
+              className="bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] border-none rounded-xl shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Cập nhật
@@ -215,13 +288,19 @@ const GoalDetailsPage = () => {
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Da giam / Da tang */}
-          <Card className="bg-green-50/50 border-none shadow-sm">
+          <Card className="bg-green-50/50 border-none shadow-sm rounded-3xl">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                <TrendingDown className="w-6 h-6" />
+                {goal.type === 'weight_loss' || goal.type === 'fat_loss' || goal.targetValue < (goal.progressRecords[0]?.value || 0) ? (
+                  <TrendingDown className="w-6 h-6" />
+                ) : (
+                  <TrendingUp className="w-6 h-6" />
+                )}
               </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Đã giảm</p>
+                <p className="text-sm text-gray-500 font-medium">
+                  {goal.type === 'weight_loss' || goal.type === 'fat_loss' || goal.targetValue < (goal.progressRecords[0]?.value || 0) ? 'Đã giảm' : 'Đã tăng'}
+                </p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-gray-900">
                     {Math.abs(stats.change).toFixed(1)}
@@ -233,7 +312,7 @@ const GoalDetailsPage = () => {
           </Card>
 
           {/* Con lai */}
-          <Card className="bg-orange-50/50 border-none shadow-sm">
+          <Card className="bg-orange-50/50 border-none shadow-sm rounded-3xl">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
                 <Target className="w-6 h-6" />
@@ -252,14 +331,29 @@ const GoalDetailsPage = () => {
         </div>
 
         {/* Chart */}
-        <Card className="bg-white mb-8 border-none shadow-sm">
-          <CardHeader className="border-b-0 pb-2">
-            <div className="flex justify-between items-center">
+        <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden mb-8">
+          <CardHeader className="bg-white/30 pb-2">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <CardTitle className="text-lg font-bold">Biểu đồ tiến độ cân nặng</CardTitle>
-              <div className="flex gap-2">
-                <div className="flex items-center gap-4 text-xs font-medium mr-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-4 text-xs font-medium">
                   <div className="flex items-center gap-1 text-blue-500"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Hiện tại</div>
                   <div className="flex items-center gap-1 text-green-500"><div className="w-2 h-2 rounded-full bg-green-500"></div> Mục tiêu</div>
+                </div>
+                <div className="flex bg-white/50 rounded-lg p-1">
+                  {(Object.keys(rangeLabels) as Array<keyof typeof rangeLabels>).map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setTimeRange(range)}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                        timeRange === range
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      {rangeLabels[range]}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -324,8 +418,8 @@ const GoalDetailsPage = () => {
         </Card>
 
         {/* Progress Records */}
-        <Card className="bg-white">
-          <CardHeader className="border-b" style={{ backgroundColor: '#F5F3ED' }}>
+        <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden mb-6">
+          <CardHeader className="bg-white/30">
             <CardTitle className="text-xl">Lịch sử tiến độ</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -336,11 +430,11 @@ const GoalDetailsPage = () => {
                   .map((record) => (
                     <div
                       key={record.progressRecordId}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between p-4 border border-white/50 rounded-2xl hover:bg-white/40 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#5FCCB4]/10 flex items-center justify-center">
-                          <Activity className="w-6 h-6 text-[#5FCCB4]" />
+                        <div className="w-12 h-12 rounded-full bg-[#4A6F6F]/10 flex items-center justify-center">
+                          <Activity className="w-6 h-6 text-[#4A6F6F]" />
                         </div>
                         <div>
                           <p className="font-semibold text-gray-900">
@@ -372,7 +466,7 @@ const GoalDetailsPage = () => {
                 <p className="text-gray-600 mb-4">Chưa có bản ghi tiến độ nào</p>
                 <Button
                   onClick={() => navigate(`/goals/${goalId}/progress`)}
-                  className="bg-[#5FCCB4] hover:bg-[#4DB89E] text-white"
+                  className="bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] rounded-xl"
                 >
                   Thêm tiến độ đầu tiên
                 </Button>
@@ -382,8 +476,8 @@ const GoalDetailsPage = () => {
         </Card>
 
         {/* Goal Info */}
-        <Card className="bg-white mt-6">
-          <CardHeader className="border-b" style={{ backgroundColor: '#F5F3ED' }}>
+        <Card className="bg-[#FFFFE0]/80 border-white/50 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white/30">
             <CardTitle className="text-xl">Thông tin mục tiêu</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -404,11 +498,8 @@ const GoalDetailsPage = () => {
               )}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Trạng thái</p>
-                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${goal.status === 'active'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-700'
-                  }`}>
-                  {goal.status === 'active' ? 'Đang hoạt động' : 'Đã hoàn thành'}
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${statusInfo.className}`}>
+                  {statusInfo.label}
                 </span>
               </div>
               {goal.notes && (

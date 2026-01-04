@@ -129,11 +129,21 @@ export default function CreateWorkoutPage() {
       <Header />
 
       <div className="max-w-7xl mx-auto py-8 px-4 md:px-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Button variant="ghost" className="rounded-full hover:bg-black/5" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-2 mb-6">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" className="rounded-full hover:bg-black/5" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-xl font-bold text-gray-800 uppercase tracking-wide">Tạo buổi tập</h1>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/dashboard')}
+            className="gap-2 text-muted-foreground hover:text-foreground h-12 px-6 rounded-xl text-lg font-medium border-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold text-gray-800 uppercase tracking-wide">Tạo buổi tập</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -316,24 +326,45 @@ export default function CreateWorkoutPage() {
               </div>
 
               {/* Exercise List */}
-              <div className="space-y-2 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+              <div className="space-y-3 overflow-y-auto pr-1 flex-1 custom-scrollbar">
                 {filteredExercises.map(exercise => (
-                  <div key={exercise.exerciseId} className="group bg-white/40 hover:bg-white/80 transition-all rounded-2xl p-3 border border-transparent hover:border-black/5 flex justify-between items-center cursor-pointer" onClick={() => addExercise(exercise)}>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-[#2d2d2d] text-sm">{exercise.name}</h4>
-                      <div className="flex gap-2 mt-1">
-                        <span className="text-[10px] bg-[#4A6F6F]/10 text-[#4A6F6F] px-2 py-0.5 rounded-full font-bold uppercase">
-                          {exercise.muscleGroup}
+                  <div key={exercise.exerciseId} className="group bg-white/60 hover:bg-white/90 transition-all rounded-2xl p-3 border border-black/5 hover:border-black/10 cursor-pointer overflow-hidden shadow-sm hover:shadow-md" onClick={() => addExercise(exercise)}>
+                    {/* Image */}
+                    <div className="w-full aspect-video rounded-xl bg-gray-100 overflow-hidden mb-3 border border-black/5 relative">
+                      {exercise.imageUrl ? (
+                        <img src={exercise.imageUrl} alt={exercise.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#4A6F6F] bg-gray-50">
+                          <Dumbbell className="w-8 h-8 opacity-60" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col">
+                      <h4 className="font-bold text-black text-lg leading-tight mb-2">
+                        {exercise.name || (exercise as any).Name || 'Bài tập không tên'}
+                      </h4>
+
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className="text-[10px] uppercase font-bold text-[#4A6F6F] bg-[#4A6F6F]/10 px-2.5 py-1 rounded-md">
+                          {exercise.muscleGroup || (exercise as any).MuscleGroup}
                         </span>
-                        <span className="text-[10px] bg-yellow-500/10 text-yellow-700 px-2 py-0.5 rounded-full font-bold uppercase">
-                          {exercise.difficulty}
+                        <span className="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-500/10 px-2.5 py-1 rounded-md">
+                          {exercise.difficulty || (exercise as any).Difficulty}
                         </span>
                       </div>
+
+                      <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">
+                        {(exercise.description || (exercise as any).Description || "").trim() !== ""
+                          ? (exercise.description || (exercise as any).Description)
+                          : "Chưa có mô tả chi tiết cho bài tập này."}
+                      </p>
                     </div>
+
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-2 rounded-full h-8 w-8 p-0 bg-[#2d2d2d] text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="ml-2 rounded-full h-8 w-8 p-0 bg-[#2d2d2d] text-white opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

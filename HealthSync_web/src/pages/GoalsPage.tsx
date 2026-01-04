@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { goalService, Goal } from '@/services/goalService';
+import { goalService, Goal, ProgressRecord } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -63,32 +63,40 @@ const GoalsPage = () => {
     if (!firstRecord || !lastRecord) return 0;
 
     const currentV = lastRecord.value;
-    const startV = firstRecord.value; // Or use goal.startValue if it existed, but using first record is safer here
+    const startV = firstRecord.value;
     const targetV = goal.targetValue;
 
-    // For weight/fat loss, target < start
-    if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
-      if (startV === targetV) return 100;
-      // Avoid division by zero if startV == targetV (handled above)
-      // If startV < targetV (weird for weight loss), handle gracefully
-      const totalChange = startV - targetV;
+    // Determine if this is a decrease goal or increase goal
+    // Check type keywords or compare target vs start
+    const isDecreaseGoal = goal.type === 'weight_loss' || 
+                          goal.type === 'fat_loss' || 
+                          targetV < startV;
+
+    if (isDecreaseGoal) {
+      // For decrease goals: need to go DOWN from start to target
+      // Progress = (start - current) / (start - target) * 100
+      const totalChangeNeeded = startV - targetV;
+      if (totalChangeNeeded <= 0) return 100; // Already at or past target
+      
       const currentChange = startV - currentV;
-      const progress = (currentChange / totalChange) * 100;
+      const progress = (currentChange / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
     } else {
-      // For gain, target > start
-      const totalChange = targetV - startV;
+      // For increase goals: need to go UP from start to target
+      // Progress = (current - start) / (target - start) * 100
+      const totalChangeNeeded = targetV - startV;
+      if (totalChangeNeeded <= 0) return 100; // Already at or past target
+      
       const currentChange = currentV - startV;
-      if (totalChange === 0) return 100;
-      const progress = (currentChange / totalChange) * 100;
+      const progress = (currentChange / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
     }
   };
 
   const getCurrentValue = (goal: Goal) => {
     if (goal.progressRecords.length === 0) return 0;
-    const latestRecord = goal.progressRecords.sort(
-      (a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
+    const latestRecord = [...goal.progressRecords].sort(
+      (a: ProgressRecord, b: ProgressRecord) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
     )[0];
     return latestRecord.value;
   };
@@ -96,7 +104,10 @@ const GoalsPage = () => {
   // Helper to determine status based on progress and date
   const getStatus = (goal: Goal) => {
     // If explicitly completed in backend
-    if (goal.status === 'completed') return 'completed';
+    if (goal.status?.toLowerCase() === 'completed') return 'completed';
+
+    // Check for future start date
+    if (new Date(goal.startDate) > new Date()) return 'upcoming';
 
     const progress = calculateProgress(goal);
     if (progress >= 100) return 'completed';
@@ -129,6 +140,8 @@ const GoalsPage = () => {
         return { label: 'HOÀN THÀNH', color: 'text-emerald-500 bg-emerald-100', barColor: 'bg-emerald-500' };
       case 'overdue':
         return { label: 'QUÁ HẠN', color: 'text-orange-500 bg-orange-100', barColor: 'bg-orange-500' };
+      case 'upcoming':
+        return { label: 'SẮP DIỄN RA', color: 'text-yellow-600 bg-yellow-100', barColor: 'bg-yellow-500' };
       default:
         return { label: 'ĐANG TIẾN HÀNH', color: 'text-purple-600 bg-purple-100', barColor: 'bg-purple-600' };
     }
@@ -157,7 +170,7 @@ const GoalsPage = () => {
                 placeholder="Tìm kiếm mục tiêu..."
                 className="pl-10 h-11 bg-white border-transparent hover:bg-white/80 transition-colors rounded-2xl shadow-sm"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               />
             </div>
 
@@ -243,7 +256,7 @@ const GoalsPage = () => {
                       <div className="flex items-center gap-3">
                         <Progress value={progress} className="h-2 flex-1 bg-gray-100 rounded-full" indicatorClassName={config.barColor} />
                         <span className="text-xs font-bold text-gray-500 whitespace-nowrap min-w-[60px] text-right">
-                          {currentValue}/{goal.targetValue} {goal.type.includes('weight') ? 'kg' : ''}
+                          {currentValue.toFixed(1)}/{goal.targetValue} {goal.type.includes('weight') || goal.type.includes('muscle') || goal.type.includes('fat') ? 'kg' : ''}
                         </span>
                       </div>
                     </div>

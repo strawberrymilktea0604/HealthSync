@@ -176,17 +176,54 @@ export default function NutritionOverview() {
           </div>
 
           {/* Add Button */}
-          <div className="flex justify-center z-10 relative">
+          <div className="flex flex-col items-center justify-center z-10 relative gap-4">
             <Button
               className="bg-[#ffab91] hover:bg-[#ff8a65] text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-[#ffab91]/30 transition-all hover:scale-105 flex items-center gap-2"
-              onClick={() => navigate('/food-search')} // Assuming food search is where we add meals
+              onClick={() => navigate('/nutrition')}
             >
               <div className="bg-white/20 rounded-full p-1">
                 <Plus className="w-5 h-5" />
               </div>
               Thêm bữa ăn
             </Button>
+
+            <Button
+              variant="ghost"
+              className="text-gray-500 hover:text-gray-800"
+              onClick={() => navigate('/nutrition-diary')}
+            >
+              Xem chi tiết nhật ký
+            </Button>
           </div>
+
+          {/* Recent Entries Preview */}
+          {nutritionLog?.foodEntries && nutritionLog.foodEntries.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-black/5">
+              <h3 className="text-lg font-bold text-gray-700 mb-4">Đã ăn hôm nay</h3>
+              <div className="space-y-3">
+                {nutritionLog.foodEntries.slice(0, 3).map((entry, index) => (
+                  <div key={index} className="flex items-center gap-3 bg-white/40 p-3 rounded-xl border border-white/50">
+                    <div className="w-12 h-12 rounded-lg bg-white overflow-hidden shrink-0 border border-black/5 relative">
+                      {entry.imageUrl ? (
+                        <img src={entry.imageUrl} alt={entry.foodItemName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No img</div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-gray-800 text-sm">{entry.foodItemName}</p>
+                      <p className="text-xs text-gray-500">{entry.caloriesKcal.toFixed(0)} kcal • {entry.mealType}</p>
+                    </div>
+                  </div>
+                ))}
+                {nutritionLog.foodEntries.length > 3 && (
+                  <p className="text-center text-xs text-gray-400 mt-2">
+                    ...và {nutritionLog.foodEntries.length - 3} món khác
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
         </div>
 

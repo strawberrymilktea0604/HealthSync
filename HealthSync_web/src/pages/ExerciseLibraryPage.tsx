@@ -198,8 +198,8 @@ export default function ExerciseLibraryPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentExercises.map((ex) => (
-                        <div key={ex.exerciseId} className="bg-white rounded-3xl p-3 shadow-sm hover:shadow-lg transition-all flex gap-4 h-40 overflow-hidden cursor-pointer border border-transparent hover:border-green-100">
-                            <div className="w-1/3 h-full rounded-2xl bg-gray-100 overflow-hidden relative shrink-0">
+                        <div key={ex.exerciseId} className="bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all flex flex-col overflow-hidden cursor-pointer border border-transparent hover:border-green-100">
+                            <div className="w-full aspect-video rounded-2xl bg-gray-100 overflow-hidden relative mb-3">
                                 {ex.imageUrl ? (
                                     <img src={ex.imageUrl} alt={ex.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -208,17 +208,17 @@ export default function ExerciseLibraryPage() {
                                     </div>
                                 )}
                             </div>
-                            <div className="flex-1 flex flex-col justify-between py-1">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 border-b border-gray-100 pb-2 mb-2">{ex.name}</h3>
-                                    <p className="text-xs text-gray-500 line-clamp-2">{ex.description || 'Bài tập phát triển sức mạnh và cơ bắp.'}</p>
+                            <div className="flex-1 flex flex-col">
+                                <div className="mb-3">
+                                    <h3 className="font-bold text-gray-900 text-lg mb-2">{ex.name}</h3>
+                                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{ex.description || 'Bài tập phát triển sức mạnh và cơ bắp.'}</p>
                                 </div>
 
-                                <div className="flex justify-between items-center mt-2">
-                                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-bold uppercase">
+                                <div className="flex gap-2 items-center flex-wrap">
+                                    <span className="text-[10px] bg-[#4A6F6F]/10 text-[#4A6F6F] px-2.5 py-1 rounded-md font-bold uppercase">
                                         {ex.muscleGroup}
                                     </span>
-                                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-bold">
+                                    <span className="text-[10px] bg-yellow-500/10 text-yellow-700 px-2.5 py-1 rounded-md font-bold uppercase">
                                         {ex.difficulty}
                                     </span>
                                 </div>

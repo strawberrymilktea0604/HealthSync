@@ -4,6 +4,7 @@ namespace HealthSync.Application.DTOs
     {
         public required UserInfoDto UserInfo { get; set; }
         public required GoalProgressDto GoalProgress { get; set; }
+        public required List<GoalSummaryDto> ActiveGoals { get; set; } // Danh sách tất cả mục tiêu đang tiến hành
         public required WeightProgressDto WeightProgress { get; set; }
         public required TodayStatsDto TodayStats { get; set; }
         public required ExerciseStreakDto ExerciseStreak { get; set; }
@@ -23,9 +24,19 @@ namespace HealthSync.Application.DTOs
         public decimal StartValue { get; set; }
         public decimal CurrentValue { get; set; }
         public decimal TargetValue { get; set; }
-        public decimal Progress { get; set; }
+        public decimal Progress { get; set; } // Phần trăm tiến độ (0-100)
+        public decimal ProgressAmount { get; set; } // Số kg đã tăng/giảm
         public decimal Remaining { get; set; }
         public required string Status { get; set; }
+    }
+
+    public class GoalSummaryDto
+    {
+        public int GoalId { get; set; }
+        public required string Type { get; set; }
+        public required string Notes { get; set; }
+        public decimal TargetValue { get; set; }
+        public decimal Progress { get; set; } // Phần trăm
     }
 
     public class WeightProgressDto

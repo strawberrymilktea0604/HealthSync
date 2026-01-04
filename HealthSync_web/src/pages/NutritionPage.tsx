@@ -25,6 +25,11 @@ const NutritionPage: React.FC = () => {
   const [mealType, setMealType] = useState<string>('Breakfast');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Filter states for Add Food dialog
+  const [calorieFilter, setCalorieFilter] = useState('all');
+  const [proteinFilter, setProteinFilter] = useState('all');
+  const [carbFilter, setCarbFilter] = useState('all');
+
   // Nutrition targets - Fetch from dashboard API
   const [targetCalories, setTargetCalories] = useState(2000);
   const [targetProtein, setTargetProtein] = useState(150);
@@ -93,6 +98,33 @@ const NutritionPage: React.FC = () => {
   const handleSearch = () => {
     loadFoodItems(searchQuery);
   };
+
+  // Apply filters to food items
+  const filteredFoodItems = foodItems.filter(item => {
+    // Calorie filter
+    if (calorieFilter !== 'all') {
+      const cal = item.caloriesKcal;
+      if (calorieFilter === 'low' && cal > 200) return false;
+      if (calorieFilter === 'medium' && (cal <= 200 || cal > 500)) return false;
+      if (calorieFilter === 'high' && cal <= 500) return false;
+    }
+
+    // Protein filter
+    if (proteinFilter !== 'all') {
+      const p = item.proteinG;
+      if (proteinFilter === 'high' && p < 20) return false;
+      if (proteinFilter === 'low' && p >= 20) return false;
+    }
+
+    // Carb filter
+    if (carbFilter !== 'all') {
+      const c = item.carbsG;
+      if (carbFilter === 'low' && c > 30) return false;
+      if (carbFilter === 'high' && c <= 30) return false;
+    }
+
+    return true;
+  });
 
   const handleAddFood = async () => {
     if (!selectedFoodItem || quantity <= 0) {
@@ -326,6 +358,43 @@ const NutritionPage: React.FC = () => {
                     </Button>
                   </div>
 
+                  {/* Filters Row */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <Select value={calorieFilter} onValueChange={setCalorieFilter}>
+                      <SelectTrigger className="bg-white/60 border-black/10 rounded-xl h-10 text-xs">
+                        <SelectValue placeholder="Calories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tất cả Calo</SelectItem>
+                        <SelectItem value="low">Thấp (&lt;200)</SelectItem>
+                        <SelectItem value="medium">Vừa (200-500)</SelectItem>
+                        <SelectItem value="high">Cao (&gt;500)</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={proteinFilter} onValueChange={setProteinFilter}>
+                      <SelectTrigger className="bg-white/60 border-black/10 rounded-xl h-10 text-xs">
+                        <SelectValue placeholder="Protein" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tất cả Protein</SelectItem>
+                        <SelectItem value="high">Cao (&gt;20g)</SelectItem>
+                        <SelectItem value="low">Thấp (&lt;20g)</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={carbFilter} onValueChange={setCarbFilter}>
+                      <SelectTrigger className="bg-white/60 border-black/10 rounded-xl h-10 text-xs">
+                        <SelectValue placeholder="Carb" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tất cả Carb</SelectItem>
+                        <SelectItem value="low">Low (&lt;30g)</SelectItem>
+                        <SelectItem value="high">High (&gt;30g)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <Select value={mealType} onValueChange={setMealType}>
                     <SelectTrigger className="bg-white/60 border-black/10 rounded-xl">
                       <SelectValue placeholder="Chọn bữa ăn" />
@@ -339,7 +408,7 @@ const NutritionPage: React.FC = () => {
                   </Select>
 
                   <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
-                    {foodItems.map((item) => (
+                    {filteredFoodItems.map((item) => (
                       <div
                         key={item.foodItemId}
                         className={`cursor-pointer transition-all p-4 rounded-xl border ${selectedFoodItem?.foodItemId === item.foodItemId
@@ -348,18 +417,35 @@ const NutritionPage: React.FC = () => {
                           }`}
                         onClick={() => setSelectedFoodItem(item)}
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-bold text-[#2d2d2d]">{item.name}</h3>
-                            <p className="text-xs text-gray-500">
-                              {item.servingSize} {item.servingUnit}
-                            </p>
+                        <div className="flex items-center gap-3">
+                          {/* Unique wide, small image style */}
+                          <div className="w-20 h-8 rounded-lg bg-white overflow-hidden shrink-0 border border-black/5 relative">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50 text-[10px]">
+                                No img
+                              </div>
+                            )}
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-[#4A6F6F]">{item.caloriesKcal.toFixed(0)} kcal</p>
-                            <p className="text-[10px] text-gray-500 uppercase">
-                              P: {item.proteinG.toFixed(0)} | C: {item.carbsG.toFixed(0)} | F: {item.fatG.toFixed(0)}
-                            </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <h3 className="font-bold text-[#2d2d2d] text-sm truncate">{item.name}</h3>
+                                <p className="text-[10px] text-gray-500">
+                                  {item.servingSize} {item.servingUnit}
+                                  <span className="mx-1">•</span>
+                                  <span className="font-bold text-[#4A6F6F]">{item.caloriesKcal.toFixed(0)} kcal</span>
+                                </p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <div className="flex gap-2 text-[10px] uppercase font-bold text-gray-400">
+                                  <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">P: {item.proteinG.toFixed(1)}</span>
+                                  <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">C: {item.carbsG.toFixed(1)}</span>
+                                  <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">F: {item.fatG.toFixed(1)}</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -413,9 +499,21 @@ const NutritionPage: React.FC = () => {
                   {entries.map((entry) => (
                     <div
                       key={entry.foodEntryId}
-                      className="flex justify-between items-center p-4 bg-white/60 rounded-2xl hover:bg-white/80 transition-colors"
+                      className="flex items-center gap-3 p-4 bg-white/60 rounded-2xl hover:bg-white/80 transition-colors"
                     >
-                      <div>
+                      {/* Food Image */}
+                      <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                        {entry.imageUrl ? (
+                          <img src={entry.imageUrl} alt={entry.foodItemName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <span className="text-xs">No img</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Food Info */}
+                      <div className="flex-1">
                         <p className="font-bold text-[#2d2d2d]">{entry.foodItemName}</p>
                         <p className="text-sm text-gray-500 mt-1">
                           <span className="font-bold">{entry.caloriesKcal.toFixed(0)} kcal</span>
@@ -423,9 +521,11 @@ const NutritionPage: React.FC = () => {
                           Số lượng: {entry.quantity.toFixed(1)}
                         </p>
                         <p className="text-[10px] text-gray-400 mt-1 uppercase">
-                          P: {entry.proteinG.toFixed(0)}g | C: {entry.carbsG.toFixed(0)}g | F: {entry.fatG.toFixed(0)}g
+                          P: {entry.proteinG.toFixed(1)}g | C: {entry.carbsG.toFixed(1)}g | F: {entry.fatG.toFixed(1)}g
                         </p>
                       </div>
+                      
+                      {/* Delete Button */}
                       <Button
                         variant="ghost"
                         size="icon"

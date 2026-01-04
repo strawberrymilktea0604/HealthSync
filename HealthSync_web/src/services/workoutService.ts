@@ -7,6 +7,7 @@ export interface Exercise {
   difficulty: string;
   equipment?: string;
   description?: string;
+  imageUrl?: string;
 }
 
 export interface ExerciseSession {
@@ -49,7 +50,7 @@ export const workoutService = {
     if (filters?.muscleGroup) params.append('muscleGroup', filters.muscleGroup);
     if (filters?.difficulty) params.append('difficulty', filters.difficulty);
     if (filters?.search) params.append('search', filters.search);
-    
+
     const response = await api.get<Exercise[]>(`/workout/exercises?${params.toString()}`);
     return response.data;
   },
@@ -58,7 +59,7 @@ export const workoutService = {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
-    
+
     const response = await api.get<WorkoutLog[]>(`/workout/workout-logs?${params.toString()}`);
     return response.data;
   },
