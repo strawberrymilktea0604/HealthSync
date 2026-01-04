@@ -12,15 +12,18 @@ public class AvatarStorageService : IAvatarStorageService
     private const string AVATAR_BUCKET = "avatars";
     // private const string DEFAULT_MINIO_URL = "http://localhost:9002"; // Removed hardcoded URI
 
+    private bool _bucketChecked = false;
+
     public AvatarStorageService(IMinioClient minioClient, IConfiguration configuration)
     {
         _minioClient = minioClient;
         _publicUrl = configuration["MinIO:PublicUrl"] ?? throw new InvalidOperationException("MinIO:PublicUrl is not configured");
-        EnsureAvatarBucketExistsAsync().Wait();
     }
 
     private async Task EnsureAvatarBucketExistsAsync()
     {
+        if (_bucketChecked) return;
+
         try
         {
             var beArgs = new BucketExistsArgs().WithBucket(AVATAR_BUCKET);
@@ -45,15 +48,20 @@ public class AvatarStorageService : IAvatarStorageService
                     .WithBucket(AVATAR_BUCKET)
                     .WithPolicy(policyJson));
             }
+            _bucketChecked = true;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error ensuring avatar bucket exists: {ex.Message}");
+            // Don't swallow exception if we can't ensure bucket exists, upload will fail anyway
+            throw new InvalidOperationException($"Could not ensure avatar bucket exists: {ex.Message}", ex);
         }
     }
 
     public async Task<string> UploadAvatarAsync(Stream fileStream, string fileName, string contentType)
     {
+        await EnsureAvatarBucketExistsAsync();
+
         try
         {
             var objectName = $"{Guid.NewGuid()}_{fileName}";
@@ -78,6 +86,7 @@ public class AvatarStorageService : IAvatarStorageService
 
     public async Task<bool> DeleteAvatarAsync(string fileName)
     {
+        // No need to check bucket for delete
         try
         {
             var rmArgs = new RemoveObjectArgs()

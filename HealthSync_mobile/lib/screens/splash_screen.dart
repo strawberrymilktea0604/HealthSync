@@ -47,36 +47,44 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Bắt đầu animation
     _animationController.forward();
 
-    // Chuyển đến màn hình chính sau 3 giây
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        
-        // Kiểm tra xem user đã đăng nhập chưa
-        if (authProvider.isAuthenticated) {
-          // Kiểm tra profile đã hoàn thiện chưa
-          if (authProvider.user!.isProfileComplete || authProvider.user!.role == 'Admin') {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const HomeScreen(),
-              ),
-            );
-          } else {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const CompleteProfileScreen(),
-              ),
-            );
-          }
+    _checkLoginAndNavigate();
+  }
+
+  Future<void> _checkLoginAndNavigate() async {
+    // Chạy song song: Animation (tối thiểu 3s) và Auto Login check
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Đợi tối thiểu 3 giây cho animation
+    final animationWait = Future.delayed(const Duration(seconds: 3));
+    // Check login
+    final loginCheck = authProvider.tryAutoLogin();
+
+    await Future.wait([animationWait, loginCheck]);
+
+    if (mounted) {
+      if (authProvider.isAuthenticated) {
+        // Kiểm tra profile đã hoàn thiện chưa
+        if (authProvider.user!.isProfileComplete || authProvider.user!.role == 'Admin') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ),
+          );
         } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const WelcomeScreen(),
+              builder: (context) => const CompleteProfileScreen(),
             ),
           );
         }
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const WelcomeScreen(),
+          ),
+        );
       }
-    });
+    }
   }
 
   @override

@@ -9,7 +9,14 @@ class WorkoutService {
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    final userJson = prefs.getString('user');
+    if (userJson == null) return null;
+    try {
+      final userData = jsonDecode(userJson);
+      return userData['token'];
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<Map<String, String>> _getHeaders() async {
@@ -37,7 +44,7 @@ class WorkoutService {
       if (difficulty != null) queryParams['difficulty'] = difficulty;
       if (search != null) queryParams['search'] = search;
 
-      final uri = Uri.parse('$baseUrl/workout/exercises')
+      final uri = Uri.parse('$baseUrl/Workout/exercises')
           .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
       final response = await http.get(uri, headers: await _getHeaders());
@@ -46,7 +53,7 @@ class WorkoutService {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Exercise.fromJson(json)).toList();
       } else {
-        throw Exception('Không thể tải danh sách bài tập');
+        throw Exception('Không thể tải danh sách bài tập: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       // Nếu là lỗi mạng, throw thông báo cụ thể
@@ -71,7 +78,7 @@ class WorkoutService {
       queryParams['endDate'] = endDate.toIso8601String();
     }
 
-    final uri = Uri.parse('$baseUrl/workout/workout-logs')
+    final uri = Uri.parse('$baseUrl/Workout/workout-logs')
         .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
     final response = await http.get(uri, headers: await _getHeaders());
@@ -80,14 +87,14 @@ class WorkoutService {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => WorkoutLog.fromJson(json)).toList();
     } else {
-      throw Exception('Không thể tải lịch sử luyện tập');
+      throw Exception('Không thể tải lịch sử luyện tập: ${response.statusCode} - ${response.body}');
     }
   }
 
   // Tạo nhật ký luyện tập mới
   Future<int> createWorkoutLog(CreateWorkoutLog workoutLog) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/workout/workout-logs'),
+      Uri.parse('$baseUrl/Workout/workout-logs'),
       headers: await _getHeaders(),
       body: jsonEncode(workoutLog.toJson()),
     );
@@ -97,6 +104,24 @@ class WorkoutService {
       return data['workoutLogId'];
     } else {
       throw Exception('Không thể lưu nhật ký luyện tập');
+    }
+  }
+
+  // Xóa nhật ký luyện tập
+  Future<bool> deleteWorkoutLog(int workoutLogId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/Workout/workout-logs/$workoutLogId'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 204) {
+      return true;
+    } else if (response.statusCode == 404) {
+      throw Exception('Không tìm thấy nhật ký luyện tập');
+    } else if (response.statusCode == 403) {
+      throw Exception('Bạn không có quyền xóa nhật ký này');
+    } else {
+      throw Exception('Không thể xóa nhật ký luyện tập');
     }
   }
 }

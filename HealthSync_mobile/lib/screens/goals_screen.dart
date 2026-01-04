@@ -48,29 +48,32 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
     }
   }
 
-  List<Goal> get _activeGoals => _goals.where((g) => g.status == 'active').toList();
+  List<Goal> get _activeGoals => _goals.where((g) => 
+      g.status == 'in_progress' || g.status == 'not_started' || g.status == 'active'
+  ).toList();
+  
   List<Goal> get _completedGoals => _goals.where((g) => g.status == 'completed').toList();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8E4D9),
+      backgroundColor: const Color(0xFFD9D7B6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8E4D9),
+        backgroundColor: const Color(0xFFD9D7B6),
         elevation: 0,
         title: const Text(
           'Mục tiêu của tôi',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
+            fontFamily: 'Estedad-VF',
+            color: Colors.black,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.black87),
+            icon: const Icon(Icons.search, color: Colors.black),
             onPressed: () {
-              // Thông báo tạm
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Tính năng tìm kiếm đang được phát triển!')),
               );
@@ -79,9 +82,12 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF5FCCB4),
-          labelColor: Colors.black87,
+          indicatorColor: const Color(0xFFA4C639),
+          indicatorWeight: 3,
+          labelColor: Colors.black,
+          labelStyle: const TextStyle(fontFamily: 'Estedad-VF', fontWeight: FontWeight.bold),
           unselectedLabelColor: Colors.black54,
+          unselectedLabelStyle: const TextStyle(fontFamily: 'Estedad-VF'),
           tabs: const [
             Tab(text: 'Đang thực hiện'),
             Tab(text: 'Đã hoàn thành'),
@@ -98,6 +104,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
               ],
             ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'goals_fab',
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -107,7 +114,8 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
             _loadGoals();
           }
         },
-        backgroundColor: const Color(0xFF5FCCB4),
+        backgroundColor: const Color(0xFF2d2d2d),
+        foregroundColor: const Color(0xFFFDFBD4),
         child: const Icon(Icons.add),
       ),
     );
@@ -122,23 +130,25 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
             Icon(
               isActive ? Icons.track_changes : Icons.check_circle_outline,
               size: 80,
-              color: Colors.grey[400],
+              color: Colors.black.withOpacity(0.2),
             ),
             const SizedBox(height: 16),
             Text(
               isActive ? 'Chưa có mục tiêu nào' : 'Chưa hoàn thành mục tiêu nào',
               style: TextStyle(
+                fontFamily: 'Estedad-VF',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: Colors.grey[700],
               ),
             ),
             const SizedBox(height: 8),
             Text(
               isActive ? 'Hãy tạo mục tiêu đầu tiên của bạn' : '',
               style: TextStyle(
+                fontFamily: 'Estedad-VF',
                 fontSize: 14,
-                color: Colors.grey[500],
+                color: Colors.grey[600],
               ),
             ),
           ],
@@ -166,13 +176,13 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F3ED),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFC5C292),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -190,7 +200,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
               _loadGoals();
             }
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -203,12 +213,12 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5FCCB4).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFFDFBD4),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
                         Icons.track_changes,
-                        color: Color(0xFF5FCCB4),
+                        color: Color(0xFF8BA655),
                         size: 28,
                       ),
                     ),
@@ -220,6 +230,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                           Text(
                             goal.getTypeDisplay(),
                             style: const TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
@@ -228,8 +239,9 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                           Text(
                             'Mục tiêu: ${goal.targetValue.toStringAsFixed(1)} kg',
                             style: TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: Colors.black.withOpacity(0.6),
                             ),
                           ),
                         ],
@@ -237,7 +249,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                     ),
                     Icon(
                       Icons.chevron_right,
-                      color: Colors.grey[400],
+                      color: Colors.black.withOpacity(0.3),
                     ),
                   ],
                 ),
@@ -251,6 +263,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                       Text(
                         '${currentValue.toStringAsFixed(1)} kg',
                         style: const TextStyle(
+                          fontFamily: 'Estedad-VF',
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
@@ -262,7 +275,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF5FCCB4).withValues(alpha: 0.2),
+                          color: const Color(0xFFFDFBD4),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -272,15 +285,16 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                                   ? Icons.check_circle 
                                   : Icons.trending_up,
                               size: 16,
-                              color: const Color(0xFF5FCCB4),
+                              color: const Color(0xFF8BA655),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '${progress.toStringAsFixed(0)}%',
                               style: const TextStyle(
+                                fontFamily: 'Estedad-VF',
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF5FCCB4),
+                                color: Color(0xFF8BA655),
                               ),
                             ),
                           ],
@@ -294,11 +308,11 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: progress / 100,
-                      backgroundColor: Colors.grey[300],
+                      backgroundColor: const Color(0xFFFDFBD4),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF5FCCB4),
+                        Color(0xFF8BA655),
                       ),
-                      minHeight: 8,
+                      minHeight: 12,
                     ),
                   ),
                 ],
@@ -307,23 +321,25 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                 // Footer info
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                    const Icon(Icons.calendar_today, size: 14, color: Colors.black54),
                     const SizedBox(width: 4),
                     Text(
                       '${_formatDate(goal.startDate)}${goal.endDate != null ? ' - ${_formatDate(goal.endDate!)}' : ''}',
-                      style: TextStyle(
+                      style: const TextStyle(
+                        fontFamily: 'Estedad-VF',
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: Colors.black54,
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.show_chart, size: 14, color: Colors.grey[600]),
+                    const Icon(Icons.show_chart, size: 14, color: Colors.black54),
                     const SizedBox(width: 4),
                     Text(
                       '${goal.progressRecords.length} bản ghi',
-                      style: TextStyle(
+                      style: const TextStyle(
+                        fontFamily: 'Estedad-VF',
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: Colors.black54,
                       ),
                     ),
                   ],

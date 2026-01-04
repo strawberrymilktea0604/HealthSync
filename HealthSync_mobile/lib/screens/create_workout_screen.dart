@@ -46,19 +46,26 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   }
 
   Future<void> _loadExercises() async {
+    print('DEBUG: Starting to load exercises...');
     try {
       setState(() => _isLoadingExercises = true);
       final exercises = await _workoutService.getExercises();
+      print('DEBUG: Loaded ${exercises.length} exercises');
       setState(() {
         _exercises = exercises;
         _filteredExercises = exercises;
         _isLoadingExercises = false;
       });
     } catch (e) {
+      print('DEBUG: Error loading exercises: $e');
       setState(() => _isLoadingExercises = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể tải bài tập: $e')),
+          SnackBar(
+            content: Text('Không thể tải bài tập: $e'),
+            duration: const Duration(seconds: 5),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -168,9 +175,9 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F1E8),
+      backgroundColor: const Color(0xFFD9D7B6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F1E8),
+        backgroundColor: const Color(0xFFD9D7B6),
         elevation: 0,
         title: const Text(
           'Buổi Tập Mới',
@@ -202,7 +209,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Widget _buildWorkoutDetailsCard() {
     return Card(
-      color: const Color(0xFFE8DCC4),
+      color: const Color(0xFFC5C292),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -260,7 +267,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Widget _buildSelectedExercisesCard() {
     return Card(
-      color: const Color(0xFFE8DCC4),
+      color: const Color(0xFFC5C292),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -317,7 +324,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   Widget _buildExerciseSessionCard(int index, _ExerciseSessionData session) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFFF5F1E8),
+      color: const Color(0xFFFDFBD4),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -439,7 +446,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFF5F1E8),
+      backgroundColor: const Color(0xFFD9D7B6),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -482,7 +489,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                          fillColor: const Color(0xFFFDFBD4),
                           ),
                           onChanged: (value) {
                             setModalState(() {
@@ -502,7 +509,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: const Color(0xFFFDFBD4),
                                 ),
                                 initialValue: _muscleGroupFilter,
                                 items: [
@@ -533,7 +540,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: const Color(0xFFFDFBD4),
                                 ),
                                 initialValue: _difficultyFilter,
                                 items: [
@@ -569,10 +576,24 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             itemCount: _filteredExercises.length,
                             itemBuilder: (context, index) {
                               final exercise = _filteredExercises[index];
-                              return Card(
+                               return Card(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                color: const Color(0xFFE8DCC4),
+                                color: const Color(0xFFFDFBD4),
                                 child: ListTile(
+                                  leading: CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: const Color(0xFF2D3E2E).withValues(alpha: 0.1),
+                                    backgroundImage: exercise.imageUrl != null
+                                        ? NetworkImage(exercise.imageUrl!)
+                                        : null,
+                                    child: exercise.imageUrl == null
+                                        ? const Icon(
+                                            Icons.fitness_center,
+                                            color: Color(0xFF2D3E2E),
+                                            size: 28,
+                                          )
+                                        : null,
+                                  ),
                                   title: Text(
                                     exercise.name,
                                     style: const TextStyle(
@@ -586,39 +607,45 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF2D3E2E)
-                                                  .withValues(alpha: 0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              exercise.muscleGroup,
-                                              style: const TextStyle(
-                                                fontSize: 12,
+                                          Flexible(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF2D3E2E)
+                                                    .withValues(alpha: 0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                exercise.muscleGroup,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[300],
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              exercise.difficulty,
-                                              style: const TextStyle(
-                                                fontSize: 12,
+                                          Flexible(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[300],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                exercise.difficulty,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ),

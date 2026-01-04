@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/nutrition_service.dart';
+import 'nutrition_history_screen.dart';
 
 class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key});
@@ -104,19 +106,52 @@ class _NutritionScreenState extends State<NutritionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F3E8),
+      backgroundColor: const Color(0xFFD9D7B6),
       appBar: AppBar(
-        title: Text('Nhật ký Dinh dưỡng'),
-        backgroundColor: Color(0xFFB8C5A0),
+        title: const Text(
+          'Nhật ký Dinh dưỡng',
+          style: TextStyle(
+            fontFamily: 'Estedad-VF',
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontSize: 24,
+          ),
+        ),
+        backgroundColor: const Color(0xFFD9D7B6),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.calendar_today),
+            icon: const Icon(Icons.history, color: Colors.black),
+            tooltip: 'Lịch sử',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NutritionHistoryScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_today, color: Colors.black),
             onPressed: () async {
               final date = await showDatePicker(
                 context: context,
                 initialDate: _selectedDate,
                 firstDate: DateTime(2020),
                 lastDate: DateTime.now(),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: Color(0xFFA4C639),
+                        onPrimary: Colors.white,
+                        onSurface: Colors.black,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
               if (date != null) {
                 setState(() => _selectedDate = date);
@@ -127,28 +162,36 @@ class _NutritionScreenState extends State<NutritionScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadNutritionLog,
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Date selector
                     Container(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0xFFFDFBD4),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             DateFormat('dd/MM/yyyy').format(_selectedDate),
-                            style: TextStyle(
+                            style: const TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -159,73 +202,96 @@ class _NutritionScreenState extends State<NutritionScreen> {
                                     _selectedDate.year == DateTime.now().year
                                 ? 'Hôm nay'
                                 : '',
-                            style: TextStyle(
-                              color: Color(0xFFB8C5A0),
-                              fontWeight: FontWeight.w500,
+                            style: const TextStyle(
+                              fontFamily: 'Estedad-VF',
+                              color: Color(0xFF8BA655), // Olive Green
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
                     // Summary card
                     Container(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Color(0xFFFFF8E1),
-                        borderRadius: BorderRadius.circular(16),
+                        color: const Color(0xFFC5C292),
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'Tổng Calo Hôm Nay',
                             style: TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 16,
-                              color: Colors.grey[600],
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            '${_nutritionLog?.totalCalories.toInt() ?? 0}',
-                            style: TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFFFA726),
-                            ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '${_nutritionLog?.totalCalories.toInt() ?? 0}',
+                                style: const TextStyle(
+                                  fontFamily: 'Estedad-VF',
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'kcal',
+                                style: TextStyle(
+                                  fontFamily: 'Estedad-VF',
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'kcal',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildNutrientInfo(
+                              _buildCircularNutrientInfo(
                                 'Protein',
-                                '${_nutritionLog?.proteinG.toInt() ?? 0}g',
-                                Color(0xFFEC407A),
+                                _nutritionLog?.proteinG ?? 0,
+                                50, // Target value
+                                const Color(0xFFFF6B6B),
                               ),
-                              _buildNutrientInfo(
+                              _buildCircularNutrientInfo(
                                 'Carbs',
-                                '${_nutritionLog?.carbsG.toInt() ?? 0}g',
-                                Color(0xFF42A5F5),
+                                _nutritionLog?.carbsG ?? 0,
+                                200, // Target value
+                                const Color(0xFFFFA726),
                               ),
-                              _buildNutrientInfo(
+                              _buildCircularNutrientInfo(
                                 'Fat',
-                                '${_nutritionLog?.fatG.toInt() ?? 0}g',
-                                Color(0xFFFFA726),
+                                _nutritionLog?.fatG ?? 0,
+                                60, // Target value
+                                const Color(0xFF66BB6A),
                               ),
                             ],
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
                     // Meal sections
                     if (_nutritionLog != null && _nutritionLog!.foodEntries.isNotEmpty)
@@ -237,9 +303,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
               ),
             ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'nutrition_fab',
         onPressed: _showAddFoodDialog,
-        backgroundColor: Color(0xFFB8C5A0),
-        child: Icon(Icons.add),
+        backgroundColor: const Color(0xFF2d2d2d),
+        foregroundColor: const Color(0xFFFDFBD4),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -250,16 +318,107 @@ class _NutritionScreenState extends State<NutritionScreen> {
         Text(
           value,
           style: TextStyle(
+            fontFamily: 'Estedad-VF',
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
+            fontFamily: 'Estedad-VF',
             fontSize: 12,
+            color: Colors.black54,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCircularNutrientInfo(
+    String label,
+    double currentValue,
+    double targetValue,
+    Color color,
+  ) {
+    final progress = (currentValue / targetValue).clamp(0.0, 1.0);
+    
+    return Column(
+      children: [
+        SizedBox(
+          width: 80,
+          height: 80,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Background circle
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: CustomPaint(
+                  painter: _CircularProgressPainter(
+                    progress: 1.0,
+                    color: Colors.black.withOpacity(0.1),
+                    strokeWidth: 6,
+                  ),
+                ),
+              ),
+              // Progress circle
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: CustomPaint(
+                  painter: _CircularProgressPainter(
+                    progress: progress,
+                    color: color,
+                    strokeWidth: 6,
+                  ),
+                ),
+              ),
+              // Value in center
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    currentValue.toStringAsFixed(1),
+                    style: TextStyle(
+                      fontFamily: 'Estedad-VF',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    'g',
+                    style: TextStyle(
+                      fontFamily: 'Estedad-VF',
+                      fontSize: 10,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Estedad-VF',
+            fontSize: 12,
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          '${(progress * 100).toInt()}%',
+          style: TextStyle(
+            fontFamily: 'Estedad-VF',
+            fontSize: 10,
             color: Colors.grey[600],
           ),
         ),
@@ -279,33 +438,41 @@ class _NutritionScreenState extends State<NutritionScreen> {
       );
 
       return Container(
-        margin: EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFFFDFBD4),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
                       Container(
-                        width: 8,
+                        width: 4,
                         height: 24,
                         decoration: BoxDecoration(
                           color: _getMealTypeColor(mealType),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Text(
                         _getMealTypeLabel(mealType),
-                        style: TextStyle(
+                        style: const TextStyle(
+                          fontFamily: 'Estedad-VF',
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -315,15 +482,16 @@ class _NutritionScreenState extends State<NutritionScreen> {
                   Text(
                     '${totalCalories.toInt()} kcal',
                     style: TextStyle(
+                      fontFamily: 'Estedad-VF',
                       fontSize: 14,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(height: 1),
+            const Divider(height: 1, color: Colors.black12),
             ...entries.map((entry) => _buildFoodEntryItem(entry)),
           ],
         ),
@@ -333,19 +501,36 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Widget _buildFoodEntryItem(FoodEntry entry) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: CircleAvatar(
+        radius: 28,
+        backgroundColor: const Color(0xFFA4C639).withValues(alpha: 0.2),
+        backgroundImage: entry.imageUrl != null
+            ? NetworkImage(entry.imageUrl!)
+            : null,
+        child: entry.imageUrl == null
+            ? const Icon(
+                Icons.restaurant,
+                color: Color(0xFFA4C639),
+                size: 26,
+              )
+            : null,
+      ),
       title: Text(
         entry.foodItemName,
-        style: TextStyle(fontWeight: FontWeight.w500),
+        style: const TextStyle(fontFamily: 'Estedad-VF', fontWeight: FontWeight.w600, fontSize: 16),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 4),
-          Text('Số lượng: ${entry.quantity.toStringAsFixed(1)}'),
+          const SizedBox(height: 4),
           Text(
-            'P: ${entry.proteinG.toInt()}g | C: ${entry.carbsG.toInt()}g | F: ${entry.fatG.toInt()}g',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            'Số lượng: ${entry.quantity.toStringAsFixed(1)}',
+            style: const TextStyle(fontFamily: 'Estedad-VF', fontSize: 13),  
+          ),
+          Text(
+            'P: ${entry.proteinG.toStringAsFixed(1)}g | C: ${entry.carbsG.toStringAsFixed(1)}g | F: ${entry.fatG.toStringAsFixed(1)}g',
+            style: TextStyle(fontFamily: 'Estedad-VF', fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -354,14 +539,15 @@ class _NutritionScreenState extends State<NutritionScreen> {
         children: [
           Text(
             '${entry.caloriesKcal.toInt()} kcal',
-            style: TextStyle(
+            style: const TextStyle(
+              fontFamily: 'Estedad-VF',
               fontWeight: FontWeight.bold,
-              color: Color(0xFFFFA726),
+              color: Color(0xFFA4C639),
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           IconButton(
-            icon: Icon(Icons.delete_outline, color: Colors.red),
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
             onPressed: () => _deleteFoodEntry(entry.foodEntryId),
           ),
         ],
@@ -371,26 +557,28 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Widget _buildEmptyState() {
     return Container(
-      padding: EdgeInsets.all(48),
+      padding: const EdgeInsets.all(48),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+       color: const Color(0xFFFDFBD4),
+        borderRadius: BorderRadius.circular(32),
       ),
       child: Column(
         children: [
           Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Chưa có món ăn nào',
             style: TextStyle(
+              fontFamily: 'Estedad-VF',
               fontSize: 18,
               color: Colors.grey[600],
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Nhấn nút + để thêm món ăn',
             style: TextStyle(
+              fontFamily: 'Estedad-VF',
               fontSize: 14,
               color: Colors.grey[500],
             ),
@@ -482,58 +670,66 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
       maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFF5F3E8),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: const BoxDecoration(
+            color: Color(0xFFD9D7B6),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
           child: Column(
             children: [
               Container(
-                margin: EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 12),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Colors.black.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Thêm món ăn',
                       style: TextStyle(
+                        fontFamily: 'Estedad-VF',
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _searchController,
+                      style: const TextStyle(fontFamily: 'Estedad-VF'),
                       decoration: InputDecoration(
                         hintText: 'Tìm kiếm món ăn...',
-                        prefixIcon: Icon(Icons.search),
+                        hintStyle: const TextStyle(fontFamily: 'Estedad-VF'),
+                        prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFFFDFBD4),
                       ),
                       onSubmitted: (value) => _loadFoodItems(value),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedMealType,
+                      value: _selectedMealType,
+                      style: const TextStyle(fontFamily: 'Estedad-VF', color: Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Bữa ăn',
+                        labelStyle: const TextStyle(fontFamily: 'Estedad-VF'),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFFFDFBD4),
                       ),
-                      items: [
+                      items: const [
                         DropdownMenuItem(value: 'Breakfast', child: Text('Bữa sáng')),
                         DropdownMenuItem(value: 'Lunch', child: Text('Bữa trưa')),
                         DropdownMenuItem(value: 'Dinner', child: Text('Bữa tối')),
@@ -548,51 +744,68 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Expanded(
                 child: _isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
                         controller: scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: _foodItems.length,
                         itemBuilder: (context, index) {
                           final item = _foodItems[index];
                           final isSelected = _selectedFood?.foodItemId == item.foodItemId;
                           
                           return Card(
-                            margin: EdgeInsets.only(bottom: 12),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            color: const Color(0xFFFDFBD4),
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
-                                color: isSelected ? Color(0xFFB8C5A0) : Colors.transparent,
+                                color: isSelected ? const Color(0xFFA4C639) : Colors.transparent,
                                 width: 2,
                               ),
                             ),
                             child: ListTile(
-                              contentPadding: EdgeInsets.all(12),
+                              contentPadding: const EdgeInsets.all(16),
+                              leading: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: const Color(0xFFA4C639).withValues(alpha: 0.2),
+                                backgroundImage: item.imageUrl != null
+                                    ? NetworkImage(item.imageUrl!)
+                                    : null,
+                                child: item.imageUrl == null
+                                    ? const Icon(
+                                        Icons.restaurant,
+                                        color: Color(0xFFA4C639),
+                                        size: 28,
+                                      )
+                                    : null,
+                              ),
                               title: Text(
                                 item.name,
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(fontFamily: 'Estedad-VF', fontWeight: FontWeight.w700),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(height: 4),
-                                  Text('${item.servingSize.toInt()} ${item.servingUnit}'),
-                                  SizedBox(height: 2),
+                                  const SizedBox(height: 4),
+                                  Text('${item.servingSize.toInt()} ${item.servingUnit}', style: const TextStyle(fontFamily: 'Estedad-VF')),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    'P: ${item.proteinG.toInt()}g | C: ${item.carbsG.toInt()}g | F: ${item.fatG.toInt()}g',
-                                    style: TextStyle(fontSize: 12),
+                                    'P: ${item.proteinG.toStringAsFixed(1)}g | C: ${item.carbsG.toStringAsFixed(1)}g | F: ${item.fatG.toStringAsFixed(1)}g',
+                                    style: const TextStyle(fontFamily: 'Estedad-VF', fontSize: 12),
                                   ),
                                 ],
                               ),
                               trailing: Text(
                                 '${item.caloriesKcal.toInt()}\nkcal',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
+                                  fontFamily: 'Estedad-VF',
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFFFFA726),
+                                  color: Color(0xFFA4C639),
                                 ),
                               ),
                               onTap: () => setState(() => _selectedFood = item),
@@ -603,14 +816,15 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
               ),
               if (_selectedFood != null)
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFDFBD4),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 8,
-                        offset: Offset(0, -2),
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
                       ),
                     ],
                   ),
@@ -618,14 +832,15 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      const Text(
                         'Số lượng',
                         style: TextStyle(
+                          fontFamily: 'Estedad-VF',
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
@@ -635,13 +850,15 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
                               max: 10.0,
                               divisions: 99,
                               label: _quantity.toStringAsFixed(1),
-                              activeColor: Color(0xFFB8C5A0),
+                              activeColor: const Color(0xFFA4C639),
+                              inactiveColor: Colors.grey[300],
                               onChanged: (value) => setState(() => _quantity = value),
                             ),
                           ),
                           Text(
                             _quantity.toStringAsFixed(1),
-                            style: TextStyle(
+                            style: const TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -649,45 +866,49 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
                         ],
                       ),
                       Container(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFF8E1),
-                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFFD9D7B6).withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Tổng dinh dưỡng:',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              style: TextStyle(fontFamily: 'Estedad-VF', fontWeight: FontWeight.w700),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Calories: ${(_selectedFood!.caloriesKcal * _quantity).toInt()} kcal',
+                              'Calories: ${(_selectedFood!.caloriesKcal * _quantity).toStringAsFixed(1)} kcal',
+                              style: const TextStyle(fontFamily: 'Estedad-VF'),
                             ),
                             Text(
-                              'P: ${(_selectedFood!.proteinG * _quantity).toInt()}g | '
-                              'C: ${(_selectedFood!.carbsG * _quantity).toInt()}g | '
-                              'F: ${(_selectedFood!.fatG * _quantity).toInt()}g',
+                              'P: ${(_selectedFood!.proteinG * _quantity).toStringAsFixed(1)}g | '
+                              'C: ${(_selectedFood!.carbsG * _quantity).toStringAsFixed(1)}g | '
+                              'F: ${(_selectedFood!.fatG * _quantity).toStringAsFixed(1)}g',
+                              style: const TextStyle(fontFamily: 'Estedad-VF'),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: _isAdding ? null : _addFood,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFB8C5A0),
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: const Color(0xFF2d2d2d),
+                            foregroundColor: const Color(0xFFFDFBD4),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                           child: Text(
                             _isAdding ? 'Đang thêm...' : 'Thêm vào nhật ký',
-                            style: TextStyle(
+                            style: const TextStyle(
+                              fontFamily: 'Estedad-VF',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -702,5 +923,46 @@ class _AddFoodBottomSheetState extends State<AddFoodBottomSheet> {
         );
       },
     );
+  }
+}
+
+// Custom painter for circular progress indicator
+class _CircularProgressPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  _CircularProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+    
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // Draw arc
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2, // Start from top
+      2 * math.pi * progress, // Sweep angle based on progress
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CircularProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

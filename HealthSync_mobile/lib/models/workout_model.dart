@@ -5,6 +5,7 @@ class Exercise {
   final String difficulty;
   final String? equipment;
   final String? description;
+  final String? imageUrl;
 
   Exercise({
     required this.exerciseId,
@@ -13,9 +14,16 @@ class Exercise {
     required this.difficulty,
     this.equipment,
     this.description,
+    this.imageUrl,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['imageUrl'];
+    // Transform localhost to 10.0.2.2 for Android emulator
+    if (imageUrl != null && imageUrl.contains('localhost')) {
+      imageUrl = imageUrl.replaceAll('localhost', '10.0.2.2');
+    }
+    
     return Exercise(
       exerciseId: json['exerciseId'],
       name: json['name'],
@@ -23,6 +31,7 @@ class Exercise {
       difficulty: json['difficulty'],
       equipment: json['equipment'],
       description: json['description'],
+      imageUrl: imageUrl,
     );
   }
 
@@ -34,6 +43,7 @@ class Exercise {
       'difficulty': difficulty,
       'equipment': equipment,
       'description': description,
+      'imageUrl': imageUrl,
     };
   }
 }

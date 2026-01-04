@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import 'network_service.dart';
@@ -272,21 +273,42 @@ class ApiService {
     );
 
     request.headers['Authorization'] = 'Bearer $token';
-    request.files.add(await http.MultipartFile.fromPath('File', file.path));
+    
+    // Determine content type
+    MediaType? contentType;
+    final path = file.path.toLowerCase();
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      contentType = MediaType('image', 'jpeg');
+    } else if (path.endsWith('.png')) {
+      contentType = MediaType('image', 'png');
+    } else if (path.endsWith('.gif')) {
+      contentType = MediaType('image', 'gif');
+    }
 
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
+    request.files.add(await http.MultipartFile.fromPath(
+      'File', 
+      file.path,
+      contentType: contentType,
+    ));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(responseBody);
-      return data['AvatarUrl'] ?? data['avatarUrl'] ?? '';
+      final data = jsonDecode(response.body);
+      String avatarUrl = data['AvatarUrl'] ?? data['avatarUrl'] ?? '';
+      if (avatarUrl.contains('localhost')) {
+        avatarUrl = avatarUrl.replaceFirst('localhost', '10.0.2.2');
+      }
+      return avatarUrl;
     } else {
-      if (responseBody.isNotEmpty) {
+      if (response.body.isNotEmpty) {
         try {
-          final error = jsonDecode(responseBody);
-          throw Exception(error['Error'] ?? error['message'] ?? 'Failed to upload avatar');
+          final error = jsonDecode(response.body);
+          throw Exception(error['Error'] ?? error['message'] ?? 'Failed to upload avatar: ${response.body}');
         } catch (_) {
-          throw Exception('Failed to upload avatar (server error)');
+           // Return the raw response body as error message if json decode fails
+           throw Exception('Failed to upload avatar (${response.statusCode}): ${response.body}');
         }
       }
       throw Exception('Failed to upload avatar (${response.statusCode})');

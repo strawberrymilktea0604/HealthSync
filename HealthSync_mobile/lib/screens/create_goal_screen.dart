@@ -109,9 +109,9 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8E4D9),
+      backgroundColor: const Color(0xFFD9D7B6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8E4D9),
+        backgroundColor: const Color(0xFFD9D7B6),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
@@ -146,7 +146,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFDFBD4),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: DropdownButtonFormField<String>(
@@ -196,7 +196,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFDFBD4),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: TextFormField(
@@ -252,7 +252,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                                 vertical: 16,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(0xFFFDFBD4),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Row(
@@ -299,7 +299,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                                 vertical: 16,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(0xFFFDFBD4),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Row(
@@ -345,7 +345,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFDFBD4),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: TextFormField(

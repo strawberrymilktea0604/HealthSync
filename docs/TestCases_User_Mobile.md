@@ -153,6 +153,11 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | TC-M-GOAL-010 | Thêm progress mới | 1. Trong Goal Details<br>2. Nhấn FAB "+"<br>3. Chuyển đến Add Progress Screen<br>4. Nhập giá trị mới<br>5. Nhấn "Lưu" | CurrentValue: 68 (cho mục tiêu giảm còn 65kg) | Progress được thêm, biểu đồ cập nhật | | | |
 | TC-M-GOAL-011 | Xem biểu đồ tiến độ | 1. Xem Goal Details có nhiều progress | N/A | Biểu đồ Line/Area hiển thị đúng xu hướng | | | |
 | TC-M-GOAL-012 | Xem thống kê mục tiêu | 1. Scroll xuống trong Goal Details | N/A | Hiển thị: Current Value, Average, Best, Ngày còn lại | | | |
+| TC-M-GOAL-013 | Khóa nút Cập nhật cho goal not_started | 1. Xem goal có status "not_started"<br>2. Kiểm tra FAB và nút "Thêm mới" | N/A | FAB không hiển thị, nút "Thêm mới" bị disable (màu xám) | | | |
+| TC-M-GOAL-014 | Khóa nút Cập nhật cho goal completed | 1. Xem goal có status "completed"<br>2. Kiểm tra FAB và nút "Thêm mới" | N/A | FAB không hiển thị, nút "Thêm mới" bị disable | | | |
+| TC-M-GOAL-015 | Cho phép Cập nhật goal in_progress | 1. Xem goal có status "in_progress"<br>2. Kiểm tra FAB và nút "Thêm mới" | N/A | FAB hiển thị và active, nút "Thêm mới" màu xanh và có thể nhấn | | | |
+| TC-M-GOAL-016 | Filter goals theo tab Đang thực hiện | 1. Trong Goals Screen<br>2. Tab "Đang thực hiện" được chọn | N/A | Chỉ hiển thị goals có status "in_progress" hoặc "not_started" | | | |
+| TC-M-GOAL-017 | Filter goals theo tab Đã hoàn thành | 1. Nhấn tab "Đã hoàn thành" | N/A | Chỉ hiển thị goals có status "completed" | | | |
 
 ---
 
@@ -184,6 +189,21 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 |--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
 | TC-M-NUT-011 | Xóa món khỏi nhật ký | 1. Trong danh sách bữa ăn<br>2. Swipe left trên món ăn hoặc nhấn nút xóa<br>3. Xác nhận | N/A | Món bị xóa, tổng calories cập nhật | | | |
 | TC-M-NUT-012 | Hủy xóa món | 1. Nhấn xóa<br>2. Nhấn "Hủy" trong dialog xác nhận | N/A | Dialog đóng, món vẫn còn | | | |
+
+### Chức năng 6.4: Xem Lịch Sử Dinh Dưỡng
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-NUT-013 | Mở Nutrition History từ icon | 1. Trong Nutrition Screen<br>2. Nhấn icon History trên AppBar | N/A | Chuyển đến Nutrition History Screen | | | |
+| TC-M-NUT-014 | Xem lịch sử 7 ngày | 1. Trong Nutrition History<br>2. Tab "7 ngày" được chọn | N/A | Hiển thị: Thống kê trung bình, Biểu đồ Calories, Biểu đồ Macros, Danh sách chi tiết 7 ngày | | | |
+| TC-M-NUT-015 | Xem lịch sử 30 ngày | 1. Nhấn tab "30 ngày" | N/A | Hiển thị dữ liệu 30 ngày, biểu đồ cập nhật | | | |
+| TC-M-NUT-016 | Hiển thị thống kê trung bình | 1. Xem Nutrition History | N/A | Hiển thị đúng: Calories TB, Protein TB, Carbs TB, Fat TB dạng cards | | | |
+| TC-M-NUT-017 | Hiển thị biểu đồ Calories theo ngày | 1. Scroll xuống phần biểu đồ | N/A | Line Chart hiển thị calories theo từng ngày, có tooltip khi nhấn vào điểm | | | |
+| TC-M-NUT-018 | Hiển thị biểu đồ Macros theo ngày | 1. Xem biểu đồ Macros | N/A | Bar Chart hiển thị Protein/Carbs/Fat theo ngày với màu sắc khác nhau | | | |
+| TC-M-NUT-019 | Xem chi tiết ngày trong lịch sử | 1. Scroll xuống danh sách "Chi tiết theo ngày"<br>2. Xem thông tin từng ngày | N/A | Hiển thị: Ngày, Số món ăn, Total Calories, Macros dạng list items | | | |
+| TC-M-NUT-020 | Lịch sử trống | 1. User mới chưa có dữ liệu<br>2. Vào Nutrition History | N/A | Hiển thị empty state với icon và text "Chưa có dữ liệu dinh dưỡng" | | | |
+| TC-M-NUT-021 | Pull to refresh lịch sử | 1. Trong Nutrition History<br>2. Kéo xuống để refresh | N/A | Loading indicator hiện, dữ liệu được tải lại | | | |
+| TC-M-NUT-022 | Chuyển đổi giữa tabs | 1. Nhấn tab "7 ngày"<br>2. Nhấn tab "30 ngày" | N/A | Chuyển đổi mượt mà, dữ liệu cập nhật không bị lag | | | |
 
 ---
 
@@ -323,15 +343,15 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | Xác thực (Đăng ký, Đăng nhập, Recovery) | 24 | | | |
 | Hoàn thiện hồ sơ | 6 | | | |
 | Trang chủ & Navigation | 9 | | | |
-| Quản lý Mục tiêu | 12 | | | |
-| Theo dõi Dinh dưỡng | 12 | | | |
+| Quản lý Mục tiêu | 17 | | | |
+| Theo dõi Dinh dưỡng | 22 | | | |
 | Theo dõi Bài tập | 15 | | | |
 | AI Chat | 10 | | | |
 | Tạo mật khẩu Google | 4 | | | |
 | Đăng xuất | 3 | | | |
 | Kiểm thử đặc thù Mobile | 14 | | | |
 | Quản lý Hồ sơ cá nhân | 8 | | | |
-| **TỔNG** | **124** | | | |
+| **TỔNG** | **139** | | | |
 
 ---
 
@@ -341,8 +361,8 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 |------|-------------------|
 | Phần 1: Admin (Web) | 59 |
 | Phần 2: User Web | 78 |
-| Phần 3: User Mobile | 124 |
-| **TỔNG CỘNG** | **261** |
+| Phần 3: User Mobile | 139 |
+| **TỔNG CỘNG** | **276** |
 
 ---
 

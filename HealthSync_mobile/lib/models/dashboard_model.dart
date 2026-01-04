@@ -1,164 +1,237 @@
-class CustomerDashboard {
-  final UserInfo userInfo;
-  final GoalProgress? goalProgress;
-  final WeightProgress? weightProgress;
-  final TodayStats todayStats;
-  final ExerciseStreak exerciseStreak;
+class CustomerDashboardDto {
+  final UserInfoDto userInfo;
+  final GoalProgressDto goalProgress;
+  final List<GoalSummaryDto> activeGoals;
+  final WeightProgressDto weightProgress;
+  final TodayStatsDto todayStats;
+  final ExerciseStreakDto exerciseStreak;
 
-  CustomerDashboard({
+  CustomerDashboardDto({
     required this.userInfo,
-    this.goalProgress,
-    this.weightProgress,
+    required this.goalProgress,
+    required this.activeGoals,
+    required this.weightProgress,
     required this.todayStats,
     required this.exerciseStreak,
   });
 
-  factory CustomerDashboard.fromJson(Map<String, dynamic> json) {
-    return CustomerDashboard(
-      userInfo: UserInfo.fromJson(json['userInfo']),
-      goalProgress: json['goalProgress'] != null
-          ? GoalProgress.fromJson(json['goalProgress'])
-          : null,
-      weightProgress: json['weightProgress'] != null
-          ? WeightProgress.fromJson(json['weightProgress'])
-          : null,
-      todayStats: TodayStats.fromJson(json['todayStats']),
-      exerciseStreak: ExerciseStreak.fromJson(json['exerciseStreak']),
+  factory CustomerDashboardDto.fromJson(Map<String, dynamic> json) {
+    return CustomerDashboardDto(
+      userInfo: UserInfoDto.fromJson(json['userInfo']),
+      goalProgress: GoalProgressDto.fromJson(json['goalProgress']),
+      activeGoals: (json['activeGoals'] as List<dynamic>?)
+              ?.map((e) => GoalSummaryDto.fromJson(e))
+              .toList() ??
+          [],
+      weightProgress: WeightProgressDto.fromJson(json['weightProgress']),
+      todayStats: TodayStatsDto.fromJson(json['todayStats']),
+      exerciseStreak: ExerciseStreakDto.fromJson(json['exerciseStreak']),
     );
   }
 }
 
-class UserInfo {
+class UserInfoDto {
+  final int userId;
+  final String email;
   final String fullName;
   final String avatarUrl;
 
-  UserInfo({required this.fullName, required this.avatarUrl});
+  UserInfoDto({
+    required this.userId,
+    required this.email,
+    required this.fullName,
+    required this.avatarUrl,
+  });
 
-  factory UserInfo.fromJson(Map<String, dynamic> json) {
-    return UserInfo(
+  factory UserInfoDto.fromJson(Map<String, dynamic> json) {
+    String avatarUrl = json['avatarUrl'] ?? '';
+    // Transform localhost to 10.0.2.2 for Android emulator
+    if (avatarUrl.contains('localhost')) {
+      avatarUrl = avatarUrl.replaceAll('localhost', '10.0.2.2');
+    }
+    
+    return UserInfoDto(
+      userId: json['userId'] ?? 0,
+      email: json['email'] ?? '',
       fullName: json['fullName'] ?? '',
-      avatarUrl: json['avatarUrl'] ?? '',
+      avatarUrl: avatarUrl,
     );
   }
 }
 
-class GoalProgress {
+class GoalProgressDto {
   final String goalType;
   final double startValue;
   final double currentValue;
   final double targetValue;
   final double progress;
+  final double progressAmount;
   final double remaining;
   final String status;
 
-  GoalProgress({
+  GoalProgressDto({
     required this.goalType,
     required this.startValue,
     required this.currentValue,
     required this.targetValue,
     required this.progress,
+    required this.progressAmount,
     required this.remaining,
     required this.status,
   });
 
-  factory GoalProgress.fromJson(Map<String, dynamic> json) {
-    return GoalProgress(
-      goalType: json['goalType'] ?? '',
-      startValue: (json['startValue'] ?? 0).toDouble(),
-      currentValue: (json['currentValue'] ?? 0).toDouble(),
-      targetValue: (json['targetValue'] ?? 0).toDouble(),
-      progress: (json['progress'] ?? 0).toDouble(),
-      remaining: (json['remaining'] ?? 0).toDouble(),
+  factory GoalProgressDto.fromJson(Map<String, dynamic> json) {
+    return GoalProgressDto(
+      goalType: json['goalType'] ?? 'None',
+      startValue: (json['startValue'] as num?)?.toDouble() ?? 0.0,
+      currentValue: (json['currentValue'] as num?)?.toDouble() ?? 0.0,
+      targetValue: (json['targetValue'] as num?)?.toDouble() ?? 0.0,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      progressAmount: (json['progressAmount'] as num?)?.toDouble() ?? 0.0,
+      remaining: (json['remaining'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] ?? '',
     );
   }
+
+  String getGoalTypeDisplay() {
+    switch (goalType) {
+      case 'weight_loss':
+        return 'Giảm cân';
+      case 'weight_gain':
+        return 'Tăng cân';
+      case 'muscle_gain':
+        return 'Tăng cơ';
+      case 'fat_loss':
+        return 'Giảm mỡ';
+      default:
+        return goalType;
+    }
+  }
 }
 
-class WeightProgress {
+class GoalSummaryDto {
+  final int goalId;
+  final String type;
+  final String notes;
+  final double targetValue;
+  final double progress;
+
+  GoalSummaryDto({
+    required this.goalId,
+    required this.type,
+    required this.notes,
+    required this.targetValue,
+    required this.progress,
+  });
+
+  factory GoalSummaryDto.fromJson(Map<String, dynamic> json) {
+    return GoalSummaryDto(
+      goalId: json['goalId'] ?? 0,
+      type: json['type'] ?? '',
+      notes: json['notes'] ?? '',
+      targetValue: (json['targetValue'] as num?)?.toDouble() ?? 0.0,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+  
+  String getTypeDisplay() {
+    switch (type) {
+      case 'weight_loss':
+        return 'Giảm cân';
+      case 'weight_gain':
+        return 'Tăng cân';
+      case 'muscle_gain':
+        return 'Tăng cơ';
+      case 'fat_loss':
+        return 'Giảm mỡ';
+      default:
+        return type;
+    }
+  }
+}
+
+class WeightProgressDto {
   final double currentWeight;
   final double targetWeight;
   final double weightLost;
   final double weightRemaining;
   final double progressPercentage;
-  final List<WeightDataPoint> weightHistory;
-  final int daysRemaining;
+  final List<WeightDataPointDto> weightHistory;
   final String timeRemaining;
 
-  WeightProgress({
+  WeightProgressDto({
     required this.currentWeight,
     required this.targetWeight,
     required this.weightLost,
     required this.weightRemaining,
     required this.progressPercentage,
     required this.weightHistory,
-    required this.daysRemaining,
     required this.timeRemaining,
   });
 
-  factory WeightProgress.fromJson(Map<String, dynamic> json) {
-    return WeightProgress(
-      currentWeight: (json['currentWeight'] ?? 0).toDouble(),
-      targetWeight: (json['targetWeight'] ?? 0).toDouble(),
-      weightLost: (json['weightLost'] ?? 0).toDouble(),
-      weightRemaining: (json['weightRemaining'] ?? 0).toDouble(),
-      progressPercentage: (json['progressPercentage'] ?? 0).toDouble(),
+  factory WeightProgressDto.fromJson(Map<String, dynamic> json) {
+    return WeightProgressDto(
+      currentWeight: (json['currentWeight'] as num?)?.toDouble() ?? 0.0,
+      targetWeight: (json['targetWeight'] as num?)?.toDouble() ?? 0.0,
+      weightLost: (json['weightLost'] as num?)?.toDouble() ?? 0.0,
+      weightRemaining: (json['weightRemaining'] as num?)?.toDouble() ?? 0.0,
+      progressPercentage: (json['progressPercentage'] as num?)?.toDouble() ?? 0.0,
       weightHistory: (json['weightHistory'] as List<dynamic>?)
-              ?.map((e) => WeightDataPoint.fromJson(e))
+              ?.map((e) => WeightDataPointDto.fromJson(e))
               .toList() ??
           [],
-      daysRemaining: json['daysRemaining'] ?? 0,
       timeRemaining: json['timeRemaining'] ?? '',
     );
   }
 }
 
-class WeightDataPoint {
+class WeightDataPointDto {
   final DateTime date;
   final double weight;
 
-  WeightDataPoint({required this.date, required this.weight});
+  WeightDataPointDto({
+    required this.date,
+    required this.weight,
+  });
 
-  factory WeightDataPoint.fromJson(Map<String, dynamic> json) {
-    return WeightDataPoint(
+  factory WeightDataPointDto.fromJson(Map<String, dynamic> json) {
+    return WeightDataPointDto(
       date: DateTime.parse(json['date']),
-      weight: (json['weight'] ?? 0).toDouble(),
+      weight: (json['weight'] as num).toDouble(),
     );
   }
 }
 
-class TodayStats {
+class TodayStatsDto {
   final int caloriesConsumed;
   final int caloriesTarget;
-  final int workoutMinutes;
   final String workoutDuration;
 
-  TodayStats({
+  TodayStatsDto({
     required this.caloriesConsumed,
     required this.caloriesTarget,
-    required this.workoutMinutes,
     required this.workoutDuration,
   });
 
-  factory TodayStats.fromJson(Map<String, dynamic> json) {
-    return TodayStats(
+  factory TodayStatsDto.fromJson(Map<String, dynamic> json) {
+    return TodayStatsDto(
       caloriesConsumed: json['caloriesConsumed'] ?? 0,
-      caloriesTarget: json['caloriesTarget'] ?? 0,
-      workoutMinutes: json['workoutMinutes'] ?? 0,
-      workoutDuration: json['workoutDuration'] ?? '',
+      caloriesTarget: json['caloriesTarget'] ?? 2000,
+      workoutDuration: json['workoutDuration'] ?? '0 min',
     );
   }
 }
 
-class ExerciseStreak {
+class ExerciseStreakDto {
   final int currentStreak;
-  final int totalDays;
 
-  ExerciseStreak({required this.currentStreak, required this.totalDays});
+  ExerciseStreakDto({
+    required this.currentStreak,
+  });
 
-  factory ExerciseStreak.fromJson(Map<String, dynamic> json) {
-    return ExerciseStreak(
+  factory ExerciseStreakDto.fromJson(Map<String, dynamic> json) {
+    return ExerciseStreakDto(
       currentStreak: json['currentStreak'] ?? 0,
-      totalDays: json['totalDays'] ?? 0,
     );
   }
 }

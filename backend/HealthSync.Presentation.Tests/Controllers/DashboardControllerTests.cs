@@ -70,6 +70,7 @@ public class DashboardControllerTests
         {
             UserInfo = new UserInfoDto { UserId = userId, Email = "test@example.com", FullName = "Test User" },
             GoalProgress = new GoalProgressDto { GoalType = "Weight", StartValue = 80, CurrentValue = 75, TargetValue = 70, Progress = 75, Remaining = 5, Status = "In Progress" },
+            ActiveGoals = new List<GoalSummaryDto>(),
             WeightProgress = new WeightProgressDto { CurrentWeight = 75, TargetWeight = 70, WeightLost = 5, WeightRemaining = 5, ProgressPercentage = 50, WeightHistory = new List<WeightDataPointDto>(), DaysRemaining = 30, TimeRemaining = "30 days" },
             TodayStats = new TodayStatsDto { CaloriesConsumed = 1500, CaloriesTarget = 2000, WorkoutMinutes = 45, WorkoutDuration = "45 min" },
             ExerciseStreak = new ExerciseStreakDto { CurrentStreak = 5, TotalDays = 20 }

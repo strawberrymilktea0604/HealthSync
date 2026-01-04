@@ -8,7 +8,14 @@ class GoalService {
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    final userJson = prefs.getString('user');
+    if (userJson == null) return null;
+    try {
+      final userData = jsonDecode(userJson);
+      return userData['token'];
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<Map<String, String>> _getHeaders() async {
@@ -21,20 +28,31 @@ class GoalService {
 
   // Lấy danh sách mục tiêu
   Future<List<Goal>> getGoals() async {
-    final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('$baseUrl/goals'),
-      headers: headers,
-    );
+    try {
+      final headers = await _getHeaders();
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/Goals'),
+        headers: headers,
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final goals = (data['goals'] as List<dynamic>)
-          .map((json) => Goal.fromJson(json as Map<String, dynamic>))
-          .toList();
-      return goals;
-    } else {
-      throw Exception('Failed to load goals');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        if (data is Map && data.containsKey('goals')) {
+          final goalsJson = data['goals'] as List<dynamic>;
+          final goals = goalsJson
+              .map((json) => Goal.fromJson(json as Map<String, dynamic>))
+              .toList();
+          return goals;
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception('Failed to load goals: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -42,7 +60,7 @@ class GoalService {
   Future<Goal> createGoal(CreateGoalRequest request) async {
     final headers = await _getHeaders();
     final response = await http.post(
-      Uri.parse('$baseUrl/goals'),
+      Uri.parse('$baseUrl/Goals'),
       headers: headers,
       body: jsonEncode(request.toJson()),
     );
@@ -60,7 +78,7 @@ class GoalService {
   Future<ProgressRecord> addProgress(int goalId, AddProgressRequest request) async {
     final headers = await _getHeaders();
     final response = await http.post(
-      Uri.parse('$baseUrl/goals/$goalId/progress'),
+      Uri.parse('$baseUrl/Goals/$goalId/progress'),
       headers: headers,
       body: jsonEncode(request.toJson()),
     );

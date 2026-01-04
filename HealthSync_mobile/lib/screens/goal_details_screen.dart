@@ -70,9 +70,9 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFFE8E4D9),
+        backgroundColor: const Color(0xFFD9D7B6),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFE8E4D9),
+          backgroundColor: const Color(0xFFD9D7B6),
           elevation: 0,
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -81,9 +81,9 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
 
     if (_goal == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFE8E4D9),
+        backgroundColor: const Color(0xFFD9D7B6),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFE8E4D9),
+          backgroundColor: const Color(0xFFD9D7B6),
           elevation: 0,
         ),
         body: const Center(child: Text('Không tìm thấy mục tiêu')),
@@ -100,14 +100,14 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
     final remaining = currentValue != null ? _goal!.targetValue - currentValue : _goal!.targetValue;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8E4D9),
+      backgroundColor: const Color(0xFFD9D7B6),
       body: CustomScrollView(
         slivers: [
           // App Bar with Goal Info
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            backgroundColor: const Color(0xFFE8E4D9),
+            backgroundColor: const Color(0xFFD9D7B6),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black87),
               onPressed: () => Navigator.pop(context, true),
@@ -198,7 +198,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F3ED),
+                      color: const Color(0xFFFDFBD4),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
@@ -354,27 +354,33 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AddProgressScreen(goalId: widget.goalId),
-                            ),
-                          );
-                          if (result == true) {
-                            _loadGoalDetails();
-                          }
-                        },
-                        icon: const Icon(
+                        onPressed: _goal?.status == 'in_progress'
+                            ? () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        AddProgressScreen(goalId: widget.goalId),
+                                  ),
+                                );
+                                if (result == true) {
+                                  _loadGoalDetails();
+                                }
+                              }
+                            : null,
+                        icon: Icon(
                           Icons.add,
-                          color: Color(0xFF5FCCB4),
+                          color: _goal?.status == 'in_progress'
+                              ? const Color(0xFF5FCCB4)
+                              : Colors.grey,
                           size: 20,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Thêm mới',
                           style: TextStyle(
-                            color: Color(0xFF5FCCB4),
+                            color: _goal?.status == 'in_progress'
+                                ? const Color(0xFF5FCCB4)
+                                : Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -416,8 +422,8 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF5F3ED),
-                          borderRadius: BorderRadius.circular(15),
+                          color: const Color(0xFFFDFBD4),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
@@ -515,22 +521,24 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddProgressScreen(goalId: widget.goalId),
-            ),
-          );
-          if (result == true) {
-            _loadGoalDetails();
-          }
-        },
-        backgroundColor: const Color(0xFF5FCCB4),
-        icon: const Icon(Icons.add),
-        label: const Text('Cập nhật'),
-      ),
+      floatingActionButton: _goal?.status == 'in_progress'
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddProgressScreen(goalId: widget.goalId),
+                  ),
+                );
+                if (result == true) {
+                  _loadGoalDetails();
+                }
+              },
+              backgroundColor: const Color(0xFF5FCCB4),
+              icon: const Icon(Icons.add),
+              label: const Text('Cập nhật'),
+            )
+          : null,
     );
   }
 
@@ -538,7 +546,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F3ED),
+        color: const Color(0xFFFDFBD4),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

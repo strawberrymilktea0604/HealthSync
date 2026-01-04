@@ -22,20 +22,30 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null;
 
   AuthProvider() {
-    _loadUser();
+    // Constructor no longer auto-calls _loadUser since we will call it explicitly in Splash
   }
 
   // Load user from shared preferences
-  Future<void> _loadUser() async {
+  Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString('user');
     if (userJson != null) {
       try {
         final userData = jsonDecode(userJson);
         final expiresAt = DateTime.parse(userData['expiresAt']);
+        // Check if token is still valid (add strict check)
         if (expiresAt.isAfter(DateTime.now())) {
-          _user = User.fromJson(userData);
-          notifyListeners();
+          final tempUser = User.fromJson(userData);
+          
+          // FIX: Only auto-login if profile is complete. 
+          // If profile is incomplete, we force logout so user is returned to Welcome/Login screen on restart.
+          if (tempUser.isProfileComplete || tempUser.role == 'Admin') {
+            _user = tempUser;
+            notifyListeners();
+            return true;
+          } else {
+             await logout(); // Incomplete profile -> Logout
+          }
         } else {
           await logout();
         }
@@ -43,6 +53,7 @@ class AuthProvider with ChangeNotifier {
         await logout();
       }
     }
+    return false;
   }
 
   // Save user to shared preferences

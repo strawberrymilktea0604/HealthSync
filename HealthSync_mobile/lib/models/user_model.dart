@@ -22,6 +22,14 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    String? avatar = json['avatarUrl'] ?? json['AvatarUrl'];
+    // FIX: Android Emulator cannot access localhost directly. 
+    // If running on Android and URL contains localhost, replace with 10.0.2.2
+    // Since we don't have dart:io here, we'll do a string replacement that catches common localhost variants.
+    if (avatar != null && avatar.contains('localhost')) {
+        avatar = avatar.replaceFirst('localhost', '10.0.2.2');
+    }
+    
     return User(
       userId: json['userId'] ?? json['UserId'],
       email: json['email'] ?? json['Email'],
@@ -31,7 +39,7 @@ class User {
       expiresAt: DateTime.parse(json['expiresAt'] ?? json['ExpiresAt']),
       requiresPassword: json['requiresPassword'] ?? json['RequiresPassword'] ?? false,
       isProfileComplete: json['isProfileComplete'] ?? json['IsProfileComplete'] ?? false,
-      avatarUrl: json['avatarUrl'] ?? json['AvatarUrl'],
+      avatarUrl: avatar,
     );
   }
 

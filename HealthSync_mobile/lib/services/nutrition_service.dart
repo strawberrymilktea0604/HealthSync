@@ -9,6 +9,7 @@ class FoodItem {
   final double proteinG;
   final double carbsG;
   final double fatG;
+  final String? imageUrl;
 
   FoodItem({
     required this.foodItemId,
@@ -19,9 +20,16 @@ class FoodItem {
     required this.proteinG,
     required this.carbsG,
     required this.fatG,
+    this.imageUrl,
   });
 
   factory FoodItem.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['imageUrl'];
+    // Transform localhost to 10.0.2.2 for Android emulator
+    if (imageUrl != null && imageUrl.contains('localhost')) {
+      imageUrl = imageUrl.replaceAll('localhost', '10.0.2.2');
+    }
+    
     return FoodItem(
       foodItemId: json['foodItemId'],
       name: json['name'],
@@ -31,6 +39,7 @@ class FoodItem {
       proteinG: (json['proteinG'] as num).toDouble(),
       carbsG: (json['carbsG'] as num).toDouble(),
       fatG: (json['fatG'] as num).toDouble(),
+      imageUrl: imageUrl,
     );
   }
 }
@@ -45,6 +54,7 @@ class FoodEntry {
   final double proteinG;
   final double carbsG;
   final double fatG;
+  final String? imageUrl;
 
   FoodEntry({
     required this.foodEntryId,
@@ -56,9 +66,16 @@ class FoodEntry {
     required this.proteinG,
     required this.carbsG,
     required this.fatG,
+    this.imageUrl,
   });
 
   factory FoodEntry.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['imageUrl'];
+    // Transform localhost to 10.0.2.2 for Android emulator
+    if (imageUrl != null && imageUrl.contains('localhost')) {
+      imageUrl = imageUrl.replaceAll('localhost', '10.0.2.2');
+    }
+    
     return FoodEntry(
       foodEntryId: json['foodEntryId'],
       foodItemId: json['foodItemId'],
@@ -69,6 +86,7 @@ class FoodEntry {
       proteinG: (json['proteinG'] as num).toDouble(),
       carbsG: (json['carbsG'] as num).toDouble(),
       fatG: (json['fatG'] as num).toDouble(),
+      imageUrl: imageUrl,
     );
   }
 }
@@ -160,6 +178,39 @@ class NutritionService {
       await _apiService.delete('/nutrition/food-entry/$foodEntryId');
     } catch (e) {
       // print('Error deleting food entry: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<NutritionLog>> getNutritionLogs({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (startDate != null) {
+        queryParams['startDate'] = startDate.toIso8601String();
+      }
+      if (endDate != null) {
+        queryParams['endDate'] = endDate.toIso8601String();
+      }
+      
+      final response = await _apiService.get(
+        '/nutrition/nutrition-logs',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      
+      if (response == null) {
+        return [];
+      }
+      
+      if (response is! List) {
+        return [];
+      }
+      
+      final logs = (response as List).map((e) => NutritionLog.fromJson(e)).toList();
+      return logs;
+    } catch (e) {
       rethrow;
     }
   }
