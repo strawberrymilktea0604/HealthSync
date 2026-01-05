@@ -26,31 +26,8 @@ public class AvatarStorageServiceTests
             .ReturnsAsync(true); // Default to existing bucket to skip creation logic in ctor
     }
 
-    [Fact]
-    public void Constructor_ShouldCheckBucketExistence()
-    {
-        // Act
-        var service = new AvatarStorageService(_minioClientMock.Object, _configurationMock.Object);
+    // Constructor tests removed as bucket check logic was moved to UploadAvatarAsync
 
-        // Assert
-        _minioClientMock.Verify(m => m.BucketExistsAsync(It.IsAny<BucketExistsArgs>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public void Constructor_ShouldCreateBucketAndPolicy_WhenBucketDoesNotExist()
-    {
-        // Arrange
-        _minioClientMock
-            .Setup(m => m.BucketExistsAsync(It.IsAny<BucketExistsArgs>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false); // Does not exist
-
-        // Act
-        var service = new AvatarStorageService(_minioClientMock.Object, _configurationMock.Object);
-
-        // Assert
-        _minioClientMock.Verify(m => m.MakeBucketAsync(It.IsAny<MakeBucketArgs>(), It.IsAny<CancellationToken>()), Times.Once);
-        _minioClientMock.Verify(m => m.SetPolicyAsync(It.IsAny<SetPolicyArgs>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
 
     [Fact]
     public async Task UploadAvatarAsync_ShouldUploadAndReturnUrl()

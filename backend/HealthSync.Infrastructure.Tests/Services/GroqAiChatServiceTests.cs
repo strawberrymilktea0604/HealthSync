@@ -12,6 +12,7 @@ public class GroqAiChatServiceTests
         // Arrange
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns((string?)null);
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
         
         // Clear environment variable if set
         var originalEnvVar = Environment.GetEnvironmentVariable("GROQ_API_KEY");
@@ -33,12 +34,28 @@ public class GroqAiChatServiceTests
     }
 
     [Fact]
+    public void Constructor_WithMissingBaseUrl_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-key");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns((string?)null);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var service = new GroqAiChatService(configurationMock.Object);
+        });
+    }
+
+    [Fact]
     public void Constructor_WithApiKeyInConfiguration_CreatesInstance()
     {
         // Arrange
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key-12345");
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         // Act
         var service = new GroqAiChatService(configurationMock.Object);
@@ -54,6 +71,7 @@ public class GroqAiChatServiceTests
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns((string?)null);
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         var originalEnvVar = Environment.GetEnvironmentVariable("GROQ_API_KEY");
         Environment.SetEnvironmentVariable("GROQ_API_KEY", "env-api-key-67890");
@@ -80,6 +98,7 @@ public class GroqAiChatServiceTests
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns((string?)null);
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         // Act
         var service = new GroqAiChatService(configurationMock.Object);
@@ -95,6 +114,7 @@ public class GroqAiChatServiceTests
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("invalid-key");
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         var service = new GroqAiChatService(configurationMock.Object);
 
@@ -112,6 +132,7 @@ public class GroqAiChatServiceTests
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         var service = new GroqAiChatService(configurationMock.Object);
 
@@ -129,6 +150,7 @@ public class GroqAiChatServiceTests
         var configurationMock = new Mock<IConfiguration>();
         configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
         configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
         var service = new GroqAiChatService(configurationMock.Object);
         var cts = new CancellationTokenSource();
@@ -140,4 +162,244 @@ public class GroqAiChatServiceTests
             await service.GetHealthAdviceAsync("Context", "Question", cts.Token);
         });
     }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithValidContextWithProfile_ParsesCorrectly()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Male"",
+                ""age"": 25,
+                ""heightCm"": 175.5,
+                ""currentWeightKg"": 70.0,
+                ""bmi"": 22.8,
+                ""bmiStatus"": ""Bình thường"",
+                ""bmr"": 1700,
+                ""activityLevel"": ""Moderate""
+            },
+            ""goal"": {
+                ""type"": ""Weight Loss"",
+                ""targetWeightKg"": 65.0,
+                ""deadline"": ""2024-12-31""
+            },
+            ""recentActivityLogs"": ""- [01/01 10:00] Logged workout\n- [01/02 11:00] Logged nutrition""
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithMissingProfile_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""goal"": {
+                ""type"": ""Weight Loss""
+            }
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithMissingGoal_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Female"",
+                ""age"": 30
+            }
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithNullGoal_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Female"",
+                ""age"": 30
+            },
+            ""goal"": null
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithMissingActivityLogs_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Male"",
+                ""age"": 25
+            }
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithEmptyJson_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = "{}";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithIncompleteProfile_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Male""
+            }
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithActivityLogsNotString_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""recentActivityLogs"": 12345
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithCompleteGoalData_ParsesCorrectly()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Male"",
+                ""age"": 25,
+                ""heightCm"": 175,
+                ""currentWeightKg"": 70,
+                ""bmi"": 22.8,
+                ""bmiStatus"": ""Normal"",
+                ""bmr"": 1700,
+                ""activityLevel"": ""Moderate""
+            },
+            ""goal"": {
+                ""type"": ""Weight Loss"",
+                ""targetWeightKg"": 65,
+                ""deadline"": ""2024-12-31""
+            }
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
 }
+

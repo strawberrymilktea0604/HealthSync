@@ -1,24 +1,25 @@
 Summary
-  Generated on: 1/2/2026 - 6:05:14 PM
+  Generated on: 1/6/2026 - 3:43:57 AM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
-  Classes: 105
-  Files: 103
-  Line coverage: 99.8%
-  Covered lines: 1561
-  Uncovered lines: 2
-  Coverable lines: 1563
-  Total lines: 8398
-  Branch coverage: 81.6% (320 of 392)
-  Covered branches: 320
-  Total branches: 392
-  Method coverage: 99.4% (172 of 173)
-  Full method coverage: 98.8% (171 of 173)
-  Covered methods: 172
-  Fully covered methods: 171
-  Total methods: 173
+  Classes: 108
+  Files: 106
+  Line coverage: 99.7%
+  Covered lines: 1695
+  Uncovered lines: 4
+  Coverable lines: 1699
+  Total lines: 8973
+  Branch coverage: 80.9% (408 of 504)
+  Covered branches: 408
+  Total branches: 504
+  Method coverage: 99.4% (191 of 192)
+  Full method coverage: 98.4% (189 of 192)
+  Covered methods: 191
+  Fully covered methods: 189
+  Total methods: 192
 
-HealthSync.Application                                                      100%
+HealthSync.Application                                                     99.5%
+  HealthSync.Application.Common.Behaviors.AuditLogBehavior<T1, T2>         95.3%
   HealthSync.Application.Extensions.ApplicationUserExtensions               100%
   HealthSync.Application.Handlers.AddProgressCommandHandler                 100%
   HealthSync.Application.Handlers.AssignRoleToUserCommandHandler            100%
@@ -93,6 +94,7 @@ HealthSync.Domain                                                           100%
   HealthSync.Domain.Entities.Permission                                     100%
   HealthSync.Domain.Entities.Role                                           100%
   HealthSync.Domain.Entities.RolePermission                                 100%
+  HealthSync.Domain.Entities.UserActionLog                                  100%
   HealthSync.Domain.Entities.UserProfile                                    100%
   HealthSync.Domain.Entities.UserRole                                       100%
   HealthSync.Domain.Entities.WorkoutLog                                     100%
@@ -110,9 +112,10 @@ HealthSync.Infrastructure                                                  99.8%
   HealthSync.Infrastructure.ServiceCollectionExtensions                     100%
   HealthSync.Infrastructure.Services.AuthService                            100%
   HealthSync.Infrastructure.Services.AvatarStorageService                   100%
+  HealthSync.Infrastructure.Services.CurrentUserService                     100%
   HealthSync.Infrastructure.Services.EmailService                           100%
-  HealthSync.Infrastructure.Services.GeminiAiChatService                    100%
   HealthSync.Infrastructure.Services.GoogleAuthService                      100%
+  HealthSync.Infrastructure.Services.GroqAiChatService                      100%
   HealthSync.Infrastructure.Services.JwtTokenService                        100%
   HealthSync.Infrastructure.Services.MinioStorageService                    100%
 

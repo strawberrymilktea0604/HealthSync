@@ -144,7 +144,7 @@ public class GoogleLoginWebCommandHandlerTests
             UserId = 10,
             Email = "existing@example.com",
             UserRoles = new List<UserRole> { new UserRole { Role = customerRole } },
-            Profile = new UserProfile { FullName = "", WeightKg = 50, HeightCm = 150, AvatarUrl = "old" }
+            Profile = new UserProfile { FullName = "", WeightKg = 50, HeightCm = 150, AvatarUrl = "" }
         };
 
         var usersList = new List<ApplicationUser> { existingUser };

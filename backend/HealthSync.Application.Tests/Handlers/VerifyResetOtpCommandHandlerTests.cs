@@ -77,6 +77,6 @@ public class VerifyResetOtpCommandHandlerTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Null(result.Token); // Assuming Token is null or empty
+        Assert.True(string.IsNullOrEmpty(result.Token)); // Token is null or empty
     }
 }

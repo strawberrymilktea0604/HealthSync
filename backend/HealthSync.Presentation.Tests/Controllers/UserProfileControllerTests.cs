@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
+using System.Security.Claims;
 using Xunit;
+using MockQueryable.Moq;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthSync.Presentation.Tests.Controllers;
 
@@ -60,6 +63,9 @@ public class UserProfileControllerTests
 
         _profileRepositoryMock.Setup(r => r.GetByUserIdAsync(1))
             .ReturnsAsync(profile);
+
+        var appUser = new ApplicationUser { UserId = 1, AvatarUrl = "https://example.com/avatar.jpg" };
+        _dbContextMock.Setup(c => c.ApplicationUsers).Returns(new List<ApplicationUser> { appUser }.AsQueryable().BuildMockDbSet().Object);
 
         // Act
         var result = await _controller.GetProfile();

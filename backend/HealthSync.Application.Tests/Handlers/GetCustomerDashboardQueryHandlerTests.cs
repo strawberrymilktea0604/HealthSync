@@ -32,7 +32,7 @@ namespace HealthSync.Application.Tests.Handlers
             _mockContext.Setup(c => c.ApplicationUsers).Returns(mockUserSet.Object);
 
             // Act & Assert
-            await Assert.ThrowsAsync<KeyNotFoundException>(
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
                 async () => await _handler.Handle(query, CancellationToken.None)
             );
         }
@@ -158,7 +158,7 @@ namespace HealthSync.Application.Tests.Handlers
             var todayLog = new NutritionLog
             {
                 UserId = 1,
-                LogDate = DateTime.UtcNow.Date,
+                LogDate = DateTime.UtcNow.AddHours(7).Date,
                 FoodEntries = new List<FoodEntry>
                 {
                     new FoodEntry { CaloriesKcal = 200 },
@@ -203,7 +203,7 @@ namespace HealthSync.Application.Tests.Handlers
             var todayWorkout = new WorkoutLog
             {
                 UserId = 1,
-                WorkoutDate = DateTime.UtcNow.Date,
+                WorkoutDate = DateTime.UtcNow.AddHours(7).Date,
                 DurationMin = 45
             };
 

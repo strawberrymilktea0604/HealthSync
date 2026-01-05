@@ -255,6 +255,19 @@ public class PermissionPolicyProviderTests
         Assert.Contains(PermissionCodes.GOAL_DELETE, requirements);
         Assert.Equal(3, requirements.Count);
     }
+
+    [Fact]
+    public async Task GetPolicyAsync_WithUnknownPermissionCode_ReturnsNull()
+    {
+        // Arrange
+        var unknownPermissionCode = "UNKNOWN_PERMISSION_CODE";
+
+        // Act
+        var policy = await _provider.GetPolicyAsync(unknownPermissionCode);
+
+        // Assert
+        Assert.Null(policy);
+    }
 }
 
 

@@ -45,7 +45,7 @@ public class ResetPasswordCommandHandlerTests
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
+            new Claim("sub", "1"),
             new Claim("type", "reset"),
             new Claim(ClaimTypes.Email, "user@test.com")
         };
@@ -91,7 +91,7 @@ public class ResetPasswordCommandHandlerTests
         // Arrange
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
+            new Claim("sub", "1"),
             new Claim("type", "access"), // Wrong type
             new Claim(ClaimTypes.Email, "user@test.com")
         };
@@ -121,7 +121,7 @@ public class ResetPasswordCommandHandlerTests
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "999"),
+            new Claim("sub", "999"),
             new Claim("type", "reset"),
             new Claim(ClaimTypes.Email, "notfound@test.com")
         };
@@ -147,7 +147,7 @@ public class ResetPasswordCommandHandlerTests
         // Arrange
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "not-a-number"),
+            new Claim("sub", "not-a-number"),
             new Claim("type", "reset")
         };
         var identity = new ClaimsIdentity(claims);
@@ -182,7 +182,7 @@ public class ResetPasswordCommandHandlerTests
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
+            new Claim("sub", "1"),
             new Claim("type", "reset")
         };
         var identity = new ClaimsIdentity(claims);

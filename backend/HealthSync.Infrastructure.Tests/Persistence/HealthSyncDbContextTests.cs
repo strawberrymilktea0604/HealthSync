@@ -106,44 +106,13 @@ public class HealthSyncDbContextTests
         // Act - The context is created, OnModelCreating is called automatically
 
         // Assert - Verify seed data is present
-        Assert.NotEmpty(context.FoodItems);
-        Assert.NotEmpty(context.Exercises);
         Assert.NotEmpty(context.Roles);
         Assert.NotEmpty(context.Permissions);
+
     }
 
-    [Fact]
-    public void OnModelCreating_SeedsFoodItems()
-    {
-        // Arrange
-        using var context = CreateAndSeedContext();
+    // OnModelCreating_SeedsFoodItems and OnModelCreating_SeedsExercises removed as seeding is now done in DataSeeder
 
-        // Act
-        var foodItems = context.FoodItems.ToList();
-
-        // Assert
-        Assert.Equal(10, foodItems.Count);
-        Assert.Contains(foodItems, f => f.Name == "Chicken Breast");
-        Assert.Contains(foodItems, f => f.Name == "Brown Rice");
-        Assert.Contains(foodItems, f => f.Name == "Banana");
-    }
-
-    [Fact]
-    public void OnModelCreating_SeedsExercises()
-    {
-        // Arrange
-        using var context = CreateAndSeedContext();
-
-        // Act
-        var exercises = context.Exercises.ToList();
-
-        // Assert
-        Assert.Equal(15, exercises.Count);
-        Assert.Contains(exercises, e => e.Name == "Push-ups");
-        Assert.Contains(exercises, e => e.Name == "Bench Press");
-        Assert.Contains(exercises, e => e.Name == "Pull-ups");
-        Assert.Contains(exercises, e => e.Name == "Squats");
-    }
 
     [Fact]
     public void OnModelCreating_SeedsRoles()
@@ -256,6 +225,21 @@ public class HealthSyncDbContextTests
         var savedUser = context.ApplicationUsers.Include(u => u.Profile).First();
         Assert.NotNull(savedUser.Profile);
         Assert.Equal("Test User", savedUser.Profile.FullName);
+    }
+
+    [Fact]
+    public async Task IApplicationDbContext_CanConnectAsync_ReturnsTrue()
+    {
+        // Arrange
+        var options = CreateNewContextOptions();
+        using var context = new HealthSyncDbContext(options);
+        var iContext = context as HealthSync.Domain.Interfaces.IApplicationDbContext;
+        
+        // Act
+        var canConnect = await iContext.CanConnectAsync(CancellationToken.None);
+
+        // Assert
+        Assert.True(canConnect);
     }
 }
 
