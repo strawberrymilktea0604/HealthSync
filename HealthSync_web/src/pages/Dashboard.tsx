@@ -319,14 +319,42 @@ export default function Dashboard() {
     ? activeGoals.find((g: GoalSummary) => g.goalId === selectedGoalId)
     : null;
 
+  // Helper: Get consolidated goal data from selectedGoalDetails or goalProgress
+  const getGoalData = () => {
+    const source = selectedGoalDetails || goalProgress;
+    if (!source) return null;
+    return {
+      goalType: source.goalType || '',
+      targetValue: source.targetValue || 0,
+      startValue: source.startValue || 0,
+      progressAmount: source.progressAmount || 0,
+      remaining: source.remaining || 0,
+    };
+  };
+
+  // Helper: Check if goal is a decrease goal (weight loss, fat loss, etc.)
+  const isDecreaseGoal = (goalData: ReturnType<typeof getGoalData>) => {
+    if (!goalData) return false;
+    const type = goalData.goalType.toLowerCase();
+    return type.includes('loss') || type.includes('giảm') || goalData.targetValue < goalData.startValue;
+  };
+
+  // Helper: Get direction text (Giảm/Tăng or Đã giảm/Đã tăng)
+  const getGoalDirection = (goalData: ReturnType<typeof getGoalData>, prefix: boolean = false) => {
+    const isDecrease = isDecreaseGoal(goalData);
+    if (prefix) return isDecrease ? 'Đã giảm' : 'Đã tăng';
+    return isDecrease ? 'Giảm' : 'Tăng';
+  };
+
+  // Helper: Calculate total weight change
+  const getTotalChange = (goalData: ReturnType<typeof getGoalData>) => {
+    if (!goalData) return 0;
+    return Math.abs(goalData.startValue - goalData.targetValue);
+  };
+
   // Hàm tính toán chi tiết progress cho goal được chọn
   const calculateGoalProgress = (goalSummary: GoalSummary) => {
     if (!goalSummary) return null;
-
-    // Lấy goal details từ activeGoals để tính toán
-    const isDecreaseGoal = goalSummary.type.toLowerCase().includes('loss') ||
-      goalSummary.type.toLowerCase().includes('giảm') ||
-      goalSummary.targetValue < (goalSummary as any).startValue;
 
     // Nếu đã có cached details, dùng luôn
     if (selectedGoalDetails && selectedGoalDetails.goalId === goalSummary.goalId) {
@@ -334,18 +362,19 @@ export default function Dashboard() {
     }
 
     // Giả sử progress là % đã hoàn thành, tính ngược lại các giá trị
-    // Đây là workaround vì API không trả về đầy đủ thông tin
     return {
       goalType: goalSummary.type,
       targetValue: goalSummary.targetValue,
       progress: goalSummary.progress,
-      // Những giá trị này cần load từ API riêng hoặc cache
       startValue: 0,
       currentValue: 0,
       progressAmount: 0,
       remaining: 0
     };
   };
+
+  // Pre-calculate goal data for render
+  const currentGoalData = getGoalData();
 
   return (
     <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
@@ -437,14 +466,10 @@ export default function Dashboard() {
               <div className="flex-1 flex flex-col items-center justify-center">
                 <div className="text-center">
                   <p className="text-5xl font-black mb-1 text-[#2d2d2d] leading-none tracking-tighter">
-                    {(selectedGoalDetails || goalProgress) ? (
-                      (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') ||
-                        (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
-                        ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? 'Giảm' : 'Tăng'
-                    ) : '---'}
+                    {currentGoalData ? getGoalDirection(currentGoalData) : '---'}
                   </p>
                   <p className="text-4xl font-extrabold text-[#2d2d2d]/90 tracking-tight">
-                    {(selectedGoalDetails || goalProgress) ? `${Math.abs((selectedGoalDetails?.startValue || goalProgress?.startValue || 0) - (selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0)).toFixed(1)}kg` : ''}
+                    {currentGoalData ? `${getTotalChange(currentGoalData).toFixed(1)}kg` : ''}
                   </p>
                 </div>
               </div>
@@ -455,23 +480,19 @@ export default function Dashboard() {
             <div className="bg-[#D9D7B6]/80 rounded-[2rem] p-6 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
               <p className="text-sm font-semibold opacity-60 uppercase tracking-wider text-[#3d3d3d]">Tiến độ hiện tại</p>
               <div className="flex-1 flex flex-col items-center justify-center">
-                {(selectedGoalDetails || goalProgress) ? (
+                {currentGoalData ? (
                   <div className="text-center">
                     <p className="text-2xl font-semibold mb-3 text-[#2d2d2d]">
-                      {(selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') ||
-                        (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
-                        ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? 'Đã giảm' : 'Đã tăng'} <span className="font-black text-4xl block mt-1">{(selectedGoalDetails?.progressAmount || goalProgress?.progressAmount || 0).toFixed(1)}<span className="text-2xl font-bold text-[#2d2d2d]/60">kg</span></span>
+                      {getGoalDirection(currentGoalData, true)} <span className="font-black text-4xl block mt-1">{currentGoalData.progressAmount.toFixed(1)}<span className="text-2xl font-bold text-[#2d2d2d]/60">kg</span></span>
                     </p>
                     <div className="inline-flex items-center gap-2 bg-black/5 px-3 py-1 rounded-full">
-                      {(selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('loss') ||
-                        (selectedGoalDetails?.goalType || goalProgress?.goalType || '').toLowerCase().includes('giảm') ||
-                        ((selectedGoalDetails?.targetValue || goalProgress?.targetValue || 0) < (selectedGoalDetails?.startValue || goalProgress?.startValue || 0)) ? (
+                      {isDecreaseGoal(currentGoalData) ? (
                         <TrendingDown className="w-4 h-4 text-[#4A6F6F]" />
                       ) : (
                         <TrendingUp className="w-4 h-4 text-[#4A6F6F]" />
                       )}
                       <p className="text-sm font-medium text-[#2d2d2d]">
-                        Còn <span className="font-bold">{Math.abs((selectedGoalDetails?.remaining || goalProgress?.remaining || 0)).toFixed(1)}kg</span>
+                        Còn <span className="font-bold">{Math.abs(currentGoalData.remaining).toFixed(1)}kg</span>
                       </p>
                     </div>
                   </div>

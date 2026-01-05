@@ -456,8 +456,10 @@ public class DataSeeder
 
         foreach (var user in users)
         {
-            bool hasUpdates = ProcessWorkoutLogs(user, random, exerciseIds) 
-                            | ProcessNutritionLogs(user, random, foodItems);
+            // Evaluate both methods separately to ensure both are always called
+            bool workoutUpdated = ProcessWorkoutLogs(user, random, exerciseIds);
+            bool nutritionUpdated = ProcessNutritionLogs(user, random, foodItems);
+            bool hasUpdates = workoutUpdated || nutritionUpdated;
 
             if (hasUpdates)
             {
