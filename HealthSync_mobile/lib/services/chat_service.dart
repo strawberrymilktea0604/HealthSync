@@ -3,13 +3,21 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/chat_message.dart';
 import 'network_service.dart';
+import '../helpers/navigation_helper.dart';
 
 class ChatService {
   static const String baseUrl = 'http://10.0.2.2:8080/api';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    final userJson = prefs.getString('user');
+    if (userJson == null) return null;
+    try {
+      final userData = jsonDecode(userJson);
+      return userData['token'];
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<ChatResponse> sendMessage(String question) async {
@@ -25,7 +33,7 @@ class ChatService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/api/Chat/ask'),
+        Uri.parse('$baseUrl/Chat/ask'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -35,8 +43,9 @@ class ChatService {
 
       if (response.statusCode == 200) {
         return ChatResponse.fromJson(jsonDecode(response.body));
-      } else if (response.statusCode == 401) {
-        throw Exception('Phiên đăng nhập đã hết hạn');
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await handleAuthError();
+        throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
       } else {
         throw Exception('Không thể kết nối với AI. Vui lòng thử lại.');
       }
@@ -63,7 +72,7 @@ class ChatService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/api/Chat/history?pageSize=$pageSize&pageNumber=$pageNumber'),
+        Uri.parse('$baseUrl/Chat/history?pageSize=$pageSize&pageNumber=$pageNumber'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -72,6 +81,9 @@ class ChatService {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => ChatMessage.fromJson(json)).toList();
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await handleAuthError();
+        throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
       } else {
         throw Exception('Không thể tải lịch sử chat');
       }

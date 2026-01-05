@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout_model.dart';
 import 'network_service.dart';
+import '../helpers/navigation_helper.dart';
 
 class WorkoutService {
   static const String baseUrl = 'http://10.0.2.2:8080/api';
@@ -52,6 +53,9 @@ class WorkoutService {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Exercise.fromJson(json)).toList();
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await handleAuthError();
+        throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
       } else {
         throw Exception('Không thể tải danh sách bài tập: ${response.statusCode} - ${response.body}');
       }
@@ -90,6 +94,9 @@ class WorkoutService {
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => WorkoutLog.fromJson(json)).toList();
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
       throw Exception('Không thể tải lịch sử luyện tập: ${response.statusCode} - ${response.body}');
     }
@@ -106,6 +113,9 @@ class WorkoutService {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       return data['workoutLogId'];
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
       throw Exception('Không thể lưu nhật ký luyện tập');
     }
@@ -120,10 +130,11 @@ class WorkoutService {
 
     if (response.statusCode == 204) {
       return true;
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else if (response.statusCode == 404) {
       throw Exception('Không tìm thấy nhật ký luyện tập');
-    } else if (response.statusCode == 403) {
-      throw Exception('Bạn không có quyền xóa nhật ký này');
     } else {
       throw Exception('Không thể xóa nhật ký luyện tập');
     }

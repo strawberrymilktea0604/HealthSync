@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/chat_message.dart';
 import '../services/chat_service.dart';
+import 'chat_history_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -21,6 +23,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    // Default to empty new chat or load recent history?
+    // User requested "New Chat Button", implying default might be history or we need ability to clear.
+    // For better UX, we load history so they don't lose context, but provide "New Chat" to clear.
     _loadChatHistory();
   }
 
@@ -36,11 +41,18 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể tải lịch sử: ${e.toString()}')),
-        );
+        // Silently fail or show snackbar?
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Không thể tải lịch sử: ${e.toString()}')),
+        // );
       }
     }
+  }
+
+  void _startNewChat() {
+    setState(() {
+      _messages.clear();
+    });
   }
 
   Future<void> _sendMessage() async {
@@ -105,23 +117,58 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D7B6),
+      backgroundColor: const Color(0xFFEBE8D0), // Adjusted slightly to match image warmth
       appBar: AppBar(
-        title: const Text(
-          'HealthBot 💪',
-          style: TextStyle(
-            fontFamily: 'Estedad-VF',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
+        title: Row(
+          children: [
+            const CircleAvatar(
+              backgroundImage: AssetImage('assets/images/logo.png'), // Or robot icon
+              radius: 18,
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Healthbot',
+                  style: TextStyle(
+                    fontFamily: 'Estedad-VF',
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  'Always active',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         backgroundColor: const Color(0xFFFDFBD4),
-        elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.25),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadChatHistory,
+            icon: const Icon(Icons.add, color: Colors.black),
+            tooltip: 'Đoạn chat mới',
+            onPressed: _startNewChat,
+          ),
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.black),
+            tooltip: 'Lịch sử chat',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChatHistoryScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -137,16 +184,17 @@ class _ChatScreenState extends State<ChatScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.chat_bubble_outline,
+                              Icons.smart_toy_outlined,
                               size: 80,
-                              color: Colors.grey[300],
+                              color: Colors.grey.withOpacity(0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Bắt đầu cuộc trò chuyện',
+                              'Hỏi tôi về sức khỏe của bạn!',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.grey[600],
+                                fontFamily: 'Estedad-VF',
                               ),
                             ),
                           ],
@@ -154,7 +202,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final message = _messages[index];
@@ -165,30 +213,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // Loading indicator
           if (_isSending)
-            Container(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  const SizedBox(width: 16),
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.grey[400]!,
-                      ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4C5A9),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: SizedBox(
+                    width: 40,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'AI đang suy nghĩ...',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
 
@@ -199,59 +268,63 @@ class _ChatScreenState extends State<ChatScreen> {
               color: const Color(0xFFFDFBD4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  blurRadius: 11.4,
-                  offset: const Offset(0, -13),
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
                 ),
               ],
             ),
             child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.25),
-                            blurRadius: 5.6,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
                       child: TextField(
                         controller: _messageController,
                         decoration: const InputDecoration(
                           hintText: 'Type a Message',
                           hintStyle: TextStyle(
                             fontFamily: 'ABeeZee',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFFB6B7B8),
-                            letterSpacing: 0.0073,
+                            fontSize: 16,
+                            color: Colors.grey,
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                            horizontal: 20,
+                            vertical: 12,
                           ),
                         ),
-                        maxLines: null,
                         textCapitalization: TextCapitalization.sentences,
                         enabled: !_isSending,
                         onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: Colors.black),
-                    onPressed: _isSending ? null : _sendMessage,
-                    iconSize: 24,
-                  ),
-                ],
+                    Container(
+                      margin: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        // gradient: LinearGradient(
+                        //   colors: [Color(0xFF8BA655), Color(0xFF6B8E23)],
+                        // ),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.send_rounded, color: Color(0xFFAA55EE)), // Purple send btn like image?
+                        onPressed: _isSending ? null : _sendMessage,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -278,57 +351,79 @@ class _ChatBubble extends StatelessWidget {
     final isUser = message.isUser;
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         mainAxisAlignment:
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            CircleAvatar(
-              backgroundColor: const Color(0xFFD4C5A9),
+            const CircleAvatar(
+              backgroundColor: Color(0xFFD4C5A9),
+              backgroundImage: AssetImage('assets/images/logo.png'), // Or robot icon
               radius: 16,
-              child: const Text('🤖', style: TextStyle(fontSize: 16)),
+              child: Icon(Icons.smart_toy, size: 20, color: Colors.white),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18.85, vertical: 18.64),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isUser
-                    ? const Color(0xFFAA55EE)
-                    : const Color(0xFFCCC997),
+                    ? const Color(0xFFAA55EE) // Purple for user
+                    : const Color(0xFFD4C5A9), // Beige/Greenish for bot
                 borderRadius: BorderRadius.only(
-                  topLeft: isUser ? const Radius.circular(24) : Radius.zero,
-                  topRight: isUser ? const Radius.circular(24) : const Radius.circular(24),
-                  bottomLeft: const Radius.circular(24),
-                  bottomRight: isUser ? Radius.zero : const Radius.circular(24),
+                  topLeft: isUser ? const Radius.circular(20) : Radius.zero,
+                  topRight: isUser ? const Radius.circular(20) : const Radius.circular(20),
+                  bottomLeft: const Radius.circular(20),
+                  bottomRight: isUser ? Radius.zero : const Radius.circular(20),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.content,
-                    style: TextStyle(
-                      fontFamily: 'ABeeZee',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: isUser ? Colors.white : const Color(0xFF77838F),
-                      letterSpacing: 0.0714,
-                      height: 1.714,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatTime(message.createdAt),
-                    style: TextStyle(
-                      fontFamily: 'ABeeZee',
-                      fontSize: 10,
-                      color: isUser
-                          ? Colors.white.withValues(alpha: 0.7)
-                          : Colors.black54,
+                  MarkdownBody(
+                    data: message.content,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(
+                        fontFamily: 'ABeeZee',
+                        fontSize: 15,
+                        height: 1.4,
+                        color: isUser ? Colors.white : Colors.black87,
+                      ),
+                      code: TextStyle(
+                        backgroundColor: isUser ? Colors.white24 : Colors.black12,
+                        fontFamily: 'monospace',
+                        color: isUser ? Colors.white : Colors.black87,
+                      ),
+                      codeblockDecoration: BoxDecoration(
+                        color: isUser ? Colors.white24 : Colors.black12,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      // Compact Table Styles
+                      tableHead: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11, // Smaller font for headers
+                        color: isUser ? Colors.white : Colors.black87,
+                      ),
+                      tableBody: TextStyle(
+                        fontSize: 11, // Smaller font for body
+                        color: isUser ? Colors.white : Colors.black87,
+                      ),
+                      tableCellsPadding: const EdgeInsets.all(4), // Reduced padding
+                      tableBorder: TableBorder.all(
+                        color: isUser ? Colors.white54 : Colors.black26, 
+                        width: 0.5
+                      ),
                     ),
                   ),
                 ],
@@ -337,18 +432,15 @@ class _ChatBubble extends StatelessWidget {
           ),
           if (isUser) ...[
             const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Colors.blue,
+            const CircleAvatar(
+              backgroundColor: Colors.transparent, // Or profile image
               radius: 16,
-              child: const Icon(Icons.person, size: 18, color: Colors.white),
+              child: Icon(Icons.person_outline, size: 24, color: Colors.black54),
             ),
           ],
         ],
       ),
     );
   }
-
-  String _formatTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
 }
+

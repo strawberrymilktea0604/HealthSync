@@ -5,6 +5,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import 'network_service.dart';
+import '../helpers/navigation_helper.dart';
 
 class ApiService {
   // Sử dụng 10.0.2.2 cho Android emulator để trỏ đến localhost của máy host
@@ -199,6 +200,9 @@ class ApiService {
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
        if (response.body.isNotEmpty) {
         try {
@@ -244,6 +248,11 @@ class ApiService {
         'activityLevel': activityLevel,
       }),
     );
+
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
+    }
 
     if (response.statusCode != 200) {
       if (response.body.isNotEmpty) {
@@ -301,6 +310,9 @@ class ApiService {
         avatarUrl = avatarUrl.replaceFirst('localhost', '10.0.2.2');
       }
       return avatarUrl;
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
       if (response.body.isNotEmpty) {
         try {
@@ -386,6 +398,9 @@ class ApiService {
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Session expired');
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Request failed');
@@ -416,6 +431,9 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return jsonDecode(response.body);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Session expired');
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Request failed');
@@ -442,6 +460,11 @@ class ApiService {
       Uri.parse('$baseUrl$endpoint'),
       headers: headers,
     );
+
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Session expired');
+    }
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       final error = jsonDecode(response.body);

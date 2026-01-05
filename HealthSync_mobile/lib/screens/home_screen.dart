@@ -7,6 +7,8 @@ import 'profile_screen.dart';
 import 'workout_history_screen.dart';
 import 'nutrition_screen.dart';
 import 'goals_screen.dart';
+import 'chat_screen.dart';
+import '../helpers/navigation_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -297,6 +299,14 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: _loadDashboard,
               child: const Text('Thử lại'),
             ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () async {
+                 // Clear nav stack and go to sign in + clear prefs
+                 await handleAuthError();
+              },
+              child: const Text('Đăng xuất', style: TextStyle(color: Colors.red)),
+            ),
           ],
         ),
       );
@@ -371,8 +381,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Icons.notifications_outlined),
-                      onPressed: () {},
+                      icon: const Icon(Icons.smart_toy_outlined),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChatScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [isSending, setIsSending] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
+  const [historyList, setHistoryList] = useState<ChatMessage[]>([]); // Separated history list for sidebar
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
@@ -162,15 +163,22 @@ export default function Dashboard() {
   // Chat functions
   useEffect(() => {
     if (showChat) {
-      // Only load chat history if user is logged in
       const userJson = localStorage.getItem('user');
       if (userJson) {
+        // Initial load for chat messages
         loadChatHistory();
       } else {
         console.warn('User not logged in - cannot load chat history');
       }
     }
   }, [showChat]);
+
+  // Load history separately regarding sidebar toggle
+  useEffect(() => {
+    if (showChatHistory) {
+      loadSidebarHistory();
+    }
+  }, [showChatHistory]);
 
   useEffect(() => {
     scrollToBottom();
@@ -180,14 +188,27 @@ export default function Dashboard() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const loadSidebarHistory = async () => {
+    try {
+      const history = await chatService.getChatHistory();
+      setHistoryList(history);
+    } catch (error: any) {
+      console.error('Error loading sidebar history:', error);
+    }
+  };
+
   const loadChatHistory = async () => {
     setLoadingChat(true);
     try {
       const history = await chatService.getChatHistory();
+      // Only set messages if we don't have messages yet (to avoid overwriting current session if needed, 
+      // but here we just load all as backend returns all)
+      // If user hit New Chat, `messages` is empty. If they reopen chat, they might expect to see history or new session.
+      // For now, let's load history into messages if it's the first open.
       setMessages(history);
+      setHistoryList(history); // Also sync history list
     } catch (error: any) {
       console.error('Error loading chat history:', error);
-      // Don't show error to user, just set empty messages
       if (error.response?.status === 401) {
         console.warn('User not authenticated for chat');
       }
@@ -222,6 +243,9 @@ export default function Dashboard() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    // Also update history list immediately
+    setHistoryList((prev) => [...prev, userMessage]);
+
     setInputMessage('');
     setIsSending(true);
 
@@ -236,6 +260,7 @@ export default function Dashboard() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+      setHistoryList((prev) => [...prev, aiMessage]); // Sync AI reply to history
     } catch (error: any) {
       console.error('Error sending message:', error);
 
@@ -253,7 +278,12 @@ export default function Dashboard() {
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
+    if (!dateString) return "";
+    // If date string doesn't specify timezone, assume UTC to fix the display issue (11h -> 18h)
+    const normalizedDateString = !dateString.endsWith("Z") && !dateString.includes("+")
+      ? dateString + "Z"
+      : dateString;
+    const date = new Date(normalizedDateString);
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -663,30 +693,37 @@ export default function Dashboard() {
                     exit={{ width: 0, opacity: 0 }}
                     className="bg-white/95 backdrop-blur-md border-r border-gray-100 flex flex-col h-full overflow-hidden z-20 shadow-lg"
                   >
-                    <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                       <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Lịch sử</span>
+                      <button onClick={loadSidebarHistory} title="Làm mới" className="p-1 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+                        <RefreshCw className="w-3 h-3" />
+                      </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                      {messages.length > 0 ? (
+                      {historyList.length > 0 ? (
                         <>
-                          <div className="p-3 bg-[#EBE9C0] rounded-xl border border-[#Dcdbb0] shadow-sm">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
-                              <span className="text-sm font-bold text-[#2d2d2d]">Hiện tại</span>
+                          <div className="mb-2 px-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">Gần đây</span>
+                          </div>
+                          {historyList.filter(m => m.role === 'user').slice().reverse().map((msg, idx) => (
+                            <div key={msg.id || idx} className="p-3 bg-gray-50 hover:bg-[#EBE9C0]/30 rounded-xl border border-gray-100 hover:border-[#Dcdbb0] shadow-sm cursor-pointer transition-colors group">
+                              <p className="text-xs text-[#2d2d2d] font-medium line-clamp-2 leading-relaxed group-hover:text-black">
+                                {msg.content}
+                              </p>
+                              <p className="text-[10px] text-gray-400 mt-1.5 text-right">{formatTime(msg.createdAt)}</p>
                             </div>
-                            <p className="text-xs text-[#2d2d2d]/70 truncate font-medium">
-                              {messages[messages.length - 1]?.content || "Đang trò chuyện..."}
-                            </p>
-                          </div>
-
-                          <div className="text-center py-8">
-                            <History className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                            <p className="text-xs font-medium text-gray-400">Không có lịch sử trước đó</p>
-                          </div>
+                          ))}
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                          <p className="text-xs font-medium">Chưa có dữ liệu</p>
+                          {loadingChat ? (
+                            <Loader2 className="w-5 h-5 animate-spin mb-2" />
+                          ) : (
+                            <>
+                              <History className="w-8 h-8 text-gray-200 mb-2" />
+                              <p className="text-xs font-medium">Trống</p>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>

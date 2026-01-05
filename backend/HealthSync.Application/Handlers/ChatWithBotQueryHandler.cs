@@ -21,6 +21,13 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
 
     public async Task<ChatResponseDto> Handle(ChatWithBotQuery request, CancellationToken cancellationToken)
     {
+        // 0. Check if user exists (to prevent FK violation or processing for deleted user)
+        var userExists = await _context.ApplicationUsers.AnyAsync(u => u.UserId == request.UserId, cancellationToken);
+        if (!userExists)
+        {
+            throw new UnauthorizedAccessException("User account no longer exists or has been deleted.");
+        }
+
         // 1. Aggregate user context data
         var userContext = await BuildUserContextAsync(request.UserId, cancellationToken);
         var contextJson = JsonSerializer.Serialize(userContext, new JsonSerializerOptions 
@@ -69,7 +76,7 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
     {
         var context = new UserContextDto();
 
-        // Get Profile
+        // 1. Get Profile
         var profile = await _context.UserProfiles
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
@@ -94,59 +101,87 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
             };
         }
 
-        // Get Active Goal
-        var goal = await _context.Goals
+        // 2. Get Goals (Active & Completed)
+        var allGoals = await _context.Goals
             .AsNoTracking()
             .Include(g => g.ProgressRecords)
-            .Where(g => g.UserId == userId && g.Status == "in_progress")
+            .Where(g => g.UserId == userId)
             .OrderByDescending(g => g.StartDate)
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 
-        if (goal != null)
+        // Find Active Goal ("in_progress" or "active")
+        var activeGoal = allGoals.FirstOrDefault(g => g.Status == "in_progress" || g.Status == "active");
+        if (activeGoal != null)
         {
-            var latestProgress = goal.ProgressRecords
+            var latestProgress = activeGoal.ProgressRecords
                 .OrderByDescending(p => p.RecordDate)
                 .FirstOrDefault();
 
             context.Goal = new GoalContextDto
             {
-                Type = goal.Type,
-                TargetWeightKg = goal.TargetValue,
-                Deadline = goal.EndDate
+                Type = activeGoal.Type,
+                TargetWeightKg = activeGoal.TargetValue,
+                Deadline = activeGoal.EndDate,
+                Status = activeGoal.Status,
+                CurrentProgress = latestProgress?.WeightKg ?? context.Profile.CurrentWeightKg // Fallback to current weight
             };
 
+            // Update profile current weight if progress is newer
             if (latestProgress != null)
             {
                 context.Profile.CurrentWeightKg = latestProgress.WeightKg;
             }
         }
 
-        // === NEW: Get Recent User Action Logs (Data Warehouse Lite) ===
+        // Get Completed Goals for motivation
+        var completedGoals = allGoals
+            .Where(g => g.Status == "completed")
+            .OrderByDescending(g => g.EndDate ?? g.StartDate)
+            .Take(5)
+            .Select(g => $"{g.Type}: {g.TargetValue}kg (Done at {g.EndDate:dd/MM/yyyy})")
+            .ToList();
+        
+        context.CompletedGoalsHistory = completedGoals;
+
+        // 3. Get Data Warehouse Logs (User Actions)
         var recentActions = await _context.UserActionLogs
             .AsNoTracking()
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.Timestamp)
-            .Take(50) // Lấy 50 action gần nhất
+            .Take(20) 
             .Select(a => new { a.Timestamp, a.ActionType, a.Description })
             .ToListAsync(cancellationToken);
 
-        // Thêm vào context để pass cho AI (format dạng text)
         if (recentActions.Any())
         {
-            var actionLogsSummary = string.Join("\n", recentActions.Select(a => 
+            context.RecentActivityLogs = string.Join("\n", recentActions.Select(a => 
                 $"- [{a.Timestamp:dd/MM HH:mm}] {a.Description}"));
-            
-            // Thêm trường mới vào UserContextDto (sẽ tạo sau)
-            context.RecentActivityLogs = actionLogsSummary;
         }
 
-        // Get Last 7 Days Logs
+        // 4. Get System Resources (Foods & Exercises) for Suggestions
+        // Limit to top 30 common items to save context
+        context.AvailableFoodsSummary = await _context.FoodItems
+            .AsNoTracking()
+            .OrderBy(f => f.FoodItemId) // Or order by popularity if available
+            .Take(40)
+            .Select(f => $"{f.Name} ({f.CaloriesKcal}kcal/{f.ServingSize}{f.ServingUnit})")
+            .ToListAsync(cancellationToken);
+
+        context.AvailableExercisesSummary = await _context.Exercises
+            .AsNoTracking()
+            .OrderBy(e => e.ExerciseId)
+            .Take(40)
+            .Select(e => $"{e.Name} ({e.MuscleGroup}) - {e.Difficulty}")
+            .ToListAsync(cancellationToken);
+
+        // 5. Get Last 7 Days Logs (Detailed)
         var sevenDaysAgo = DateTime.UtcNow.AddDays(-7).Date;
         var today = DateTime.UtcNow.Date;
 
         var nutritionLogs = await _context.NutritionLogs
             .AsNoTracking()
             .Include(n => n.FoodEntries)
+                .ThenInclude(fe => fe.FoodItem)
             .Where(n => n.UserId == userId && n.LogDate >= sevenDaysAgo && n.LogDate <= today)
             .ToListAsync(cancellationToken);
 
@@ -162,30 +197,39 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
         {
             var dailyLog = new DailyLogContextDto { Date = date };
 
-            var nutritionLog = nutritionLogs.FirstOrDefault(n => n.LogDate.Date == date);
-            if (nutritionLog != null && nutritionLog.FoodEntries.Any())
+            // Nutrition
+            var dailyNutrition = nutritionLogs.Where(n => n.LogDate.Date == date).ToList();
+            if (dailyNutrition.Any())
             {
+                var allEntries = dailyNutrition.SelectMany(n => n.FoodEntries).ToList();
                 dailyLog.Nutrition = new NutritionContextDto
                 {
-                    Calories = nutritionLog.FoodEntries.Sum(f => f.CaloriesKcal ?? 0),
-                    ProteinG = nutritionLog.FoodEntries.Sum(f => f.ProteinG ?? 0),
-                    CarbsG = nutritionLog.FoodEntries.Sum(f => f.CarbsG ?? 0),
-                    FatG = nutritionLog.FoodEntries.Sum(f => f.FatG ?? 0)
+                    Calories = allEntries.Sum(f => f.CaloriesKcal ?? 0),
+                    ProteinG = allEntries.Sum(f => f.ProteinG ?? 0),
+                    CarbsG = allEntries.Sum(f => f.CarbsG ?? 0),
+                    FatG = allEntries.Sum(f => f.FatG ?? 0),
+                    FoodItems = allEntries.Select(f => f.FoodItem?.Name ?? "Unknown").Distinct().ToList()
                 };
             }
 
-            var workoutLog = workoutLogs.FirstOrDefault(w => w.WorkoutDate.Date == date);
-            if (workoutLog != null)
+            // Workout
+            var dailyWorkout = workoutLogs.Where(w => w.WorkoutDate.Date == date).ToList();
+            if (dailyWorkout.Any())
             {
+                var allSessions = dailyWorkout.SelectMany(w => w.ExerciseSessions).ToList();
                 dailyLog.Workout = new WorkoutContextDto
                 {
                     Status = "Completed",
-                    DurationMin = workoutLog.DurationMin,
-                    Focus = workoutLog.ExerciseSessions
-                        .Select(es => es.Exercise.MuscleGroup)
+                    DurationMin = dailyWorkout.Sum(w => w.DurationMin),
+                    Focus = allSessions
+                        .Select(es => es.Exercise?.MuscleGroup ?? "General")
                         .Distinct()
                         .ToList(),
-                    Notes = workoutLog.Notes
+                    Exercises = allSessions
+                        .Select(es => es.Exercise?.Name ?? "Unknown")
+                        .Distinct()
+                        .ToList(),
+                    Notes = string.Join("; ", dailyWorkout.Where(w => !string.IsNullOrEmpty(w.Notes)).Select(w => w.Notes))
                 };
             }
             else

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/goal_model.dart';
+import '../helpers/navigation_helper.dart';
 
 class GoalService {
   static const String baseUrl = 'http://10.0.2.2:8080/api';
@@ -48,6 +49,9 @@ class GoalService {
         } else {
           return [];
         }
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await handleAuthError();
+        throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
       } else {
         throw Exception('Failed to load goals: ${response.statusCode} - ${response.body}');
       }
@@ -68,6 +72,9 @@ class GoalService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return Goal.fromJson(data);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Failed to create goal');
@@ -86,6 +93,9 @@ class GoalService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return ProgressRecord.fromJson(data['progressRecord']);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await handleAuthError();
+      throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['Error'] ?? 'Failed to add progress');

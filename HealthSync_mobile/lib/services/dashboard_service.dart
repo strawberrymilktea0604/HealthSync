@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/dashboard_model.dart';
+import '../helpers/navigation_helper.dart';
 import 'network_service.dart';
 
 class DashboardService {
@@ -43,10 +44,9 @@ class DashboardService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return CustomerDashboardDto.fromJson(data);
-      } else if (response.statusCode == 403) {
-        // Lỗi 403 - Không có quyền truy cập
-        throw Exception(
-            'Bạn không có quyền truy cập dashboard. Vui lòng đăng xuất và đăng nhập lại.');
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await handleAuthError();
+        throw Exception('Phiên đăng nhập hết hạn hoặc tài khoản bị khóa');
       } else {
         throw Exception(
             'Không thể tải dashboard: ${response.statusCode} - ${response.body}');

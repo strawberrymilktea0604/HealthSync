@@ -25,7 +25,7 @@ namespace HealthSync.Application.Handlers
 
             if (user == null)
             {
-                throw new KeyNotFoundException("User not found");
+                throw new UnauthorizedAccessException("User account no longer exists or has been deleted.");
             }
 
             // Get user info

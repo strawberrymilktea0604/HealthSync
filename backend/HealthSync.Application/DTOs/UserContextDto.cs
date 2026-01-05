@@ -8,6 +8,13 @@ public class UserContextDto
     
     // NEW: Lịch sử thao tác gần đây từ Data Warehouse
     public string? RecentActivityLogs { get; set; }
+
+    // NEW: Danh sách tài nguyên hệ thống (để gợi ý)
+    public List<string> AvailableExercisesSummary { get; set; } = new();
+    public List<string> AvailableFoodsSummary { get; set; } = new();
+    
+    // NEW: Danh sách các mục tiêu khác (ví dụ đã hoàn thành)
+    public List<string> CompletedGoalsHistory { get; set; } = new();
 }
 
 public class ProfileContextDto
@@ -27,6 +34,8 @@ public class GoalContextDto
     public string Type { get; set; } = string.Empty;
     public decimal TargetWeightKg { get; set; }
     public DateTime? Deadline { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public decimal CurrentProgress { get; set; }
 }
 
 public class DailyLogContextDto
@@ -43,6 +52,7 @@ public class NutritionContextDto
     public decimal CarbsG { get; set; }
     public decimal FatG { get; set; }
     public string? Notes { get; set; }
+    public List<string> FoodItems { get; set; } = new(); // NEW: Chi tiết món ăn
 }
 
 public class WorkoutContextDto
@@ -51,4 +61,5 @@ public class WorkoutContextDto
     public int? DurationMin { get; set; }
     public List<string> Focus { get; set; } = new();
     public string? Notes { get; set; }
+    public List<string> Exercises { get; set; } = new(); // NEW: Chi tiết bài tập
 }
