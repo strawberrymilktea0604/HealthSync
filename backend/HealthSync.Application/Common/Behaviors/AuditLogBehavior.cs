@@ -51,7 +51,7 @@ public class AuditLogBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
                     {
                         UserId = parsedUserId,
                         ActionType = requestTypeName,
-                        Description = GenerateDescription(requestTypeName, request),
+                        Description = GenerateDescription(requestTypeName),
                         MetaDataJson = SerializeMetadata(request),
                         Timestamp = DateTime.UtcNow
                     };
@@ -78,7 +78,7 @@ public class AuditLogBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
     /// <summary>
     /// Tạo mô tả dễ đọc cho từng loại action
     /// </summary>
-    private string GenerateDescription(string actionType, TRequest request)
+    private string GenerateDescription(string actionType)
     {
         // Mapping các command phổ biến sang mô tả tiếng Việt
         return actionType switch

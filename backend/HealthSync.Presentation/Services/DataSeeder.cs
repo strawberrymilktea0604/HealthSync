@@ -810,11 +810,16 @@ public class DataSeeder
         for (int attempts = 0; attempts < maxAttempts; attempts++)
         {
             var rand = random.NextDouble();
-            DateTime date = rand < 0.30 
-                ? now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24))
-                : rand < 0.70 
-                    ? now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24))
-                    : now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
+            // Refactored from nested ternary for clarity
+            double r = random.NextDouble();
+            DateTime date;
+            
+            if (r < 0.30)
+                date = now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24));
+            else if (r < 0.70)
+                date = now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24));
+            else
+                date = now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
 
             if (!existingDates.Contains(date.Date) && !createdDates.Contains(date.Date))
                 return date;

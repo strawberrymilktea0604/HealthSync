@@ -15,7 +15,7 @@ export default function VerifyPasswordReset() {
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
-    if (location.state && location.state.email) {
+    if (location.state?.email) {
       setEmail(location.state.email);
     } else {
       // If no email in state, redirect back to forgot password

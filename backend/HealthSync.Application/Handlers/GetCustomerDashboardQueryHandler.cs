@@ -150,8 +150,8 @@ namespace HealthSync.Application.Handlers
             var firstRecord = records.FirstOrDefault();
             var latestRecord = records.LastOrDefault();
             
-            decimal startVal = firstRecord?.WeightKg ?? firstRecord?.Value ?? 0;
-            decimal currentVal = latestRecord?.WeightKg ?? latestRecord?.Value ?? startVal;
+            decimal startVal = firstRecord?.WeightKg ?? 0;
+            decimal currentVal = latestRecord?.WeightKg ?? startVal;
             decimal targetVal = goal.TargetValue;
             
             decimal progressPct = CalculateProgressPercentage(startVal, currentVal, targetVal, goal.Type);
@@ -172,8 +172,8 @@ namespace HealthSync.Application.Handlers
             var firstProgress = sortedRecords.FirstOrDefault();
             var latestProgress = sortedRecords.LastOrDefault();
 
-            decimal startValue = firstProgress?.WeightKg ?? firstProgress?.Value ?? defaultWeight;
-            decimal currentValue = latestProgress?.WeightKg ?? latestProgress?.Value ?? startValue;
+            decimal startValue = firstProgress?.WeightKg ?? defaultWeight;
+            decimal currentValue = latestProgress?.WeightKg ?? startValue;
             decimal targetValue = primaryGoal.TargetValue;
             
             bool isDecrease = IsDecreaseGoal(primaryGoal.Type, startValue, targetValue);

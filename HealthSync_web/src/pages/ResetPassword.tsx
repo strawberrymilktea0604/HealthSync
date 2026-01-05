@@ -17,7 +17,7 @@ export default function ResetPassword() {
   const [token, setToken] = useState("");
 
   useEffect(() => {
-    if (location.state && location.state.token) {
+    if (location.state?.token) {
       setToken(location.state.token);
     } else {
       // If no token, redirect back to forgot password or login

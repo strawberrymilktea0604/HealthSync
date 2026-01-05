@@ -66,7 +66,7 @@ export default function NutritionOverview() {
     { name: "Consumed", value: Math.min(currentCalories, targetCalories) },
     { name: "Remaining", value: Math.max(0, targetCalories - currentCalories) },
   ];
-  const COLORS = ["#FF69B4", "#E0E0E0"]; // Pink for progress, gray for empty
+
 
   // Custom detailed gauge data
   // We want a gradient-like effect or multiple segments if possible, but for now simple 2 segments

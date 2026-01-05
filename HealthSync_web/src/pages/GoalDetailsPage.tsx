@@ -71,36 +71,7 @@ const GoalDetailsPage = () => {
     return types[type] || type;
   };
 
-  const calculateProgress = () => {
-    if (!goal || goal.progressRecords.length === 0) return 0;
 
-    const sortedRecords = [...goal.progressRecords].sort(
-      (a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
-    );
-
-    const startValue = sortedRecords[0].weightKg || sortedRecords[0].value;
-    const currentValue = sortedRecords.at(-1)?.weightKg || sortedRecords.at(-1)?.value || 0;
-    const targetValue = goal.targetValue;
-
-    // Determine if this is a decrease goal or increase goal
-    const isDecreaseGoal = goal.type === 'weight_loss' ||
-      goal.type === 'fat_loss' ||
-      targetValue < startValue;
-
-    if (isDecreaseGoal) {
-      // For decrease goals: (start - current) / (start - target) * 100
-      const totalChangeNeeded = startValue - targetValue;
-      if (totalChangeNeeded <= 0) return 100;
-      const progress = ((startValue - currentValue) / totalChangeNeeded) * 100;
-      return Math.max(0, Math.min(100, progress));
-    } else {
-      // For increase goals: (current - start) / (target - start) * 100
-      const totalChangeNeeded = targetValue - startValue;
-      if (totalChangeNeeded <= 0) return 100;
-      const progress = ((currentValue - startValue) / totalChangeNeeded) * 100;
-      return Math.max(0, Math.min(100, progress));
-    }
-  };
 
   const getChartData = () => {
     if (!goal || goal.progressRecords.length === 0) return [];
@@ -353,8 +324,8 @@ const GoalDetailsPage = () => {
                       key={range}
                       onClick={() => setTimeRange(range)}
                       className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${timeRange === range
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-900'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
                         }`}
                     >
                       {rangeLabels[range]}

@@ -44,7 +44,7 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, AdminUs
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
                 // FIX: Prioritize ApplicationUser.AvatarUrl, fallback to UserProfile.AvatarUrl
-                AvatarUrl = u.AvatarUrl != null ? u.AvatarUrl : (u.Profile != null ? u.Profile.AvatarUrl : null)
+                AvatarUrl = u.AvatarUrl ?? u.Profile.AvatarUrl
             })
             .ToListAsync(cancellationToken);
 
