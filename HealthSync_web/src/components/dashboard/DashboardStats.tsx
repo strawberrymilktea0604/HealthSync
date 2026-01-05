@@ -45,12 +45,14 @@ export default function DashboardStats({ todayStats }: DashboardStatsProps) {
                         <Utensils className="w-5 h-5" />
                         Ghi bữa ăn
                     </Button>
-                    <div
+                    <button
                         className="rounded-full border-2 border-[#4A6F6F] bg-white text-[#4A6F6F] hover:bg-[#4A6F6F] hover:text-white w-14 h-14 flex items-center justify-center transition-all hover:scale-110 shadow-md cursor-pointer font-bold text-xl"
                         onClick={() => navigate('/nutrition-history')}
+                        aria-label="Lịch sử dinh dưỡng"
+                        type="button"
                     >
                         📊
-                    </div>
+                    </button>
                 </div>
             </div>
 

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { exerciseService, Exercise } from '@/services/exerciseService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search, Filter, Clock, Flame, ChevronLeft, ChevronRight, LayoutGrid, List } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Search, Filter, ChevronLeft, ChevronRight, LayoutGrid, List, Flame } from 'lucide-react';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,15 +13,13 @@ const itemsPerPage = 6;
 
 export default function ExerciseLibraryPage() {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
-    const [loading, setLoading] = useState(true);
 
     // Filters
     const [search, setSearch] = useState('');
     const [muscleGroup, setMuscleGroup] = useState('all');
-    const [difficulty, setDifficulty] = useState('all');
+    const difficulty = 'all';
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -33,7 +30,7 @@ export default function ExerciseLibraryPage() {
 
     useEffect(() => {
         filterExercises();
-    }, [search, muscleGroup, difficulty, exercises]);
+    }, [search, muscleGroup, exercises]);
 
     const loadExercises = async () => {
         try {
@@ -43,8 +40,6 @@ export default function ExerciseLibraryPage() {
         } catch (error) {
             console.error(error);
             toast.error('Không thể tải danh sách bài tập');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -241,7 +236,7 @@ export default function ExerciseLibraryPage() {
 
                         {Array.from({ length: totalPages }).map((_, i) => (
                             <button
-                                key={i}
+                                key={i + 1}
                                 onClick={() => setCurrentPage(i + 1)}
                                 className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${currentPage === i + 1
                                     ? 'bg-[#5FB25F] text-white shadow-lg shadow-green-200'

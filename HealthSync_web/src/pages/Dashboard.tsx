@@ -19,8 +19,7 @@ export default function Dashboard() {
     selectedGoalId,
     setSelectedGoalId,
     selectedGoalDetails,
-    loadDashboard,
-    exercises
+    loadDashboard
   } = useDashboardData();
 
   const [showChat, setShowChat] = useState(false);

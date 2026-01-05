@@ -34,6 +34,86 @@ export default function DashboardChat({ showChat, setShowChat }: DashboardChatPr
         return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     };
 
+    const renderChatContent = () => {
+        if (loadingChat) {
+            return (
+                <div className="flex justify-center items-center h-full">
+                    <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <Loader2 className="w-8 h-8 animate-spin text-[#2d2d2d]" />
+                    </div>
+                </div>
+            );
+        }
+
+        if (messages.length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-in fade-in zoom-in duration-500">
+                    <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#EBE9C0] to-[#E5E3B5] shadow-xl flex items-center justify-center mb-6 group transform transition-transform hover:scale-105 duration-300">
+                        <Bot className="w-12 h-12 text-[#2d2d2d] group-hover:rotate-12 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#2d2d2d] mb-2">Xin chào! 👋</h3>
+                    <p className="text-sm text-gray-500 text-center max-w-[200px] leading-relaxed">
+                        Tôi là trợ lý sức khỏe AI của bạn. Hãy hỏi tôi bất cứ điều gì!
+                    </p>
+                </div>
+            );
+        }
+
+        return messages.map((message) => (
+            <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex gap-4 items-end ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+            >
+                {/* Avatar Block */}
+                <div className={`w-[70px] h-[60px] rounded-[1.25rem] flex items-center justify-center flex-shrink-0 shadow-sm border-2 ${message.role === 'assistant'
+                    ? 'bg-[#EBE9C0] border-white'
+                    : 'bg-[#2563EB] border-blue-400'
+                    }`}>
+                    {message.role === 'assistant' ? (
+                        <Bot className="w-8 h-8 text-[#2d2d2d]" />
+                    ) : (
+                        <User className="w-8 h-8 text-white" />
+                    )}
+                </div>
+
+                {/* Content Bubble */}
+                <div
+                    className={`max-w-[70%] rounded-[1.5rem] px-5 py-4 shadow-md text-[15px] leading-relaxed relative ${message.role === 'user'
+                        ? 'bg-[#1a1a1a] text-white rounded-tr-md'
+                        : 'bg-white border border-gray-100 text-gray-800 rounded-tl-md'
+                        }`}
+                >
+                    {message.role === 'user' ? (
+                        <p className="whitespace-pre-wrap font-medium">{message.content}</p>
+                    ) : (
+                        <div className="prose prose-neutral max-w-none 
+                            prose-headings:text-gray-900 prose-headings:font-bold prose-headings:mb-2 prose-headings:mt-4
+                            prose-p:text-gray-800 prose-p:leading-7 
+                            prose-strong:text-black prose-strong:font-black
+                            prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
+                            prose-li:my-1
+                            prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-sm prose-code:font-mono prose-code:text-pink-600
+                            first:mt-0 last:mb-0"
+                        >
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {message.content}
+                            </ReactMarkdown>
+                        </div>
+                    )}
+                    <p
+                        className={`text-[10px] mt-2 font-medium ${message.role === 'user' ? 'text-white/40 text-left' : 'text-gray-400 text-right'
+                            }`}
+                    >
+                        {formatTime(message.createdAt)}
+                    </p>
+                </div>
+            </motion.div>
+        ));
+    };
+
     return (
         <div className="fixed bottom-8 right-8 z-50">
             <AnimatePresence>
@@ -138,77 +218,7 @@ export default function DashboardChat({ showChat, setShowChat }: DashboardChatPr
 
                             {/* Chat Messages */}
                             <div className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent z-10">
-                                {loadingChat ? (
-                                    <div className="flex justify-center items-center h-full">
-                                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-                                            <Loader2 className="w-8 h-8 animate-spin text-[#2d2d2d]" />
-                                        </div>
-                                    </div>
-                                ) : messages.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-in fade-in zoom-in duration-500">
-                                        <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#EBE9C0] to-[#E5E3B5] shadow-xl flex items-center justify-center mb-6 group transform transition-transform hover:scale-105 duration-300">
-                                            <Bot className="w-12 h-12 text-[#2d2d2d] group-hover:rotate-12 transition-transform duration-300" />
-                                        </div>
-                                        <h3 className="text-xl font-bold text-[#2d2d2d] mb-2">Xin chào! 👋</h3>
-                                        <p className="text-sm text-gray-500 text-center max-w-[200px] leading-relaxed">
-                                            Tôi là trợ lý sức khỏe AI của bạn. Hãy hỏi tôi bất cứ điều gì!
-                                        </p>
-                                    </div>
-                                ) : (
-                                    messages.map((message) => (
-                                        <motion.div
-                                            key={message.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            className={`flex gap-4 items-end ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                                        >
-                                            {/* Avatar Block */}
-                                            <div className={`w-[70px] h-[60px] rounded-[1.25rem] flex items-center justify-center flex-shrink-0 shadow-sm border-2 ${message.role === 'assistant'
-                                                ? 'bg-[#EBE9C0] border-white'
-                                                : 'bg-[#2563EB] border-blue-400'
-                                                }`}>
-                                                {message.role === 'assistant' ? (
-                                                    <Bot className="w-8 h-8 text-[#2d2d2d]" />
-                                                ) : (
-                                                    <User className="w-8 h-8 text-white" />
-                                                )}
-                                            </div>
-
-                                            {/* Content Bubble */}
-                                            <div
-                                                className={`max-w-[70%] rounded-[1.5rem] px-5 py-4 shadow-md text-[15px] leading-relaxed relative ${message.role === 'user'
-                                                    ? 'bg-[#1a1a1a] text-white rounded-tr-md'
-                                                    : 'bg-white border border-gray-100 text-gray-800 rounded-tl-md'
-                                                    }`}
-                                            >
-                                                {message.role === 'user' ? (
-                                                    <p className="whitespace-pre-wrap font-medium">{message.content}</p>
-                                                ) : (
-                                                    <div className="prose prose-neutral max-w-none 
-                            prose-headings:text-gray-900 prose-headings:font-bold prose-headings:mb-2 prose-headings:mt-4
-                            prose-p:text-gray-800 prose-p:leading-7 
-                            prose-strong:text-black prose-strong:font-black
-                            prose-ul:list-disc prose-ul:pl-4 prose-ul:my-2
-                            prose-li:my-1
-                            prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-sm prose-code:font-mono prose-code:text-pink-600
-                            first:mt-0 last:mb-0"
-                                                    >
-                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                                            {message.content}
-                                                        </ReactMarkdown>
-                                                    </div>
-                                                )}
-                                                <p
-                                                    className={`text-[10px] mt-2 font-medium ${message.role === 'user' ? 'text-white/40 text-left' : 'text-gray-400 text-right'
-                                                        }`}
-                                                >
-                                                    {formatTime(message.createdAt)}
-                                                </p>
-                                            </div>
-                                        </motion.div>
-                                    ))
-                                )}
+                                {renderChatContent()}
                                 {isSending && (
                                     <motion.div
                                         initial={{ opacity: 0, y: 10 }}

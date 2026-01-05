@@ -57,11 +57,11 @@ const AddProgressPage = () => {
 
     try {
       setLoading(true);
-      
+
       // Convert date to UTC to avoid timezone issues
       const dateObj = new Date(formData.recordDate);
       const utcDate = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
-      
+
       await goalService.addProgress(Number.parseInt(goalId), {
         ...formData,
         recordDate: utcDate.toISOString(),
@@ -81,6 +81,13 @@ const AddProgressPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getGoalActionText = (goalType: string) => {
+    const type = goalType.toLowerCase();
+    if (type === 'weight_loss' || type === 'fat_loss') return 'Giảm';
+    if (type === 'weight_gain' || type === 'muscle_gain') return 'Tăng';
+    return 'Mục tiêu';
   };
 
   return (
@@ -124,8 +131,9 @@ const AddProgressPage = () => {
                   <p className="font-bold text-gray-900">
                     {goal ? (
                       <>
-                        {goal.type === 'weight_loss' || goal.type === 'fat_loss' ? 'Giảm' : 
-                         goal.type === 'weight_gain' || goal.type === 'muscle_gain' ? 'Tăng' : 'Mục tiêu'} <span className="text-[#4A6F6F]">{goal.targetValue}kg</span>
+                        <>
+                          {getGoalActionText(goal.type)} <span className="text-[#4A6F6F]">{goal.targetValue}kg</span>
+                        </>
                       </>
                     ) : '...'}
                   </p>

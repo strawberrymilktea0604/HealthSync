@@ -191,7 +191,7 @@ export default function DashboardGoals({
                                     const heightPercent = 20 + ((point.weight - min) / range) * 80;
 
                                     return (
-                                        <div key={i} className="flex flex-col items-center justify-end h-full w-full group relative">
+                                        <div key={point.date || point.id || i} className="flex flex-col items-center justify-end h-full w-full group relative">
                                             {/* Tooltip */}
                                             <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded mb-1 pointer-events-none whitespace-nowrap z-20 shadow-lg">
                                                 {point.weight}kg

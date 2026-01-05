@@ -10,7 +10,6 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const FoodList = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(false);

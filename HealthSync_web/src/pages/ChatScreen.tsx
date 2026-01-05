@@ -197,7 +197,7 @@ const ChatScreen: React.FC = () => {
       <div className="bg-gradient-to-b from-[#D4C5A9]/10 to-transparent border-b border-[#D4C5A9]/30 px-4 py-3">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-base font-medium flex items-center justify-center gap-2 text-gray-700">
-            <img src={logo} alt="HealthSync" className="h-5 inline-block" />
+            <img src={logo} alt="HealthSync" className="h-5 inline-block" />{' '}
             Xin chào! Hãy hỏi tôi về sức khỏe của bạn
           </p>
         </div>

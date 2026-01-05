@@ -110,7 +110,7 @@ export default function CreateWorkoutPage() {
       // Convert date string to UTC to avoid timezone issues
       const dateObj = new Date(workoutDate);
       const utcDate = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
-      
+
       await workoutService.createWorkoutLog({
         workoutDate: utcDate.toISOString(),
         durationMin,
@@ -332,7 +332,18 @@ export default function CreateWorkoutPage() {
               {/* Exercise List */}
               <div className="space-y-3 overflow-y-auto pr-1 flex-1 custom-scrollbar">
                 {filteredExercises.map(exercise => (
-                  <div key={exercise.exerciseId} className="group bg-white/60 hover:bg-white/90 transition-all rounded-2xl p-3 border border-black/5 hover:border-black/10 cursor-pointer overflow-hidden shadow-sm hover:shadow-md" onClick={() => addExercise(exercise)}>
+                  <div
+                    key={exercise.exerciseId}
+                    className="group bg-white/60 hover:bg-white/90 transition-all rounded-2xl p-3 border border-black/5 hover:border-black/10 cursor-pointer overflow-hidden shadow-sm hover:shadow-md"
+                    onClick={() => addExercise(exercise)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        addExercise(exercise);
+                      }
+                    }}
+                  >
                     {/* Image */}
                     <div className="w-full aspect-video rounded-xl bg-gray-100 overflow-hidden mb-3 border border-black/5 relative">
                       {exercise.imageUrl ? (
