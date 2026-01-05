@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import nutritionService, { NutritionLog } from "@/services/nutritionService";
 import Header from "@/components/Header";
 import { Loader2, Plus, ArrowLeft } from "lucide-react";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
+
 import { dashboardService } from "@/services/dashboardService";
 
 export default function NutritionOverview() {
@@ -34,7 +34,7 @@ export default function NutritionOverview() {
 
       setTargetCalories(targetCal);
       // Calculate macro targets based on standard percentages
-      setTargetProtein(Math.round((targetCal * 0.30) / 4));
+      setTargetProtein(Math.round((targetCal * 0.3) / 4));
       setTargetCarbs(Math.round((targetCal * 0.45) / 4));
       setTargetFat(Math.round((targetCal * 0.25) / 9));
     } catch (error) {

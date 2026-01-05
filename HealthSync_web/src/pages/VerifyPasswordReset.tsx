@@ -68,7 +68,7 @@ export default function VerifyPasswordReset() {
         title: "Code Resent",
         description: "A new verification code has been sent to your email.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to resend code.",

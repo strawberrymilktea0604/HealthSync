@@ -58,7 +58,7 @@ const GoalsPage = () => {
     // Find earliest and latest records
     const sortedRecords = [...goal.progressRecords].sort((a, b) => new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime());
     const firstRecord = sortedRecords[0];
-    const lastRecord = sortedRecords[sortedRecords.length - 1];
+    const lastRecord = sortedRecords.at(-1);
 
     if (!firstRecord || !lastRecord) return 0;
 

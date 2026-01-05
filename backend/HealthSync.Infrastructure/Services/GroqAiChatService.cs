@@ -9,23 +9,24 @@ namespace HealthSync.Infrastructure.Services;
 public class GroqAiChatService : IAiChatService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
+
     private readonly string _modelId;
 
     public GroqAiChatService(IConfiguration configuration)
     {
         // Đọc từ environment variable trước, fallback về appsettings
-        _apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
+        var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
                   ?? configuration["Groq:ApiKey"] 
                   ?? throw new InvalidOperationException("Groq API Key is not configured. Set GROQ_API_KEY environment variable or Groq:ApiKey in appsettings.json");
         
         _modelId = configuration["Groq:ModelId"] ?? "openai/gpt-oss-120b";
+        var baseUrl = configuration["Groq:BaseUrl"] ?? "https://api.groq.com/openai/v1/";
         
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://api.groq.com/openai/v1/")
+            BaseAddress = new Uri(baseUrl)
         };
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
 
     public async Task<string> GetHealthAdviceAsync(
@@ -129,19 +130,19 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
         }
     }
 
-    private class GroqResponse
+    private sealed class GroqResponse
     {
         [JsonPropertyName("choices")]
         public List<Choice>? Choices { get; set; }
     }
 
-    private class Choice
+    private sealed class Choice
     {
         [JsonPropertyName("message")]
         public Message? Message { get; set; }
     }
 
-    private class Message
+    private sealed class Message
     {
         [JsonPropertyName("content")]
         public string? Content { get; set; }

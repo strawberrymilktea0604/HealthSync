@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Trash2, Calendar, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Trash2, ArrowLeft } from 'lucide-react';
 import nutritionService, { FoodItem, FoodEntry, NutritionLog } from '@/services/nutritionService';
 import { toast } from '@/hooks/use-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -56,7 +56,7 @@ const NutritionPage: React.FC = () => {
       // Protein: 30% of calories / 4 cal per gram
       // Carbs: 45% of calories / 4 cal per gram  
       // Fat: 25% of calories / 9 cal per gram
-      setTargetProtein(Math.round((targetCal * 0.30) / 4));
+      setTargetProtein(Math.round((targetCal * 0.3) / 4));
       setTargetCarbs(Math.round((targetCal * 0.45) / 4));
       setTargetFat(Math.round((targetCal * 0.25) / 9));
     } catch (error) {

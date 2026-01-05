@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { goalService, Goal } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+
 import {
   ArrowLeft,
   Plus,
@@ -19,7 +19,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
   AreaChart,
   Line
 } from 'recharts';
@@ -135,7 +134,7 @@ const GoalDetailsPage = () => {
       remaining = targetValue - currentValue;
     }
 
-    const changePercent = startValue !== 0 ? ((change / startValue) * 100) : 0;
+    const changePercent = startValue === 0 ? 0 : ((change / startValue) * 100);
 
     return { change, changePercent, remaining };
   };

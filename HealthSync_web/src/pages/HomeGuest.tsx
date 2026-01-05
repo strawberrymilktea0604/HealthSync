@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { motion } from "framer-motion";
 import logo from "../assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+
 
 export default function HomeGuest() {
   const navigate = useNavigate();

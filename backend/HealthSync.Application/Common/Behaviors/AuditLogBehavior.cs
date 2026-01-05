@@ -78,7 +78,7 @@ public class AuditLogBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
     /// <summary>
     /// Tạo mô tả dễ đọc cho từng loại action
     /// </summary>
-    private string GenerateDescription(string actionType)
+    private static string GenerateDescription(string actionType)
     {
         // Mapping các command phổ biến sang mô tả tiếng Việt
         return actionType switch
