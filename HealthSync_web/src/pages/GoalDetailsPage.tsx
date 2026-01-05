@@ -83,9 +83,9 @@ const GoalDetailsPage = () => {
     const targetValue = goal.targetValue;
 
     // Determine if this is a decrease goal or increase goal
-    const isDecreaseGoal = goal.type === 'weight_loss' || 
-                          goal.type === 'fat_loss' || 
-                          targetValue < startValue;
+    const isDecreaseGoal = goal.type === 'weight_loss' ||
+      goal.type === 'fat_loss' ||
+      targetValue < startValue;
 
     if (isDecreaseGoal) {
       // For decrease goals: (start - current) / (start - target) * 100
@@ -145,9 +145,9 @@ const GoalDetailsPage = () => {
     const targetValue = goal.targetValue;
 
     // Determine if this is a decrease goal or increase goal
-    const isDecreaseGoal = goal.type === 'weight_loss' || 
-                          goal.type === 'fat_loss' || 
-                          targetValue < startValue;
+    const isDecreaseGoal = goal.type === 'weight_loss' ||
+      goal.type === 'fat_loss' ||
+      targetValue < startValue;
 
     let change = 0;
     let remaining = 0;
@@ -240,15 +240,11 @@ const GoalDetailsPage = () => {
     );
   }
 
-  const progress = calculateProgress();
+
   const stats = getStatistics();
   const statusInfo = getGoalStatusInfo();
   const chartData = getChartData();
-  const latestRecord = goal.progressRecords.length > 0
-    ? [...goal.progressRecords].sort((a, b) =>
-      new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
-    )[0]
-    : null;
+
 
   return (
     <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">
@@ -356,11 +352,10 @@ const GoalDetailsPage = () => {
                     <button
                       key={range}
                       onClick={() => setTimeRange(range)}
-                      className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-                        timeRange === range
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${timeRange === range
                           ? 'bg-white text-gray-900 shadow-sm'
                           : 'text-gray-500 hover:text-gray-900'
-                      }`}
+                        }`}
                     >
                       {rangeLabels[range]}
                     </button>

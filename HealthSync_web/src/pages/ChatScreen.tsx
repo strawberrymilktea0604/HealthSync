@@ -220,7 +220,7 @@ const ChatScreen: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messages.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="p-3 bg-[#D4C5A9]/10 rounded-lg border border-[#D4C5A9]/30 hover:bg-[#D4C5A9]/20 cursor-pointer transition">
+                  <div className="p-3 bg-[#D4C5A9]/10 rounded-lg border border-[#D4C5A9]/30 transition">
                     <div className="flex items-center gap-2 mb-1">
                       <MessageSquarePlus className="w-4 h-4 text-[#D4C5A9]" />
                       <span className="text-sm font-medium text-gray-800">Cuộc trò chuyện hiện tại</span>

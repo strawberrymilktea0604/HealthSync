@@ -120,8 +120,8 @@ export default function Profile() {
         if (!dateOfBirth) return toast({ title: "Error", description: "Date of Birth is required", variant: "destructive" });
         if (!gender) return toast({ title: "Error", description: "Gender is required", variant: "destructive" });
 
-        const height = parseFloat(heightCm);
-        const weight = parseFloat(weightKg);
+        const height = Number.parseFloat(heightCm);
+        const weight = Number.parseFloat(weightKg);
 
         if (!heightCm || height <= 0 || height > 300) return toast({ title: "Error", description: "Invalid height", variant: "destructive" });
         if (!weightKg || weight <= 0 || weight > 500) return toast({ title: "Error", description: "Invalid weight", variant: "destructive" });
@@ -190,12 +190,13 @@ export default function Profile() {
                                 <AvatarImage src={avatarUrl} className="object-cover" />
                                 <AvatarFallback className="text-4xl bg-gray-200">{fullName.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <div
-                                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                            <button
+                                type="button"
+                                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none"
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <Camera className="w-10 h-10 text-white" />
-                            </div>
+                            </button>
                             <Input
                                 type="file"
                                 ref={fileInputRef}

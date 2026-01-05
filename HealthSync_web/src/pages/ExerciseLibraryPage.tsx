@@ -193,7 +193,11 @@ export default function ExerciseLibraryPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentExercises.map((ex) => (
-                        <div key={ex.exerciseId} className="bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all flex flex-col overflow-hidden cursor-pointer border border-transparent hover:border-green-100">
+                        <button
+                            type="button"
+                            key={ex.exerciseId}
+                            className="w-full text-left bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all flex flex-col overflow-hidden cursor-pointer border border-transparent hover:border-green-100"
+                        >
                             <div className="w-full aspect-video rounded-2xl bg-gray-100 overflow-hidden relative mb-3">
                                 {ex.imageUrl ? (
                                     <img src={ex.imageUrl} alt={ex.name} className="w-full h-full object-cover" />
@@ -218,7 +222,7 @@ export default function ExerciseLibraryPage() {
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     ))}
                 </div>
 

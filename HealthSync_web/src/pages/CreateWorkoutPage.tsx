@@ -332,20 +332,13 @@ export default function CreateWorkoutPage() {
               {/* Exercise List */}
               <div className="space-y-3 overflow-y-auto pr-1 flex-1 custom-scrollbar">
                 {filteredExercises.map(exercise => (
-                  <div
+                  <button
                     key={exercise.exerciseId}
-                    className="group bg-white/60 hover:bg-white/90 transition-all rounded-2xl p-3 border border-black/5 hover:border-black/10 cursor-pointer overflow-hidden shadow-sm hover:shadow-md"
+                    className="w-full text-left group bg-white/60 hover:bg-white/90 transition-all rounded-2xl p-3 border border-black/5 hover:border-black/10 cursor-pointer overflow-hidden shadow-sm hover:shadow-md flex items-start"
                     onClick={() => addExercise(exercise)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        addExercise(exercise);
-                      }
-                    }}
                   >
                     {/* Image */}
-                    <div className="w-full aspect-video rounded-xl bg-gray-100 overflow-hidden mb-3 border border-black/5 relative">
+                    <div className="w-full max-w-[160px] aspect-video rounded-xl bg-gray-100 overflow-hidden mb-3 md:mb-0 border border-black/5 relative shrink-0 mr-4">
                       {exercise.imageUrl ? (
                         <img src={exercise.imageUrl} alt={exercise.name} className="w-full h-full object-cover" />
                       ) : (
@@ -355,8 +348,8 @@ export default function CreateWorkoutPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-col">
-                      <h4 className="font-bold text-black text-lg leading-tight mb-2">
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <h4 className="font-bold text-black text-lg leading-tight mb-2 truncate">
                         {exercise.name || (exercise as any).Name || 'Bài tập không tên'}
                       </h4>
 
@@ -376,14 +369,12 @@ export default function CreateWorkoutPage() {
                       </p>
                     </div>
 
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="ml-2 rounded-full h-8 w-8 p-0 bg-[#2d2d2d] text-white opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    <div
+                      className="ml-2 rounded-full h-8 w-8 p-0 bg-[#2d2d2d] text-white opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center justify-center"
                     >
                       <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             </CardContent>

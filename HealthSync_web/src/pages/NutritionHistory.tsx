@@ -24,7 +24,7 @@ export default function NutritionHistory() {
       setLoading(true);
       const endDate = new Date();
       const startDate = viewMode === "week" ? subDays(endDate, 7) : subDays(endDate, 30);
-      
+
       const data = await nutritionService.getNutritionLogs(startDate, endDate);
       // Sort by date ascending (oldest first)
       const sortedData = data.sort((a, b) => new Date(a.logDate).getTime() - new Date(b.logDate).getTime());
@@ -39,7 +39,7 @@ export default function NutritionHistory() {
   // Calculate averages
   const calculateAverages = () => {
     if (logs.length === 0) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
-    
+
     const totals = logs.reduce((acc, log) => ({
       calories: acc.calories + log.totalCalories,
       protein: acc.protein + log.proteinG,
@@ -62,24 +62,29 @@ export default function NutritionHistory() {
     date: format(new Date(log.logDate), "dd/MM", { locale: vi }),
     fullDate: format(new Date(log.logDate), "dd/MM/yyyy", { locale: vi }),
     calories: Math.round(log.totalCalories),
-    protein: parseFloat(log.proteinG.toFixed(1)),
-    carbs: parseFloat(log.carbsG.toFixed(1)),
-    fat: parseFloat(log.fatG.toFixed(1))
+    protein: Number.parseFloat(log.proteinG.toFixed(1)),
+    carbs: Number.parseFloat(log.carbsG.toFixed(1)),
+    fat: Number.parseFloat(log.fatG.toFixed(1))
   }));
 
   // Weekly comparison
   const getWeekComparison = () => {
     if (logs.length < 7) return { change: 0, trend: "stable" as const };
-    
+
     const thisWeek = logs.slice(-7);
     const lastWeek = logs.slice(-14, -7);
-    
+
     const thisWeekAvg = thisWeek.reduce((sum, log) => sum + log.totalCalories, 0) / 7;
     const lastWeekAvg = lastWeek.reduce((sum, log) => sum + log.totalCalories, 0) / 7;
-    
+
     const change = ((thisWeekAvg - lastWeekAvg) / lastWeekAvg) * 100;
-    const trend = change > 5 ? "up" : change < -5 ? "down" : "stable";
-    
+    let trend: "up" | "down" | "stable" = "stable";
+    if (change > 5) {
+      trend = "up";
+    } else if (change < -5) {
+      trend = "down";
+    }
+
     return { change: Math.abs(change), trend };
   };
 
@@ -111,11 +116,10 @@ export default function NutritionHistory() {
             <Button
               variant={viewMode === "week" ? "default" : "outline"}
               size="lg"
-              className={`rounded-2xl px-6 font-semibold transition-all ${
-                viewMode === "week" 
-                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md" 
+              className={`rounded-2xl px-6 font-semibold transition-all ${viewMode === "week"
+                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
                   : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
-              }`}
+                }`}
               onClick={() => setViewMode("week")}
             >
               <Calendar className="w-4 h-4 mr-2" />
@@ -124,11 +128,10 @@ export default function NutritionHistory() {
             <Button
               variant={viewMode === "month" ? "default" : "outline"}
               size="lg"
-              className={`rounded-2xl px-6 font-semibold transition-all ${
-                viewMode === "month" 
-                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md" 
+              className={`rounded-2xl px-6 font-semibold transition-all ${viewMode === "month"
+                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
                   : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
-              }`}
+                }`}
               onClick={() => setViewMode("month")}
             >
               <Calendar className="w-4 h-4 mr-2" />
@@ -202,7 +205,7 @@ export default function NutritionHistory() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#6b7280" />
                   <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}
                     labelFormatter={(label) => {
                       const item = chartData.find(d => d.date === label);
@@ -210,10 +213,10 @@ export default function NutritionHistory() {
                     }}
                   />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="calories" 
-                    stroke="#ff8a80" 
+                  <Line
+                    type="monotone"
+                    dataKey="calories"
+                    stroke="#ff8a80"
                     strokeWidth={3}
                     name="Calories"
                     dot={{ fill: '#ff8a80', r: 4 }}
@@ -238,7 +241,7 @@ export default function NutritionHistory() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#6b7280" />
                   <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}
                     labelFormatter={(label) => {
                       const item = chartData.find(d => d.date === label);
@@ -263,9 +266,9 @@ export default function NutritionHistory() {
           <CardContent>
             <div className="space-y-3">
               {logs.slice().reverse().map((log) => (
-                <div 
+                <button
                   key={log.nutritionLogId}
-                  className="flex items-center justify-between p-4 bg-[#FDFBD4]/50 rounded-2xl hover:bg-[#EBE9C0]/50 transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between p-4 bg-[#FDFBD4]/50 rounded-2xl hover:bg-[#EBE9C0]/50 transition-colors cursor-pointer text-left"
                   onClick={() => {
                     // Navigate to diary with this date
                     navigate('/nutrition-diary');
@@ -317,7 +320,7 @@ export default function NutritionHistory() {
                   <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
                   <p className="text-lg font-medium">Chưa có dữ liệu</p>
                   <p className="text-sm mt-2">Bắt đầu ghi nhật ký dinh dưỡng của bạn!</p>
-                  <Button 
+                  <Button
                     className="mt-4 bg-[#2d2d2d] hover:bg-black text-[#FDFBD4] rounded-xl"
                     onClick={() => navigate('/nutrition')}
                   >

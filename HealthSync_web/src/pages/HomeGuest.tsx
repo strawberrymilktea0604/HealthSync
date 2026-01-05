@@ -207,9 +207,9 @@ export default function HomeGuest() {
             {/* Social & Tags */}
             <div className="flex flex-column justify-content-between align-items-end gap-6 mt-4 md:mt-0" style={{ minHeight: '120px' }}>
               <div className="border-round-2xl px-3 py-2 flex gap-3" style={{ backgroundColor: '#FFF9C4' }}>
-                <i className="pi pi-twitter text-2xl cursor-pointer text-900"></i>
-                <i className="pi pi-facebook text-2xl cursor-pointer text-900"></i>
-                <i className="pi pi-instagram text-2xl cursor-pointer text-900"></i>
+                <i className="pi pi-twitter text-2xl text-900"></i>
+                <i className="pi pi-facebook text-2xl text-900"></i>
+                <i className="pi pi-instagram text-2xl text-900"></i>
               </div>
               <button className="text-600 no-underline text-sm bg-transparent border-none p-0 cursor-pointer">Tags</button>
             </div>

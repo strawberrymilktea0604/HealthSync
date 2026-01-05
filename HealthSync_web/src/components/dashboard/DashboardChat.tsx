@@ -134,8 +134,7 @@ export default function DashboardChat({ showChat, setShowChat }: DashboardChatPr
                                 <div>
                                     <h3 className="font-bold text-[#2d2d2d] text-lg">Assistant</h3>
                                     <p className="text-xs text-[#2d2d2d]/60 font-medium flex items-center gap-1.5">
-                                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                                        Online
+                                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>Online
                                     </p>
                                 </div>
                             </div>

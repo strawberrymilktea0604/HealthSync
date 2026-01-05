@@ -198,9 +198,10 @@ const FoodSearch = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredItems.map((item) => (
-              <div
+              <button
+                type="button"
                 key={item.foodItemId}
-                className="group bg-white rounded-[2rem] p-4 pb-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-orange-100 cursor-pointer"
+                className="w-full text-left group bg-white rounded-[2rem] p-4 pb-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-orange-100 cursor-pointer"
               >
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] mb-4 overflow-hidden rounded-[1.5rem] bg-gray-100">
@@ -237,7 +238,7 @@ const FoodSearch = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}

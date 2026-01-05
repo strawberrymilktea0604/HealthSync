@@ -1,5 +1,5 @@
 import { useState, useEffect, ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { goalService, Goal, ProgressRecord } from '@/services/goalService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -68,16 +68,16 @@ const GoalsPage = () => {
 
     // Determine if this is a decrease goal or increase goal
     // Check type keywords or compare target vs start
-    const isDecreaseGoal = goal.type === 'weight_loss' || 
-                          goal.type === 'fat_loss' || 
-                          targetV < startV;
+    const isDecreaseGoal = goal.type === 'weight_loss' ||
+      goal.type === 'fat_loss' ||
+      targetV < startV;
 
     if (isDecreaseGoal) {
       // For decrease goals: need to go DOWN from start to target
       // Progress = (start - current) / (start - target) * 100
       const totalChangeNeeded = startV - targetV;
       if (totalChangeNeeded <= 0) return 100; // Already at or past target
-      
+
       const currentChange = startV - currentV;
       const progress = (currentChange / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
@@ -86,7 +86,7 @@ const GoalsPage = () => {
       // Progress = (current - start) / (target - start) * 100
       const totalChangeNeeded = targetV - startV;
       if (totalChangeNeeded <= 0) return 100; // Already at or past target
-      
+
       const currentChange = currentV - startV;
       const progress = (currentChange / totalChangeNeeded) * 100;
       return Math.max(0, Math.min(100, progress));
@@ -218,15 +218,17 @@ const GoalsPage = () => {
 
           {/* Goal Rows */}
           <div className="space-y-3">
-            {loading ? (
+            {loading && (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
               </div>
-            ) : filteredGoals.length === 0 ? (
+            )}
+            {!loading && filteredGoals.length === 0 && (
               <div className="text-center py-12 text-gray-500 italic bg-white/30 rounded-3xl">
                 Không tìm thấy mục tiêu nào phù hợp.
               </div>
-            ) : (
+            )}
+            {!loading && filteredGoals.length > 0 && (
               filteredGoals.map((goal) => {
                 const status = getStatus(goal);
                 const config = getStatusConfig(status);
@@ -236,11 +238,11 @@ const GoalsPage = () => {
                 return (
                   <div
                     key={goal.goalId}
-                    className="group bg-white rounded-2xl p-4 shadow-sm border border-gray-50 hover:shadow-md transition-all grid grid-cols-12 gap-6 items-center cursor-pointer relative"
-                    onClick={() => navigate(`/goals/${goal.goalId}`)}
+                    className="group bg-white rounded-2xl p-4 shadow-sm border border-gray-50 hover:shadow-md transition-all grid grid-cols-12 gap-6 items-center relative"
                   >
+                    <Link to={`/goals/${goal.goalId}`} className="absolute inset-0 z-0"><span className="sr-only">View Goal</span></Link>
                     {/* Name */}
-                    <div className="col-span-12 md:col-span-4 pl-2">
+                    <div className="col-span-12 md:col-span-4 pl-2 pointer-events-none">
                       <h3 className="font-bold text-gray-900 text-lg">{goal.notes || getGoalTypeDisplay(goal.type)}</h3>
                       {/* Mobile Status/Date view */}
                       <div className="md:hidden flex items-center gap-2 mt-2 text-xs text-gray-500">
@@ -252,7 +254,7 @@ const GoalsPage = () => {
                     </div>
 
                     {/* Progress */}
-                    <div className="col-span-12 md:col-span-3">
+                    <div className="col-span-12 md:col-span-3 pointer-events-none">
                       <div className="flex items-center gap-3">
                         <Progress value={progress} className="h-2 flex-1 bg-gray-100 rounded-full" indicatorClassName={config.barColor} />
                         <span className="text-xs font-bold text-gray-500 whitespace-nowrap min-w-[60px] text-right">
@@ -262,19 +264,19 @@ const GoalsPage = () => {
                     </div>
 
                     {/* Status Badge */}
-                    <div className="col-span-12 md:col-span-2 hidden md:block">
+                    <div className="col-span-12 md:col-span-2 hidden md:block pointer-events-none">
                       <Badge variant="secondary" className={cn("rounded-lg font-bold px-3 py-1.5 border-none", config.color)}>
                         {config.label}
                       </Badge>
                     </div>
 
                     {/* End Date */}
-                    <div className="col-span-12 md:col-span-2 hidden md:block text-sm font-medium text-gray-500">
+                    <div className="col-span-12 md:col-span-2 hidden md:block text-sm font-medium text-gray-500 pointer-events-none">
                       {goal.endDate ? format(new Date(goal.endDate), 'dd/MM/yyyy') : 'No deadline'}
                     </div>
 
                     {/* Actions */}
-                    <div className="col-span-12 md:col-span-1 hidden md:flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                    <div className="col-span-12 md:col-span-1 hidden md:flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity pr-2 relative z-10">
                       <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl">
                         <Pencil className="w-4 h-4" />
                       </Button>

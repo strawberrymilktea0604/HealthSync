@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { dashboardService } from "@/services/dashboardService";
 
 export default function NutritionOverview() {
-  const { user } = useAuth();
+  useAuth();
   const navigate = useNavigate();
   const [nutritionLog, setNutritionLog] = useState<NutritionLog | null>(null);
   const [loading, setLoading] = useState(true);

@@ -13,7 +13,7 @@ import "react-calendar/dist/Calendar.css";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function NutritionDiary() {
-  const { user } = useAuth();
+  useAuth();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [nutritionLog, setNutritionLog] = useState<NutritionLog | null>(null);

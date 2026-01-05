@@ -421,9 +421,10 @@ const NutritionPage: React.FC = () => {
 
                   <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                     {filteredFoodItems.map((item) => (
-                      <div
+                      <button
+                        type="button"
                         key={item.foodItemId}
-                        className={`cursor-pointer transition-all p-4 rounded-xl border ${selectedFoodItem?.foodItemId === item.foodItemId
+                        className={`w-full text-left cursor-pointer transition-all p-4 rounded-xl border ${selectedFoodItem?.foodItemId === item.foodItemId
                           ? 'bg-[#EBE9C0] border-[#4A6F6F]'
                           : 'bg-white/40 border-transparent hover:bg-white/60'
                           }`}
@@ -460,7 +461,7 @@ const NutritionPage: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
