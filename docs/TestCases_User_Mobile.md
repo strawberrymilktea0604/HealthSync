@@ -236,22 +236,111 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 
 ---
 
-## Module 8: AI Chat (HealthBot)
+## Module 8: AI Chatbot HealthSync (Mobile)
 
-### Chức năng 8.1: Trò Chuyện Với AI
+> **Mô tả:** AI Chatbot trên mobile là trợ lý sức khỏe thông minh, cung cấp tư vấn cá nhân hóa 100% dựa trên dữ liệu sức khỏe thực của người dùng.
+
+### Chức năng 8.1: Giao Diện Chat Screen
 
 | Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
 |--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
-| TC-M-CHAT-001 | Mở Chat Screen | 1. Nhấn icon Chat trên Bottom Navigation | N/A | Chat Screen hiển thị với: Header HealthBot, vùng tin nhắn, input box | | | |
-| TC-M-CHAT-002 | Gửi tin nhắn | 1. Nhập tin nhắn vào TextField<br>2. Nhấn nút gửi | Message: "Xin chào" | Tin nhắn user hiển thị bên phải (bubble), AI trả lời bên trái | | | |
-| TC-M-CHAT-003 | Hỏi về dinh dưỡng | 1. Gửi câu hỏi về dinh dưỡng | Message: "Tôi nên ăn bao nhiêu protein mỗi ngày?" | AI trả lời với thông tin dinh dưỡng | | | |
-| TC-M-CHAT-004 | Hỏi về bài tập | 1. Gửi câu hỏi về workout | Message: "Bài tập nào giúp giảm mỡ bụng?" | AI trả lời với gợi ý bài tập | | | |
-| TC-M-CHAT-005 | Hỏi về sức khỏe cá nhân | 1. Hỏi về BMI, cân nặng | Message: "Với chiều cao 175cm và cân nặng 70kg, BMI của tôi là bao nhiêu?" | AI tính và trả lời BMI | | | |
-| TC-M-CHAT-006 | Gửi tin nhắn trống | 1. Để trống TextField<br>2. Nhấn gửi | Message: (trống) | Nút gửi bị disable hoặc không có action | | | |
-| TC-M-CHAT-007 | Hiển thị loading khi AI đang xử lý | 1. Gửi tin nhắn<br>2. Quan sát | N/A | Hiển thị animation typing (3 dots) hoặc loading indicator | | | |
-| TC-M-CHAT-008 | Xem lịch sử chat | 1. Đóng app<br>2. Mở lại, vào Chat | N/A | Lịch sử chat trước đó được load | | | |
-| TC-M-CHAT-009 | Scroll lịch sử chat | 1. Có nhiều tin nhắn<br>2. Scroll lên xem tin cũ | N/A | Scroll mượt, tin nhắn cũ hiển thị đúng | | | |
-| TC-M-CHAT-010 | Auto scroll khi có tin mới | 1. Đang ở cuối danh sách<br>2. AI trả lời tin mới | N/A | Tự động scroll xuống tin mới nhất | | | |
+| TC-M-AI-001 | Truy cập Chat Screen | 1. Nhấn icon Chat trên Bottom Navigation | N/A | Chat Screen hiển thị với: Header "HealthBot 💪", vùng tin nhắn, input TextField, nút gửi | | | **Screen: ChatScreen** |
+| TC-M-AI-002 | Hiển thị welcome message | 1. Mở Chat Screen lần đầu (chưa có history) | N/A | Hiển thị welcome message từ AI: "Xin chào! Tôi là HealthBot, trợ lý sức khỏe của bạn" | | | |
+| TC-M-AI-003 | Load chat history | 1. Mở Chat Screen khi đã có lịch sử | N/A | Gọi API GET /api/Chat/history, hiển thị loading, sau đó render messages | | | **API: GET /api/Chat/history** |
+| TC-M-AI-004 | Hiển thị messages đúng vị trí | 1. Xem chat có nhiều messages | N/A | User messages bên phải (bubble màu xanh/đen), AI messages bên trái (bubble trắng/xám) | | | |
+| TC-M-AI-005 | Scroll lịch sử chat | 1. Có nhiều messages<br>2. Scroll lên xem tin cũ | N/A | ListView scroll mượt, tin nhắn cũ hiển thị đúng | | | |
+| TC-M-AI-006 | Auto scroll khi có tin mới | 1. Đang ở cuối danh sách<br>2. AI trả lời tin mới | N/A | Tự động scroll xuống tin mới nhất | | | |
+
+### Chức năng 8.2: Gửi Tin Nhắn
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-AI-007 | Gửi tin nhắn cơ bản | 1. Nhập tin nhắn vào TextField<br>2. Nhấn nút gửi | Message: "Xin chào" | User message hiển thị ngay, gọi API POST /api/Chat/ask | | | **API: POST /api/Chat/ask** |
+| TC-M-AI-008 | Gửi tin nhắn bằng keyboard | 1. Nhập tin nhắn<br>2. Nhấn Done/Enter trên keyboard | Message: "Xin chào" | Tin nhắn được gửi, keyboard ẩn | | | |
+| TC-M-AI-009 | Validate tin nhắn trống | 1. Để trống TextField<br>2. Nhấn gửi | Message: "" | Nút gửi bị disable hoặc không có action | | | |
+| TC-M-AI-010 | Nhận phản hồi từ AI | 1. Sau khi gửi tin nhắn<br>2. Chờ response | N/A | AI response xuất hiện bên trái với animation | | | |
+| TC-M-AI-011 | Hiển thị loading indicator | 1. Gửi tin nhắn<br>2. Quan sát khi đang chờ AI | N/A | Hiển thị typing indicator (3 dots bounce) hoặc CircularProgressIndicator | | | |
+| TC-M-AI-012 | Keyboard không che input | 1. Mở keyboard<br>2. Kiểm tra input visibility | N/A | Input TextField vẫn visible, không bị keyboard che | | | Flutter resizeToAvoidBottomInset |
+
+### Chức năng 8.3: Tư Vấn Dinh Dưỡng (Nutrition Advice)
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-AI-NUT-001 | Hỏi gợi ý bữa sáng | 1. Gửi câu hỏi | "Tôi nên ăn gì cho bữa sáng?" | AI gợi ý bữa sáng phù hợp với mục tiêu user | | | |
+| TC-M-AI-NUT-002 | Hỏi gợi ý bữa trưa | 1. Gửi câu hỏi | "Gợi ý bữa trưa cho tôi" | AI gợi ý món ăn cân bằng dinh dưỡng | | | |
+| TC-M-AI-NUT-003 | Hỏi gợi ý bữa tối | 1. Gửi câu hỏi | "Bữa tối nên ăn gì?" | AI gợi ý bữa tối nhẹ, phù hợp | | | |
+| TC-M-AI-NUT-004 | Hỏi về calories | 1. Gửi câu hỏi | "Tôi cần bao nhiêu calo mỗi ngày?" | AI tính TDEE dựa trên profile và mục tiêu | | | Context: Profile |
+| TC-M-AI-NUT-005 | Hỏi về protein | 1. Gửi câu hỏi | "Tôi cần bao nhiêu protein?" | AI tính dựa trên cân nặng và mục tiêu | | | |
+| TC-M-AI-NUT-006 | Hỏi thực phẩm giàu protein | 1. Gửi câu hỏi | "Thực phẩm nào giàu protein?" | AI liệt kê thực phẩm với gram protein | | | |
+| TC-M-AI-NUT-007 | Hỏi về chế độ ăn kiêng | 1. Gửi câu hỏi | "Chế độ ăn kiêng nào tốt để giảm cân?" | AI gợi ý phù hợp với profile | | | |
+| TC-M-AI-NUT-008 | Đánh giá dinh dưỡng hôm nay | 1. Gửi câu hỏi | "Hôm nay tôi ăn như vậy có đủ không?" | AI phân tích từ nutrition logs | | | Context: Nutrition logs |
+
+### Chức năng 8.4: Tư Vấn Luyện Tập (Workout Advice)
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-AI-WORK-001 | Hỏi bài tập cho người mới | 1. Gửi câu hỏi | "Tôi mới bắt đầu tập, nên tập gì?" | AI gợi ý bài tập beginner | | | |
+| TC-M-AI-WORK-002 | Hỏi bài tập cho ngực | 1. Gửi câu hỏi | "Bài tập nào tốt cho cơ ngực?" | AI liệt kê bài chest với sets x reps | | | |
+| TC-M-AI-WORK-003 | Hỏi bài tập giảm mỡ | 1. Gửi câu hỏi | "Bài tập nào giúp giảm mỡ?" | AI giải thích và gợi ý cardio + strength | | | |
+| TC-M-AI-WORK-004 | Hỏi lịch tập trong tuần | 1. Gửi câu hỏi | "Gợi ý lịch tập cho tôi" | AI đưa lịch split phù hợp | | | |
+| TC-M-AI-WORK-005 | Hỏi về cardio | 1. Gửi câu hỏi | "Tôi nên chạy bao lâu?" | AI gợi ý thời gian cardio | | | |
+| TC-M-AI-WORK-006 | Đánh giá buổi tập | 1. Gửi câu hỏi | "Buổi tập hôm nay của tôi có tốt không?" | AI phân tích từ workout logs | | | Context: Workout logs |
+
+### Chức năng 8.5: Tư Vấn Sức Khỏe Cá Nhân
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-AI-HEALTH-001 | Hỏi về BMI | 1. Gửi câu hỏi | "BMI của tôi là bao nhiêu?" | AI tính BMI từ profile, phân loại | | | Context: Profile |
+| TC-M-AI-HEALTH-002 | Hỏi về BMR | 1. Gửi câu hỏi | "BMR của tôi bao nhiêu?" | AI tính BMR và giải thích | | | |
+| TC-M-AI-HEALTH-003 | Hỏi về tiến độ mục tiêu | 1. Gửi câu hỏi | "Tôi tiến triển thế nào?" | AI phân tích goal progress | | | Context: Goal |
+| TC-M-AI-HEALTH-004 | Hỏi cân nặng lý tưởng | 1. Gửi câu hỏi | "Cân nặng lý tưởng của tôi?" | AI tính từ chiều cao | | | |
+| TC-M-AI-HEALTH-005 | Hỏi thời gian đạt mục tiêu | 1. Gửi câu hỏi | "Bao lâu tôi đạt mục tiêu?" | AI ước tính dựa trên tốc độ an toàn | | | |
+| TC-M-AI-HEALTH-006 | Tổng kết tuần | 1. Gửi câu hỏi | "Tuần này tôi tập và ăn thế nào?" | AI tổng hợp 7 ngày gần nhất | | | Context: 7-day logs |
+
+### Chức năng 8.6: Edge Cases & Error Handling
+
+| Test Case ID | Mô tả | Bước kiểm thử | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế | Trạng thái | Ghi chú |
+|--------------|-------|---------------|-----------------|------------------|-----------------|------------|---------|
+| TC-M-AI-EDGE-001 | Câu hỏi không liên quan | 1. Gửi câu hỏi ngoài lề | "Thời tiết hôm nay?" | AI trả lời lịch sự, gợi ý hỏi về sức khỏe | | | |
+| TC-M-AI-EDGE-002 | Tin nhắn chứa emoji | 1. Gửi tin có emoji | "Tôi muốn tập 💪" | AI xử lý đúng | | | |
+| TC-M-AI-EDGE-003 | Tin nhắn rất dài | 1. Gửi tin 500+ ký tự | Tin nhắn dài | AI xử lý đúng, không crash | | | |
+| TC-M-AI-EDGE-004 | API timeout | 1. Server chậm > 30s | N/A | Hiển thị thông báo timeout | | | |
+| TC-M-AI-EDGE-005 | Mất mạng khi gửi | 1. Tắt WiFi<br>2. Gửi tin | N/A | SnackBar hiển thị lỗi network | | | |
+| TC-M-AI-EDGE-006 | Token hết hạn | 1. Token expired<br>2. Gửi tin | N/A | Redirect về đăng nhập | | | |
+
+### Chức năng 8.7: Câu Mẫu Thử Nghiệm (Mobile)
+
+> **Mục đích:** Các câu mẫu để QA Team test AI Chatbot trên mobile
+
+#### 8.7.1 Câu Mẫu Dinh Dưỡng
+
+| STT | Câu Hỏi Mẫu | Kỳ Vọng | Ghi Chú |
+|-----|-------------|---------|---------|
+| 1 | "Hôm nay tôi nên ăn gì?" | Gợi ý bữa ăn phù hợp mục tiêu | |
+| 2 | "Tôi đang giảm cân, nên ăn bao nhiêu calo?" | Tính TDEE - deficit | Context: Goal |
+| 3 | "Snack healthy là gì?" | Liệt kê snack ít calo | |
+| 4 | "Protein shake có cần không?" | Giải thích supplement | |
+| 5 | "Tôi ăn chay, lấy protein từ đâu?" | Gợi ý protein thực vật | |
+
+#### 8.7.2 Câu Mẫu Luyện Tập
+
+| STT | Câu Hỏi Mẫu | Kỳ Vọng | Ghi Chú |
+|-----|-------------|---------|---------|
+| 1 | "Tập gym hay yoga tốt hơn?" | So sánh ưu nhược điểm | |
+| 2 | "Bài tập tại nhà không dụng cụ" | Bodyweight exercises | |
+| 3 | "Tôi đau cơ sau tập, có sao không?" | Giải thích DOMS | |
+| 4 | "Warm up có cần thiết không?" | Giải thích tầm quan trọng | |
+| 5 | "Tập bao lâu mới thấy kết quả?" | Realistic expectations | |
+
+#### 8.7.3 Câu Mẫu Sức Khỏe
+
+| STT | Câu Hỏi Mẫu | Kỳ Vọng | Ghi Chú |
+|-----|-------------|---------|---------|
+| 1 | "Tôi có thừa cân không?" | Phân tích BMI | |
+| 2 | "Giảm cân nhanh có tốt không?" | Khuyến cáo tốc độ an toàn | |
+| 3 | "Tôi hay mệt mỏi, làm sao?" | Gợi ý kiểm tra dinh dưỡng, ngủ | |
+| 4 | "Uống bao nhiêu nước?" | Tính theo cân nặng | |
+| 5 | "Ngủ bao nhiêu tiếng đủ?" | 7-9 tiếng/đêm | |
 
 ---
 
@@ -346,12 +435,12 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | Quản lý Mục tiêu | 17 | | | |
 | Theo dõi Dinh dưỡng | 22 | | | |
 | Theo dõi Bài tập | 15 | | | |
-| AI Chat | 10 | | | |
+| **AI Chatbot HealthSync** | **51** | | | **MỚI HOÀN TOÀN** |
 | Tạo mật khẩu Google | 4 | | | |
 | Đăng xuất | 3 | | | |
 | Kiểm thử đặc thù Mobile | 14 | | | |
 | Quản lý Hồ sơ cá nhân | 8 | | | |
-| **TỔNG** | **139** | | | |
+| **TỔNG** | **180** | | | **+51 test cases AI Chatbot** |
 
 ---
 
@@ -360,9 +449,9 @@ Tài liệu này tập trung vào **kiểm thử chức năng (Functional Testin
 | Phần | Số lượng Test Case |
 |------|-------------------|
 | Phần 1: Admin (Web) | 59 |
-| Phần 2: User Web | 78 |
-| Phần 3: User Mobile | 139 |
-| **TỔNG CỘNG** | **276** |
+| Phần 2: User Web | 175 |
+| Phần 3: User Mobile | 180 |
+| **TỔNG CỘNG** | **414** |
 
 ---
 
