@@ -11,6 +11,8 @@ public class GroqAiChatService : IAiChatService
     private readonly HttpClient _httpClient;
 
     private readonly string _modelId;
+    private const string DefaultBaseUrl = "https://api.groq.com/openai/v1/";
+
 
     public GroqAiChatService(IConfiguration configuration)
     {
@@ -20,7 +22,7 @@ public class GroqAiChatService : IAiChatService
                   ?? throw new InvalidOperationException("Groq API Key is not configured. Set GROQ_API_KEY environment variable or Groq:ApiKey in appsettings.json");
         
         _modelId = configuration["Groq:ModelId"] ?? "openai/gpt-oss-120b";
-        var baseUrl = configuration["Groq:BaseUrl"] ?? "https://api.groq.com/openai/v1/";
+        var baseUrl = configuration["Groq:BaseUrl"] ?? DefaultBaseUrl;
         
         _httpClient = new HttpClient
         {

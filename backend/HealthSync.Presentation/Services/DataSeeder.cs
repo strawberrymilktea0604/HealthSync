@@ -488,13 +488,10 @@ public class DataSeeder
         }
 
         bool hasUpdates = false;
-        foreach (var log in user.WorkoutLogs)
+        foreach (var log in user.WorkoutLogs.Where(log => !log.ExerciseSessions.Any() && exerciseIds.Any()))
         {
-            if (!log.ExerciseSessions.Any() && exerciseIds.Any())
-            {
-                BackfillExerciseSessions(log, random, exerciseIds);
-                hasUpdates = true;
-            }
+            BackfillExerciseSessions(log, random, exerciseIds);
+            hasUpdates = true;
         }
         return hasUpdates;
     }
@@ -524,13 +521,10 @@ public class DataSeeder
         }
 
         bool hasUpdates = false;
-        foreach (var log in user.NutritionLogs)
+        foreach (var log in user.NutritionLogs.Where(log => !log.FoodEntries.Any() && foodItems.Any()))
         {
-            if (!log.FoodEntries.Any() && foodItems.Any())
-            {
-                BackfillFoodEntries(log, random, foodItems);
-                hasUpdates = true;
-            }
+            BackfillFoodEntries(log, random, foodItems);
+            hasUpdates = true;
         }
         return hasUpdates;
     }
@@ -588,7 +582,7 @@ public class DataSeeder
 
     private void Create3Goals(int userId, DateTime createdAt, decimal? weightKg)
     {
-        var faker = new Faker();
+
         var random = new Random();
         var currentWeight = weightKg ?? 70;
         
@@ -651,7 +645,7 @@ public class DataSeeder
                 RecordDate = recordDate,
                 Value = currentValue,
                 WeightKg = currentValue,
-                WaistCm = 85 - (decimal)(progressRatio * 5), // Waist decreases proportionally
+                WaistCm = 85 - (progressRatio * 5), // Waist decreases proportionally
                 Notes = i == goal2ProgressCount ? "Tiến độ tốt, còn 3kg nữa!" : null
             });
         }
@@ -703,7 +697,7 @@ public class DataSeeder
                 RecordDate = recordDate,
                 Value = currentValue,
                 WeightKg = currentValue,
-                WaistCm = 76 + (decimal)(progressRatio * 4), // Waist increases slightly
+                WaistCm = 76 + (progressRatio * 4), // Waist increases slightly
                 Notes = i == goal3ProgressCount ? "Hoàn thành mục tiêu tăng cân!" : null
             });
         }
@@ -805,11 +799,11 @@ public class DataSeeder
         }
     }
 
-    private DateTime? GenerateRandomDate(Random random, DateTime now, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
+    private static DateTime? GenerateRandomDate(Random random, DateTime now, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
     {
         for (int attempts = 0; attempts < maxAttempts; attempts++)
         {
-            var rand = random.NextDouble();
+
             // Refactored from nested ternary for clarity
             double r = random.NextDouble();
             DateTime date;
@@ -983,7 +977,7 @@ public class DataSeeder
         }
     }
 
-    private DateTime? GenerateFakeDate(Faker faker, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
+    private static DateTime? GenerateFakeDate(Faker faker, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
     {
         for (int attempts = 0; attempts < maxAttempts; attempts++)
         {
