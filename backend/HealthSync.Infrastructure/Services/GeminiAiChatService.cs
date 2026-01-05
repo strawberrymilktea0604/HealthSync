@@ -39,31 +39,30 @@ public class GeminiAiChatService : IAiChatService
     {
         var history = new ChatHistory();
 
-        // Parse context to extract activity logs
+        // Parse context to extract detailed user info for optimized prompt
         var contextObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(userContextData);
-        string activityLogs = "";
         
+        // Extract activity logs
+        string activityLogs = "";
         if (contextObj.TryGetProperty("recentActivityLogs", out var logsElement) && 
             logsElement.ValueKind == System.Text.Json.JsonValueKind.String)
         {
             activityLogs = logsElement.GetString() ?? "";
         }
-
-        // Parse context to extract detailed user info for optimized prompt
-        var contextObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(userContextData);
         
         // Extract profile data
         string profileData = "Chưa có thông tin.";
+        string bmiStatus = "N/A"; // Declare outside if block to use in prompt
         if (contextObj.TryGetProperty("profile", out var profileElement))
         {
-            var gender = profileElement.TryGetProperty("gender", out var g) ? g.GetString() : "N/A";
+            var gender = profileElement.TryGetProperty("gender", out var g) ? g.GetString() ?? "N/A" : "N/A";
             var age = profileElement.TryGetProperty("age", out var a) ? a.GetInt32().ToString() : "N/A";
             var height = profileElement.TryGetProperty("heightCm", out var h) ? h.GetDecimal().ToString("F1") : "N/A";
             var weight = profileElement.TryGetProperty("currentWeightKg", out var w) ? w.GetDecimal().ToString("F1") : "N/A";
             var bmi = profileElement.TryGetProperty("bmi", out var b) ? b.GetDecimal().ToString("F1") : "N/A";
-            var bmiStatus = profileElement.TryGetProperty("bmiStatus", out var bs) ? bs.GetString() : "N/A";
+            bmiStatus = profileElement.TryGetProperty("bmiStatus", out var bs) ? bs.GetString() ?? "N/A" : "N/A";
             var bmr = profileElement.TryGetProperty("bmr", out var bmrVal) ? bmrVal.GetDecimal().ToString("F0") : "N/A";
-            var activityLevel = profileElement.TryGetProperty("activityLevel", out var al) ? al.GetString() : "N/A";
+            var activityLevel = profileElement.TryGetProperty("activityLevel", out var al) ? al.GetString() ?? "N/A" : "N/A";
             
             profileData = $@"- Giới tính: {gender}
 - Tuổi: {age}
@@ -77,9 +76,9 @@ public class GeminiAiChatService : IAiChatService
         string goalData = "Chưa thiết lập mục tiêu.";
         if (contextObj.TryGetProperty("goal", out var goalElement) && goalElement.ValueKind != System.Text.Json.JsonValueKind.Null)
         {
-            var goalType = goalElement.TryGetProperty("type", out var gt) ? gt.GetString() : "N/A";
+            var goalType = goalElement.TryGetProperty("type", out var gt) ? gt.GetString() ?? "N/A" : "N/A";
             var targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
-            var deadline = goalElement.TryGetProperty("deadline", out var dl) ? dl.GetString() : "N/A";
+            var deadline = goalElement.TryGetProperty("deadline", out var dl) ? dl.GetString() ?? "N/A" : "N/A";
             
             goalData = $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
         }
@@ -133,8 +132,6 @@ thì món này hơi cao so với BMR {profileData}. Chiều nay cố gắng tậ
 Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT CẢ thông tin trên.
 ════════════════════════════════════════════════════════════════";
         
-        history.AddSystemMessage(systemPrompt);
-
         history.AddSystemMessage(systemPrompt);
         history.AddUserMessage(userQuestion);
 
