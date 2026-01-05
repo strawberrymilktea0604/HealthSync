@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { dashboardService, CustomerDashboard, GoalSummary } from "@/services/dashboardService";
+import { dashboardService, CustomerDashboard } from "@/services/dashboardService";
 import { goalService, Goal } from "@/services/goalService";
 import { exerciseService, Exercise } from "@/services/exerciseService";
 
@@ -12,9 +12,9 @@ export function useDashboardData() {
 
     // Exercise State
     const [exercises, setExercises] = useState<Exercise[]>([]);
-    const [searchQuery] = useState("");
-    const [muscleGroupFilter] = useState("all");
-    const [, setLoadingExercises] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [muscleGroupFilter, setMuscleGroupFilter] = useState("all");
+    const [loadingExercises, setLoadingExercises] = useState(false);
 
     useEffect(() => {
         loadDashboard();

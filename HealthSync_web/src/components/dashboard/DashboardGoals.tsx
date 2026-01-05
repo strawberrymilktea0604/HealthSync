@@ -20,7 +20,7 @@ export default function DashboardGoals({
     selectedGoalId,
     setSelectedGoalId,
     selectedGoalDetails
-}: DashboardGoalsProps) {
+}: Readonly<DashboardGoalsProps>) {
     const navigate = useNavigate();
 
     // Helper để lấy tên hiển thị của goal type

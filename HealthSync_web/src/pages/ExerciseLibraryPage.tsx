@@ -267,7 +267,7 @@ export default function ExerciseLibraryPage() {
 }
 
 // Helper component for fallback icon
-function Dumbbell({ className }: { className?: string }) {
+function Dumbbell({ className }: Readonly<{ className?: string }>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -9,7 +9,7 @@ interface DashboardChatProps {
     setShowChat: (show: boolean) => void;
 }
 
-export default function DashboardChat({ showChat, setShowChat }: DashboardChatProps) {
+export default function DashboardChat({ showChat, setShowChat }: Readonly<DashboardChatProps>) {
     const {
         messages,
         inputMessage,

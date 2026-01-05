@@ -131,9 +131,7 @@ const AddProgressPage = () => {
                   <p className="font-bold text-gray-900">
                     {goal ? (
                       <>
-                        <>
-                          {getGoalActionText(goal.type)} <span className="text-[#4A6F6F]">{goal.targetValue}kg</span>
-                        </>
+                        {getGoalActionText(goal.type)} <span className="text-[#4A6F6F]">{goal.targetValue}kg</span>
                       </>
                     ) : '...'}
                   </p>

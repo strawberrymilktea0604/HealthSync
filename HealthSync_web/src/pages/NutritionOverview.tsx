@@ -202,7 +202,7 @@ export default function NutritionOverview() {
               <h3 className="text-lg font-bold text-gray-700 mb-4">Đã ăn hôm nay</h3>
               <div className="space-y-3">
                 {nutritionLog.foodEntries.slice(0, 3).map((entry, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-white/40 p-3 rounded-xl border border-white/50">
+                  <div key={entry.id || index} className="flex items-center gap-3 bg-white/40 p-3 rounded-xl border border-white/50">
                     <div className="w-12 h-12 rounded-lg bg-white overflow-hidden shrink-0 border border-black/5 relative">
                       {entry.imageUrl ? (
                         <img src={entry.imageUrl} alt={entry.foodItemName} className="w-full h-full object-cover" />

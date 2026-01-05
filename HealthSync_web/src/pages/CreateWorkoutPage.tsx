@@ -350,21 +350,21 @@ export default function CreateWorkoutPage() {
 
                     <div className="flex flex-col flex-1 min-w-0">
                       <h4 className="font-bold text-black text-lg leading-tight mb-2 truncate">
-                        {exercise.name || (exercise as any).Name || 'Bài tập không tên'}
+                        {exercise.name || 'Bài tập không tên'}
                       </h4>
 
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className="text-[10px] uppercase font-bold text-[#4A6F6F] bg-[#4A6F6F]/10 px-2.5 py-1 rounded-md">
-                          {exercise.muscleGroup || (exercise as any).MuscleGroup}
+                          {exercise.muscleGroup}
                         </span>
                         <span className="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-500/10 px-2.5 py-1 rounded-md">
-                          {exercise.difficulty || (exercise as any).Difficulty}
+                          {exercise.difficulty}
                         </span>
                       </div>
 
                       <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">
-                        {(exercise.description || (exercise as any).Description || "").trim() !== ""
-                          ? (exercise.description || (exercise as any).Description)
+                        {exercise.description?.trim()
+                          ? exercise.description
                           : "Chưa có mô tả chi tiết cho bài tập này."}
                       </p>
                     </div>

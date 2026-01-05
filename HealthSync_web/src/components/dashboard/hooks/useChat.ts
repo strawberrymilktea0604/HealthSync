@@ -64,7 +64,7 @@ export function useChat(showChat: boolean) {
 
     const handleNewChat = () => {
         if (messages.length > 0) {
-            const confirmNew = window.confirm('Bạn có muốn bắt đầu cuộc trò chuyện mới? Cuộc trò chuyện hiện tại sẽ được lưu vào lịch sử.');
+            const confirmNew = globalThis.confirm('Bạn có muốn bắt đầu cuộc trò chuyện mới? Cuộc trò chuyện hiện tại sẽ được lưu vào lịch sử.');
             if (!confirmNew) return;
         }
         setMessages([]);

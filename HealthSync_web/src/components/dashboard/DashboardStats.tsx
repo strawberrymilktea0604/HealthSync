@@ -10,7 +10,7 @@ interface DashboardStatsProps {
     };
 }
 
-export default function DashboardStats({ todayStats }: DashboardStatsProps) {
+export default function DashboardStats({ todayStats }: Readonly<DashboardStatsProps>) {
     const navigate = useNavigate();
 
     return (
