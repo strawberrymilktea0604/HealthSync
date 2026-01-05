@@ -1,5 +1,6 @@
 using HealthSync.Application.DTOs;
 using HealthSync.Application.Queries;
+using HealthSync.Domain.Entities;
 using HealthSync.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -50,135 +51,15 @@ namespace HealthSync.Application.Handlers
             WeightProgressDto? weightProgress = null;
             var activeGoalsSummary = new List<GoalSummaryDto>();
 
-            // Create summary for all active goals
+            // Create summary for all active goals using helper method
             foreach (var goal in activeGoals)
             {
-                var records = goal.ProgressRecords.OrderBy(p => p.RecordDate).ToList();
-                var firstRecord = records.FirstOrDefault();
-                var latestRecord = records.LastOrDefault();
-                
-                decimal startVal = firstRecord?.WeightKg ?? firstRecord?.Value ?? 0;
-                decimal currentVal = latestRecord?.WeightKg ?? latestRecord?.Value ?? startVal;
-                decimal targetVal = goal.TargetValue;
-                
-                decimal progressPct = 0;
-                bool isDecreaseGoal = goal.Type.ToLower().Contains("loss") || 
-                                     goal.Type.ToLower().Contains("giảm") ||
-                                     targetVal < startVal;
-                
-                if (isDecreaseGoal)
-                {
-                    decimal totalChange = startVal - targetVal;
-                    if (totalChange > 0)
-                    {
-                        progressPct = ((startVal - currentVal) / totalChange) * 100;
-                        progressPct = Math.Max(0, Math.Min(100, progressPct));
-                    }
-                }
-                else
-                {
-                    decimal totalChange = targetVal - startVal;
-                    if (totalChange > 0)
-                    {
-                        progressPct = ((currentVal - startVal) / totalChange) * 100;
-                        progressPct = Math.Max(0, Math.Min(100, progressPct));
-                    }
-                }
-                
-                activeGoalsSummary.Add(new GoalSummaryDto
-                {
-                    GoalId = goal.GoalId,
-                    Type = goal.Type,
-                    Notes = goal.Notes ?? "",
-                    TargetValue = goal.TargetValue,
-                    Progress = progressPct
-                });
+                activeGoalsSummary.Add(CreateGoalSummary(goal));
             }
 
             if (primaryGoal != null)
             {
-                var sortedRecords = primaryGoal.ProgressRecords
-                    .OrderBy(p => p.RecordDate)
-                    .ToList();
-
-                var firstProgress = sortedRecords.FirstOrDefault();
-                var latestProgress = sortedRecords.LastOrDefault();
-
-                decimal startValue = firstProgress?.WeightKg ?? firstProgress?.Value ?? (user.Profile?.WeightKg ?? 0);
-                decimal currentValue = latestProgress?.WeightKg ?? latestProgress?.Value ?? startValue;
-                decimal targetValue = primaryGoal.TargetValue;
-                
-                decimal progressAmount = 0;
-                decimal remaining = 0;
-                decimal progressPercentage = 0;
-
-                // Determine goal direction
-                bool isDecreaseGoal = primaryGoal.Type.ToLower().Contains("loss") || 
-                                     primaryGoal.Type.ToLower().Contains("giảm") ||
-                                     targetValue < startValue;
-
-                if (isDecreaseGoal)
-                {
-                    // For decrease goals (weight_loss, fat_loss): need to go DOWN
-                    // Progress = how much we've decreased
-                    // Remaining = how much more we need to decrease
-                    progressAmount = startValue - currentValue;
-                    remaining = currentValue - targetValue;
-                    
-                    // Calculate percentage based on total change needed
-                    decimal totalChangeNeeded = startValue - targetValue;
-                    if (totalChangeNeeded > 0)
-                    {
-                        progressPercentage = (progressAmount / totalChangeNeeded) * 100;
-                        progressPercentage = Math.Max(0, Math.Min(100, progressPercentage));
-                    }
-                }
-                else
-                {
-                    // For increase goals (weight_gain, muscle_gain): need to go UP
-                    // Progress = how much we've increased
-                    // Remaining = how much more we need to increase
-                    progressAmount = currentValue - startValue;
-                    remaining = targetValue - currentValue;
-                    
-                    // Calculate percentage based on total change needed
-                    decimal totalChangeNeeded = targetValue - startValue;
-                    if (totalChangeNeeded > 0)
-                    {
-                        progressPercentage = (progressAmount / totalChangeNeeded) * 100;
-                        progressPercentage = Math.Max(0, Math.Min(100, progressPercentage));
-                    }
-                }
-
-                goalProgress = new GoalProgressDto
-                {
-                    GoalType = primaryGoal.Type,
-                    StartValue = startValue,
-                    CurrentValue = currentValue,
-                    TargetValue = targetValue,
-                    Status = primaryGoal.Status,
-                    Progress = progressPercentage,
-                    ProgressAmount = progressAmount,
-                    Remaining = remaining
-                };
-
-                // Weight progress with chart data
-                var weightHistory = primaryGoal.ProgressRecords
-                    .OrderBy(p => p.RecordDate)
-                    .Select(p => new WeightDataPointDto
-                    {
-                        Date = p.RecordDate,
-                        Weight = p.WeightKg
-                    })
-                    .ToList();
-
-                var daysRemaining = primaryGoal.EndDate.HasValue ? (primaryGoal.EndDate.Value - DateTime.UtcNow).Days : 0;
-
-                weightProgress = new WeightProgressDto
-                {
-                    WeightHistory = weightHistory,
-                    TimeRemaining = daysRemaining > 0 ? $"{daysRemaining} days" : "N/A"
-                };
+                (goalProgress, weightProgress) = CalculatePrimaryGoalProgress(primaryGoal, user.Profile?.WeightKg ?? 0);
             }
 
             // Get today's stats
@@ -261,6 +142,90 @@ namespace HealthSync.Application.Handlers
             }
 
             return streak;
+        }
+
+        private static GoalSummaryDto CreateGoalSummary(Goal goal)
+        {
+            var records = goal.ProgressRecords.OrderBy(p => p.RecordDate).ToList();
+            var firstRecord = records.FirstOrDefault();
+            var latestRecord = records.LastOrDefault();
+            
+            decimal startVal = firstRecord?.WeightKg ?? firstRecord?.Value ?? 0;
+            decimal currentVal = latestRecord?.WeightKg ?? latestRecord?.Value ?? startVal;
+            decimal targetVal = goal.TargetValue;
+            
+            decimal progressPct = CalculateProgressPercentage(startVal, currentVal, targetVal, goal.Type);
+            
+            return new GoalSummaryDto
+            {
+                GoalId = goal.GoalId,
+                Type = goal.Type,
+                Notes = goal.Notes ?? "",
+                TargetValue = goal.TargetValue,
+                Progress = progressPct
+            };
+        }
+
+        private static (GoalProgressDto, WeightProgressDto) CalculatePrimaryGoalProgress(Goal primaryGoal, decimal defaultWeight)
+        {
+            var sortedRecords = primaryGoal.ProgressRecords.OrderBy(p => p.RecordDate).ToList();
+            var firstProgress = sortedRecords.FirstOrDefault();
+            var latestProgress = sortedRecords.LastOrDefault();
+
+            decimal startValue = firstProgress?.WeightKg ?? firstProgress?.Value ?? defaultWeight;
+            decimal currentValue = latestProgress?.WeightKg ?? latestProgress?.Value ?? startValue;
+            decimal targetValue = primaryGoal.TargetValue;
+            
+            bool isDecrease = IsDecreaseGoal(primaryGoal.Type, startValue, targetValue);
+            
+            decimal progressAmount = isDecrease ? startValue - currentValue : currentValue - startValue;
+            decimal remaining = isDecrease ? currentValue - targetValue : targetValue - currentValue;
+            decimal progressPercentage = CalculateProgressPercentage(startValue, currentValue, targetValue, primaryGoal.Type);
+
+            var goalProgress = new GoalProgressDto
+            {
+                GoalType = primaryGoal.Type,
+                StartValue = startValue,
+                CurrentValue = currentValue,
+                TargetValue = targetValue,
+                Status = primaryGoal.Status,
+                Progress = progressPercentage,
+                ProgressAmount = progressAmount,
+                Remaining = remaining
+            };
+
+            var weightHistory = primaryGoal.ProgressRecords
+                .OrderBy(p => p.RecordDate)
+                .Select(p => new WeightDataPointDto { Date = p.RecordDate, Weight = p.WeightKg })
+                .ToList();
+
+            var daysRemaining = primaryGoal.EndDate.HasValue ? (primaryGoal.EndDate.Value - DateTime.UtcNow).Days : 0;
+            var weightProgress = new WeightProgressDto
+            {
+                WeightHistory = weightHistory,
+                TimeRemaining = daysRemaining > 0 ? $"{daysRemaining} days" : "N/A"
+            };
+
+            return (goalProgress, weightProgress);
+        }
+
+        private static bool IsDecreaseGoal(string goalType, decimal startValue, decimal targetValue)
+        {
+            return goalType.ToLower().Contains("loss") || 
+                   goalType.ToLower().Contains("giảm") ||
+                   targetValue < startValue;
+        }
+
+        private static decimal CalculateProgressPercentage(decimal startValue, decimal currentValue, decimal targetValue, string goalType)
+        {
+            bool isDecrease = IsDecreaseGoal(goalType, startValue, targetValue);
+            decimal totalChange = isDecrease ? startValue - targetValue : targetValue - startValue;
+            
+            if (totalChange <= 0) return 0;
+            
+            decimal progress = isDecrease ? startValue - currentValue : currentValue - startValue;
+            decimal percentage = (progress / totalChange) * 100;
+            return Math.Max(0, Math.Min(100, percentage));
         }
     }
 }

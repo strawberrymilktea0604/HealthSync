@@ -441,108 +441,23 @@ public class DataSeeder
             return;
         }
 
-        // ONLY seed activity for users created more than 1 day ago (existing users)
-        // New users will have empty accounts
         var oneDayAgo = DateTime.UtcNow.AddDays(-1);
         var users = await _dbContext.ApplicationUsers
-            .Include(u => u.WorkoutLogs)
-                .ThenInclude(w => w.ExerciseSessions)
-            .Include(u => u.NutritionLogs)
-                .ThenInclude(n => n.FoodEntries)
-            .Where(u => u.CreatedAt < oneDayAgo) // Only old users
+            .Include(u => u.WorkoutLogs).ThenInclude(w => w.ExerciseSessions)
+            .Include(u => u.NutritionLogs).ThenInclude(n => n.FoodEntries)
+            .Where(u => u.CreatedAt < oneDayAgo)
             .Take(100)
             .ToListAsync();
             
-        Console.WriteLine($"[Seeder] Found {users.Count} existing users (created before {oneDayAgo:yyyy-MM-dd}) to seed activity.");
+        Console.WriteLine($"[Seeder] Found {users.Count} existing users to seed activity.");
         
         var random = new Random();
         int updatedUsers = 0;
 
         foreach (var user in users)
         {
-            bool hasUpdates = false;
-
-            // Generate Workouts if missing (focus on recent dates)
-            if (!user.WorkoutLogs.Any())
-            {
-                CreateRecentWorkoutLogs(user.UserId, random, exerciseIds);
-                hasUpdates = true;
-            }
-            else
-            {
-                // Backfill missing sessions for existing logs
-                foreach (var log in user.WorkoutLogs)
-                {
-                    if (!log.ExerciseSessions.Any() && exerciseIds.Any())
-                    {
-                        int sessionCount = random.Next(4, 8);
-                        for (int s = 0; s < sessionCount; s++)
-                        {
-                            var exerciseId = exerciseIds[random.Next(exerciseIds.Count)];
-                            log.ExerciseSessions.Add(new ExerciseSession
-                            {
-                                ExerciseId = exerciseId,
-                                Sets = random.Next(3, 6),
-                                Reps = random.Next(8, 15),
-                                WeightKg = (decimal)random.Next(10, 100),
-                                Rpe = (decimal)random.NextDouble() * 3 + 6 // 6.0 - 9.0
-                            });
-                        }
-                        hasUpdates = true;
-                    }
-                }
-            }
-
-            // Generate Nutrition logs if missing (focus on recent dates)
-            if (!user.NutritionLogs.Any())
-            {
-                CreateRecentNutritionLogs(user.UserId, random, foodItems);
-                hasUpdates = true;
-            }
-            else
-            {
-                // Backfill missing food entries
-                foreach (var log in user.NutritionLogs)
-                {
-                    if (!log.FoodEntries.Any() && foodItems.Any())
-                    {
-                        int entryCount = random.Next(3, 6);
-                        decimal tCal = 0, tP = 0, tC = 0, tF = 0;
-
-                        for (int e = 0; e < entryCount; e++)
-                        {
-                            var food = foodItems[random.Next(foodItems.Count)];
-                            var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5);
-                            var mealTypes = new[] { "Breakfast", "Lunch", "Dinner", "Snack" };
-
-                            var entry = new FoodEntry
-                            {
-                                FoodItemId = food.FoodItemId,
-                                Quantity = qtyRatio * food.ServingSize,
-                                CaloriesKcal = food.CaloriesKcal * qtyRatio,
-                                ProteinG = food.ProteinG * qtyRatio,
-                                CarbsG = food.CarbsG * qtyRatio,
-                                FatG = food.FatG * qtyRatio,
-                                MealType = mealTypes[random.Next(mealTypes.Length)]
-                            };
-
-                            log.FoodEntries.Add(entry);
-                            
-                            tCal += entry.CaloriesKcal ?? 0;
-                            tP += entry.ProteinG ?? 0;
-                            tC += entry.CarbsG ?? 0;
-                            tF += entry.FatG ?? 0;
-                        }
-
-                        log.TotalCalories = tCal;
-                        log.ProteinG = tP;
-                        log.CarbsG = tC;
-                        log.FatG = tF;
-                        
-                        hasUpdates = true;
-                    }
-                }
-            }
+            bool hasUpdates = ProcessWorkoutLogs(user, random, exerciseIds) 
+                            | ProcessNutritionLogs(user, random, foodItems);
 
             if (hasUpdates)
             {
@@ -558,8 +473,99 @@ public class DataSeeder
         }
         else
         {
-             Console.WriteLine($"[Info] All existing users already have activity.");
+            Console.WriteLine($"[Info] All existing users already have activity.");
         }
+    }
+
+    private bool ProcessWorkoutLogs(ApplicationUser user, Random random, List<int> exerciseIds)
+    {
+        if (!user.WorkoutLogs.Any())
+        {
+            CreateRecentWorkoutLogs(user.UserId, random, exerciseIds);
+            return true;
+        }
+
+        bool hasUpdates = false;
+        foreach (var log in user.WorkoutLogs)
+        {
+            if (!log.ExerciseSessions.Any() && exerciseIds.Any())
+            {
+                BackfillExerciseSessions(log, random, exerciseIds);
+                hasUpdates = true;
+            }
+        }
+        return hasUpdates;
+    }
+
+    private void BackfillExerciseSessions(WorkoutLog log, Random random, List<int> exerciseIds)
+    {
+        int sessionCount = random.Next(4, 8);
+        for (int s = 0; s < sessionCount; s++)
+        {
+            log.ExerciseSessions.Add(new ExerciseSession
+            {
+                ExerciseId = exerciseIds[random.Next(exerciseIds.Count)],
+                Sets = random.Next(3, 6),
+                Reps = random.Next(8, 15),
+                WeightKg = (decimal)random.Next(10, 100),
+                Rpe = (decimal)random.NextDouble() * 3 + 6
+            });
+        }
+    }
+
+    private bool ProcessNutritionLogs(ApplicationUser user, Random random, List<FoodItem> foodItems)
+    {
+        if (!user.NutritionLogs.Any())
+        {
+            CreateRecentNutritionLogs(user.UserId, random, foodItems);
+            return true;
+        }
+
+        bool hasUpdates = false;
+        foreach (var log in user.NutritionLogs)
+        {
+            if (!log.FoodEntries.Any() && foodItems.Any())
+            {
+                BackfillFoodEntries(log, random, foodItems);
+                hasUpdates = true;
+            }
+        }
+        return hasUpdates;
+    }
+
+    private void BackfillFoodEntries(NutritionLog log, Random random, List<FoodItem> foodItems)
+    {
+        int entryCount = random.Next(3, 6);
+        decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+        var mealTypes = new[] { "Breakfast", "Lunch", "Dinner", "Snack" };
+
+        for (int e = 0; e < entryCount; e++)
+        {
+            var food = foodItems[random.Next(foodItems.Count)];
+            var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5);
+
+            var entry = new FoodEntry
+            {
+                FoodItemId = food.FoodItemId,
+                Quantity = qtyRatio * food.ServingSize,
+                CaloriesKcal = food.CaloriesKcal * qtyRatio,
+                ProteinG = food.ProteinG * qtyRatio,
+                CarbsG = food.CarbsG * qtyRatio,
+                FatG = food.FatG * qtyRatio,
+                MealType = mealTypes[random.Next(mealTypes.Length)]
+            };
+
+            log.FoodEntries.Add(entry);
+            tCal += entry.CaloriesKcal ?? 0;
+            tP += entry.ProteinG ?? 0;
+            tC += entry.CarbsG ?? 0;
+            tF += entry.FatG ?? 0;
+        }
+
+        log.TotalCalories = tCal;
+        log.ProteinG = tP;
+        log.CarbsG = tC;
+        log.FatG = tF;
     }
 
     private async Task<Role> EnsureCustomerRoleAsync()
@@ -703,196 +709,89 @@ public class DataSeeder
 
     private void CreateRecentWorkoutLogs(int userId, Random random, List<int> exerciseIds)
     {
-        // Get existing workout dates to avoid duplicates
         var existingWorkoutDates = _dbContext.WorkoutLogs
             .Where(w => w.UserId == userId)
             .Select(w => w.WorkoutDate.Date)
             .ToHashSet();
         
-        // Increased workout count: 30-50 workouts, focused on recent dates
         int workoutCount = random.Next(30, 51);
         var now = DateTime.UtcNow;
         var createdDates = new HashSet<DateTime>();
         
         for (int w = 0; w < workoutCount; w++)
         {
-            DateTime workoutDate;
-            int attempts = 0;
+            var workoutDate = GenerateRandomDate(random, now, existingWorkoutDates, createdDates, 10);
+            if (workoutDate == null) continue;
             
-            // Try to find a unique date (max 10 attempts per workout)
-            do
-            {
-                // 40% chance for current week (last 7 days)
-                // 30% chance for today/yesterday
-                // 30% chance for older (within 90 days)
-                var randVal = random.NextDouble();
-                if (randVal < 0.30) // Today or yesterday
-                {
-                    workoutDate = now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24));
-                }
-                else if (randVal < 0.70) // This week (last 7 days)
-                {
-                    workoutDate = now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24));
-                }
-                else // Older data (8-90 days ago)
-                {
-                    workoutDate = now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
-                }
-                attempts++;
-            } while ((existingWorkoutDates.Contains(workoutDate.Date) || createdDates.Contains(workoutDate.Date)) && attempts < 10);
-            
-            // Skip if we couldn't find a unique date after 10 attempts
-            if (existingWorkoutDates.Contains(workoutDate.Date) || createdDates.Contains(workoutDate.Date))
-            {
-                continue;
-            }
-            
-            createdDates.Add(workoutDate.Date);
+            createdDates.Add(workoutDate.Value.Date);
             
             var workoutLog = new WorkoutLog
             {
                 UserId = userId,
-                WorkoutDate = workoutDate,
+                WorkoutDate = workoutDate.Value,
                 DurationMin = random.Next(30, 120),
                 Notes = new Faker().Lorem.Sentence(),
             };
             
-            if (exerciseIds.Any())
-            {
-                int sessionCount = random.Next(4, 8); // More exercises per session
-                for (int s = 0; s < sessionCount; s++)
-                {
-                    var exerciseId = exerciseIds[random.Next(exerciseIds.Count)];
-                    workoutLog.ExerciseSessions.Add(new ExerciseSession
-                    {
-                        ExerciseId = exerciseId,
-                        Sets = random.Next(3, 6),
-                        Reps = random.Next(8, 15),
-                        WeightKg = (decimal)random.Next(10, 100),
-                        Rpe = (decimal)random.NextDouble() * 3 + 6 // 6.0 - 9.0
-                    });
-                }
-            }
+            AddExerciseSessions(workoutLog, random, exerciseIds);
             _dbContext.WorkoutLogs.Add(workoutLog);
+        }
+    }
+
+    private void AddExerciseSessions(WorkoutLog workoutLog, Random random, List<int> exerciseIds)
+    {
+        if (!exerciseIds.Any()) return;
+        
+        int sessionCount = random.Next(4, 8);
+        for (int s = 0; s < sessionCount; s++)
+        {
+            workoutLog.ExerciseSessions.Add(new ExerciseSession
+            {
+                ExerciseId = exerciseIds[random.Next(exerciseIds.Count)],
+                Sets = random.Next(3, 6),
+                Reps = random.Next(8, 15),
+                WeightKg = (decimal)random.Next(10, 100),
+                Rpe = (decimal)random.NextDouble() * 3 + 6
+            });
         }
     }
 
     private void CreateRecentNutritionLogs(int userId, Random random, List<FoodItem> foodItems)
     {
-        // Get existing log dates to avoid duplicates
         var existingLogDates = _dbContext.NutritionLogs
             .Where(n => n.UserId == userId)
             .Select(n => n.LogDate.Date)
             .ToHashSet();
         
-        // Increased nutrition count: 60-90 logs, focused on recent dates
         int nutritionCount = random.Next(60, 91);
         var now = DateTime.UtcNow;
         var createdDates = new HashSet<DateTime>();
         
         for (int n = 0; n < nutritionCount; n++)
         {
-            DateTime logDate;
-            int attempts = 0;
+            var logDate = GenerateRandomDate(random, now, existingLogDates, createdDates, 10);
+            if (logDate == null) continue;
             
-            // Try to find a unique date (max 10 attempts per log)
-            do
-            {
-                // 40% chance for current week
-                // 30% chance for today/yesterday
-                // 30% chance for older
-                var rand = random.NextDouble();
-                if (rand < 0.30) // Today or yesterday
-                {
-                    logDate = now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24));
-                }
-                else if (rand < 0.70) // This week
-                {
-                    logDate = now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24));
-                }
-                else // Older
-                {
-                    logDate = now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
-                }
-                attempts++;
-            } while ((existingLogDates.Contains(logDate.Date) || createdDates.Contains(logDate.Date)) && attempts < 10);
-            
-            // Skip if we couldn't find a unique date after 10 attempts
-            if (existingLogDates.Contains(logDate.Date) || createdDates.Contains(logDate.Date))
-            {
-                continue;
-            }
-            
-            createdDates.Add(logDate.Date);
+            createdDates.Add(logDate.Value.Date);
             
             var nutritionLog = new NutritionLog
             {
                 UserId = userId,
-                LogDate = logDate,
+                LogDate = logDate.Value,
                 Notes = new Faker().PickRandom("Ăn ngon", "Hơi no", "Healthy meal", "Bữa chính", null)
             };
 
             if (foodItems.Any())
             {
-                decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+                var (tCal, tP, tC, tF) = AddMealEntries(nutritionLog, random, foodItems);
                 
-                // Always create Breakfast, Lunch, Dinner (1-2 items each)
-                var requiredMeals = new[] { "Breakfast", "Lunch", "Dinner" };
-                foreach (var mealType in requiredMeals)
-                {
-                    int itemsInMeal = random.Next(1, 3); // 1-2 items per meal
-                    for (int i = 0; i < itemsInMeal; i++)
-                    {
-                        var food = foodItems[random.Next(foodItems.Count)];
-                        var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5);
-
-                        var entry = new FoodEntry
-                        {
-                            FoodItemId = food.FoodItemId,
-                            Quantity = qtyRatio * food.ServingSize,
-                            CaloriesKcal = food.CaloriesKcal * qtyRatio,
-                            ProteinG = food.ProteinG * qtyRatio,
-                            CarbsG = food.CarbsG * qtyRatio,
-                            FatG = food.FatG * qtyRatio,
-                            MealType = mealType
-                        };
-
-                        tCal += entry.CaloriesKcal ?? 0;
-                        tP += entry.ProteinG ?? 0;
-                        tC += entry.CarbsG ?? 0;
-                        tF += entry.FatG ?? 0;
-
-                        nutritionLog.FoodEntries.Add(entry);
-                    }
-                }
-
-                // Optional: 50% chance to add 1-2 snacks
                 if (random.NextDouble() < 0.5)
                 {
-                    int snackCount = random.Next(1, 3);
-                    for (int i = 0; i < snackCount; i++)
-                    {
-                        var food = foodItems[random.Next(foodItems.Count)];
-                        var qtyRatio = (decimal)(random.NextDouble() * 1.0 + 0.3); // Smaller portions for snacks
-
-                        var entry = new FoodEntry
-                        {
-                            FoodItemId = food.FoodItemId,
-                            Quantity = qtyRatio * food.ServingSize,
-                            CaloriesKcal = food.CaloriesKcal * qtyRatio,
-                            ProteinG = food.ProteinG * qtyRatio,
-                            CarbsG = food.CarbsG * qtyRatio,
-                            FatG = food.FatG * qtyRatio,
-                            MealType = "Snack"
-                        };
-
-                        tCal += entry.CaloriesKcal ?? 0;
-                        tP += entry.ProteinG ?? 0;
-                        tC += entry.CarbsG ?? 0;
-                        tF += entry.FatG ?? 0;
-
-                        nutritionLog.FoodEntries.Add(entry);
-                    }
+                    var snackTotals = AddSnackEntries(nutritionLog, random, foodItems);
+                    tCal += snackTotals.cal;
+                    tP += snackTotals.p;
+                    tC += snackTotals.c;
+                    tF += snackTotals.f;
                 }
                 
                 nutritionLog.TotalCalories = tCal;
@@ -902,6 +801,73 @@ public class DataSeeder
             }
             _dbContext.NutritionLogs.Add(nutritionLog);
         }
+    }
+
+    private DateTime? GenerateRandomDate(Random random, DateTime now, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
+    {
+        for (int attempts = 0; attempts < maxAttempts; attempts++)
+        {
+            var rand = random.NextDouble();
+            DateTime date = rand < 0.30 
+                ? now.AddDays(-random.Next(0, 2)).AddHours(-random.Next(0, 24))
+                : rand < 0.70 
+                    ? now.AddDays(-random.Next(2, 8)).AddHours(-random.Next(0, 24))
+                    : now.AddDays(-random.Next(8, 91)).AddHours(-random.Next(0, 24));
+
+            if (!existingDates.Contains(date.Date) && !createdDates.Contains(date.Date))
+                return date;
+        }
+        return null;
+    }
+
+    private (decimal cal, decimal p, decimal c, decimal f) AddMealEntries(NutritionLog log, Random random, List<FoodItem> foodItems)
+    {
+        decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+        var requiredMeals = new[] { "Breakfast", "Lunch", "Dinner" };
+        
+        foreach (var mealType in requiredMeals)
+        {
+            int itemsInMeal = random.Next(1, 3);
+            for (int i = 0; i < itemsInMeal; i++)
+            {
+                var totals = AddFoodEntry(log, random, foodItems, mealType, 0.5, 2.0);
+                tCal += totals.cal; tP += totals.p; tC += totals.c; tF += totals.f;
+            }
+        }
+        return (tCal, tP, tC, tF);
+    }
+
+    private (decimal cal, decimal p, decimal c, decimal f) AddSnackEntries(NutritionLog log, Random random, List<FoodItem> foodItems)
+    {
+        decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+        int snackCount = random.Next(1, 3);
+        
+        for (int i = 0; i < snackCount; i++)
+        {
+            var totals = AddFoodEntry(log, random, foodItems, "Snack", 0.3, 1.3);
+            tCal += totals.cal; tP += totals.p; tC += totals.c; tF += totals.f;
+        }
+        return (tCal, tP, tC, tF);
+    }
+
+    private (decimal cal, decimal p, decimal c, decimal f) AddFoodEntry(NutritionLog log, Random random, List<FoodItem> foodItems, string mealType, double minRatio, double maxRatio)
+    {
+        var food = foodItems[random.Next(foodItems.Count)];
+        var qtyRatio = (decimal)(random.NextDouble() * (maxRatio - minRatio) + minRatio);
+
+        var entry = new FoodEntry
+        {
+            FoodItemId = food.FoodItemId,
+            Quantity = qtyRatio * food.ServingSize,
+            CaloriesKcal = food.CaloriesKcal * qtyRatio,
+            ProteinG = food.ProteinG * qtyRatio,
+            CarbsG = food.CarbsG * qtyRatio,
+            FatG = food.FatG * qtyRatio,
+            MealType = mealType
+        };
+
+        log.FoodEntries.Add(entry);
+        return (entry.CaloriesKcal ?? 0, entry.ProteinG ?? 0, entry.CarbsG ?? 0, entry.FatG ?? 0);
     }
     
     // Keep old methods for backward compatibility but unused now
@@ -965,7 +931,6 @@ public class DataSeeder
 
     private void CreateFakeNutritionLogs(int userId, Random random, List<FoodItem> foodItems)
     {
-        // Get existing log dates to avoid duplicates
         var existingLogDates = _dbContext.NutritionLogs
             .Where(n => n.UserId == userId)
             .Select(n => n.LogDate.Date)
@@ -973,95 +938,33 @@ public class DataSeeder
         
         int nutritionCount = random.Next(30, 50);
         var createdDates = new HashSet<DateTime>();
+        var faker = new Faker();
         
         for (int n = 0; n < nutritionCount; n++)
         {
-            DateTime logDate;
-            int attempts = 0;
+            var logDate = GenerateFakeDate(faker, existingLogDates, createdDates, 10);
+            if (logDate == null) continue;
             
-            // Try to find a unique date (max 10 attempts per log)
-            do
-            {
-                logDate = new Faker().Date.Between(DateTime.UtcNow.AddDays(-90), DateTime.UtcNow);
-                attempts++;
-            } while ((existingLogDates.Contains(logDate.Date) || createdDates.Contains(logDate.Date)) && attempts < 10);
-            
-            // Skip if we couldn't find a unique date after 10 attempts
-            if (existingLogDates.Contains(logDate.Date) || createdDates.Contains(logDate.Date))
-            {
-                continue;
-            }
-            
-            createdDates.Add(logDate.Date);
+            createdDates.Add(logDate.Value.Date);
             
             var nutritionLog = new NutritionLog
             {
                 UserId = userId,
-                LogDate = logDate.Date, // Store date only without time
-                Notes = new Faker().PickRandom("Ăn ngon", "Hơi no", "Healthy meal", null)
+                LogDate = logDate.Value.Date,
+                Notes = faker.PickRandom("Ăn ngon", "Hơi no", "Healthy meal", null)
             };
 
             if (foodItems.Any())
             {
-                decimal tCal = 0, tP = 0, tC = 0, tF = 0;
+                var (tCal, tP, tC, tF) = AddMealEntries(nutritionLog, random, foodItems);
                 
-                // Always create Breakfast, Lunch, Dinner (1-2 items each)
-                var requiredMeals = new[] { "Breakfast", "Lunch", "Dinner" };
-                foreach (var mealType in requiredMeals)
-                {
-                    int itemsInMeal = random.Next(1, 3);
-                    for (int i = 0; i < itemsInMeal; i++)
-                    {
-                        var food = foodItems[random.Next(foodItems.Count)];
-                        var qtyRatio = (decimal)(random.NextDouble() * 1.5 + 0.5);
-
-                        var entry = new FoodEntry
-                        {
-                            FoodItemId = food.FoodItemId,
-                            Quantity = qtyRatio * food.ServingSize,
-                            CaloriesKcal = food.CaloriesKcal * qtyRatio,
-                            ProteinG = food.ProteinG * qtyRatio,
-                            CarbsG = food.CarbsG * qtyRatio,
-                            FatG = food.FatG * qtyRatio,
-                            MealType = mealType
-                        };
-
-                        tCal += entry.CaloriesKcal ?? 0;
-                        tP += entry.ProteinG ?? 0;
-                        tC += entry.CarbsG ?? 0;
-                        tF += entry.FatG ?? 0;
-
-                        nutritionLog.FoodEntries.Add(entry);
-                    }
-                }
-
-                // Optional: 50% chance to add snacks
                 if (random.NextDouble() < 0.5)
                 {
-                    int snackCount = random.Next(1, 3);
-                    for (int i = 0; i < snackCount; i++)
-                    {
-                        var food = foodItems[random.Next(foodItems.Count)];
-                        var qtyRatio = (decimal)(random.NextDouble() * 1.0 + 0.3);
-
-                        var entry = new FoodEntry
-                        {
-                            FoodItemId = food.FoodItemId,
-                            Quantity = qtyRatio * food.ServingSize,
-                            CaloriesKcal = food.CaloriesKcal * qtyRatio,
-                            ProteinG = food.ProteinG * qtyRatio,
-                            CarbsG = food.CarbsG * qtyRatio,
-                            FatG = food.FatG * qtyRatio,
-                            MealType = "Snack"
-                        };
-
-                        tCal += entry.CaloriesKcal ?? 0;
-                        tP += entry.ProteinG ?? 0;
-                        tC += entry.CarbsG ?? 0;
-                        tF += entry.FatG ?? 0;
-
-                        nutritionLog.FoodEntries.Add(entry);
-                    }
+                    var snackTotals = AddSnackEntries(nutritionLog, random, foodItems);
+                    tCal += snackTotals.cal;
+                    tP += snackTotals.p;
+                    tC += snackTotals.c;
+                    tF += snackTotals.f;
                 }
                 
                 nutritionLog.TotalCalories = tCal;
@@ -1071,6 +974,17 @@ public class DataSeeder
             }
             _dbContext.NutritionLogs.Add(nutritionLog);
         }
+    }
+
+    private DateTime? GenerateFakeDate(Faker faker, HashSet<DateTime> existingDates, HashSet<DateTime> createdDates, int maxAttempts)
+    {
+        for (int attempts = 0; attempts < maxAttempts; attempts++)
+        {
+            var date = faker.Date.Between(DateTime.UtcNow.AddDays(-90), DateTime.UtcNow);
+            if (!existingDates.Contains(date.Date) && !createdDates.Contains(date.Date))
+                return date;
+        }
+        return null;
     }
 
     private async Task FixExistingUsersAvatars()
@@ -1109,10 +1023,8 @@ public class DataSeeder
         return Convert.ToBase64String(hashedBytes);
     }
 
-    // ===> PHƯƠNG THỨC MỚI ĐỂ SEED ACTION LOGS (DATA WAREHOUSE LITE) <===
     private async Task SeedUserActionsAsync()
     {
-        // Check xem đã có log chưa
         if (await _dbContext.UserActionLogs.AnyAsync())
         {
             Console.WriteLine("[Info] User action logs already exist. Skipping.");
@@ -1121,7 +1033,6 @@ public class DataSeeder
 
         Console.WriteLine("[Seeder] Generating User Action Logs (Data Warehouse Lite)...");
 
-        // Lấy danh sách user cũ để seed (giới hạn 50 users để tránh quá tải)
         var users = await _dbContext.ApplicationUsers
             .Include(u => u.WorkoutLogs)
             .Include(u => u.NutritionLogs)
@@ -1130,99 +1041,96 @@ public class DataSeeder
             .ToListAsync();
 
         var actionLogs = new List<UserActionLog>();
-        var faker = new Faker("vi");
         var random = new Random();
 
         foreach (var user in users)
         {
-            // 1. Tạo Log Đăng nhập/Đăng xuất (Rải rác trong 30 ngày)
-            for (int i = 0; i < 20; i++)
-            {
-                var time = DateTime.UtcNow.AddDays(-random.Next(0, 30)).AddHours(random.Next(6, 22));
-                actionLogs.Add(new UserActionLog
-                {
-                    UserId = user.UserId,
-                    ActionType = "UserLogin",
-                    Description = "Người dùng đăng nhập vào hệ thống",
-                    Timestamp = time
-                });
-            }
-
-            // 2. Tạo Log dựa trên Workout thật đã seed
-            foreach (var workout in user.WorkoutLogs)
-            {
-                // Log lúc bắt đầu tập
-                actionLogs.Add(new UserActionLog
-                {
-                    UserId = user.UserId,
-                    ActionType = "CreateWorkoutLog",
-                    Description = $"Đã ghi nhận buổi tập: {workout.DurationMin} phút",
-                    Timestamp = workout.WorkoutDate.AddMinutes(workout.DurationMin + 5) // Log sau khi tập xong
-                });
-            }
-
-            // 3. Tạo Log dựa trên Nutrition thật đã seed
-            foreach (var nutrition in user.NutritionLogs)
-            {
-                actionLogs.Add(new UserActionLog
-                {
-                    UserId = user.UserId,
-                    ActionType = "CreateNutritionLog",
-                    Description = $"Đã ghi nhật ký ăn uống: {nutrition.TotalCalories:F0} kcal",
-                    Timestamp = nutrition.LogDate.AddHours(random.Next(8, 20))
-                });
-            }
-
-            // 4. Tạo Log Mục tiêu (Goals)
-            foreach (var goal in user.Goals)
-            {
-                actionLogs.Add(new UserActionLog
-                {
-                    UserId = user.UserId,
-                    ActionType = "CreateGoal",
-                    Description = $"Đặt mục tiêu mới: {goal.Type} - {goal.TargetValue}kg",
-                    Timestamp = goal.StartDate
-                });
-
-                if (goal.Status == "completed")
-                {
-                    actionLogs.Add(new UserActionLog
-                    {
-                        UserId = user.UserId,
-                        ActionType = "CompleteGoal",
-                        Description = $"Chúc mừng! Đã hoàn thành mục tiêu {goal.Type}",
-                        Timestamp = goal.EndDate ?? DateTime.UtcNow
-                    });
-                }
-            }
-
-            // 5. Tạo các Log tương tác AI (Fake history chat)
-            int chatCount = random.Next(3, 8);
-            for (int k = 0; k < chatCount; k++)
-            {
-                actionLogs.Add(new UserActionLog
-                {
-                    UserId = user.UserId,
-                    ActionType = "ChatWithAI",
-                    Description = "Đã tương tác với AI Chatbot để được tư vấn",
-                    Timestamp = DateTime.UtcNow.AddDays(-random.Next(1, 10))
-                });
-            }
+            actionLogs.AddRange(GenerateUserActionLogs(user, random));
         }
 
-        // Sắp xếp lại theo thời gian cho chuẩn Data Warehouse
         var sortedLogs = actionLogs.OrderBy(l => l.Timestamp).ToList();
 
-        // Chunk insert để tránh lỗi SQL quá tải params
-        var batchSize = 1000;
+        const int batchSize = 1000;
         for (int i = 0; i < sortedLogs.Count; i += batchSize)
         {
-            var batch = sortedLogs.Skip(i).Take(batchSize).ToList();
-            _dbContext.UserActionLogs.AddRange(batch);
+            _dbContext.UserActionLogs.AddRange(sortedLogs.Skip(i).Take(batchSize));
             await _dbContext.SaveChangesAsync();
         }
 
         Console.WriteLine($"[Success] Seeded {sortedLogs.Count} action logs for AI Context.");
+    }
+
+    private IEnumerable<UserActionLog> GenerateUserActionLogs(ApplicationUser user, Random random)
+    {
+        var logs = new List<UserActionLog>();
+        
+        // 1. Login logs
+        for (int i = 0; i < 20; i++)
+        {
+            logs.Add(new UserActionLog
+            {
+                UserId = user.UserId,
+                ActionType = "UserLogin",
+                Description = "Người dùng đăng nhập vào hệ thống",
+                Timestamp = DateTime.UtcNow.AddDays(-random.Next(0, 30)).AddHours(random.Next(6, 22))
+            });
+        }
+
+        // 2. Workout logs
+        logs.AddRange(user.WorkoutLogs.Select(w => new UserActionLog
+        {
+            UserId = user.UserId,
+            ActionType = "CreateWorkoutLog",
+            Description = $"Đã ghi nhận buổi tập: {w.DurationMin} phút",
+            Timestamp = w.WorkoutDate.AddMinutes(w.DurationMin + 5)
+        }));
+
+        // 3. Nutrition logs
+        logs.AddRange(user.NutritionLogs.Select(n => new UserActionLog
+        {
+            UserId = user.UserId,
+            ActionType = "CreateNutritionLog",
+            Description = $"Đã ghi nhật ký ăn uống: {n.TotalCalories:F0} kcal",
+            Timestamp = n.LogDate.AddHours(random.Next(8, 20))
+        }));
+
+        // 4. Goal logs
+        foreach (var goal in user.Goals)
+        {
+            logs.Add(new UserActionLog
+            {
+                UserId = user.UserId,
+                ActionType = "CreateGoal",
+                Description = $"Đặt mục tiêu mới: {goal.Type} - {goal.TargetValue}kg",
+                Timestamp = goal.StartDate
+            });
+
+            if (goal.Status == "completed")
+            {
+                logs.Add(new UserActionLog
+                {
+                    UserId = user.UserId,
+                    ActionType = "CompleteGoal",
+                    Description = $"Chúc mừng! Đã hoàn thành mục tiêu {goal.Type}",
+                    Timestamp = goal.EndDate ?? DateTime.UtcNow
+                });
+            }
+        }
+
+        // 5. AI chat logs
+        int chatCount = random.Next(3, 8);
+        for (int k = 0; k < chatCount; k++)
+        {
+            logs.Add(new UserActionLog
+            {
+                UserId = user.UserId,
+                ActionType = "ChatWithAI",
+                Description = "Đã tương tác với AI Chatbot để được tư vấn",
+                Timestamp = DateTime.UtcNow.AddDays(-random.Next(1, 10))
+            });
+        }
+
+        return logs;
     }
 }
 

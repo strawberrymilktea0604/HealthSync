@@ -111,50 +111,46 @@ export default function Dashboard() {
     }
   };
 
+  // Helper function to calculate goal progress (reduces cognitive complexity)
+  const calculateGoalProgressFromGoal = (goal: Goal) => {
+    const sortedRecords = goal.progressRecords.sort((a, b) =>
+      new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
+    );
+
+    const firstRecord = sortedRecords[0];
+    const latestRecord = sortedRecords[sortedRecords.length - 1];
+
+    const startValue = firstRecord?.weightKg || firstRecord?.value || 0;
+    const currentValue = latestRecord?.weightKg || latestRecord?.value || startValue;
+    const targetValue = goal.targetValue;
+
+    const isDecreaseGoal = goal.type.toLowerCase().includes('loss') ||
+      goal.type.toLowerCase().includes('giảm') ||
+      targetValue < startValue;
+
+    const progressAmount = isDecreaseGoal ? startValue - currentValue : currentValue - startValue;
+    const remaining = isDecreaseGoal ? currentValue - targetValue : targetValue - currentValue;
+    const totalChange = Math.abs(targetValue - startValue);
+    const progress = totalChange > 0 ? (Math.abs(progressAmount) / totalChange) * 100 : 0;
+
+    return {
+      goalType: goal.type,
+      startValue,
+      currentValue,
+      targetValue,
+      progress: Math.min(100, Math.max(0, progress)),
+      progressAmount,
+      remaining,
+      status: goal.status
+    };
+  };
+
   const loadSelectedGoalDetails = async (goalId: number) => {
     try {
       const goals = await goalService.getGoals();
       const goal = goals.find((g: Goal) => g.goalId === goalId);
-
       if (!goal) return;
-
-      // Calculate progress from goal's progress records
-      const sortedRecords = goal.progressRecords.sort((a, b) =>
-        new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime()
-      );
-
-      const firstRecord = sortedRecords[0];
-      const latestRecord = sortedRecords[sortedRecords.length - 1];
-
-      const startValue = firstRecord?.weightKg || firstRecord?.value || 0;
-      const currentValue = latestRecord?.weightKg || latestRecord?.value || startValue;
-      const targetValue = goal.targetValue;
-
-      const isDecreaseGoal = goal.type.toLowerCase().includes('loss') ||
-        goal.type.toLowerCase().includes('giảm') ||
-        targetValue < startValue;
-
-      const progressAmount = isDecreaseGoal
-        ? startValue - currentValue
-        : currentValue - startValue;
-
-      const remaining = isDecreaseGoal
-        ? currentValue - targetValue
-        : targetValue - currentValue;
-
-      const totalChange = Math.abs(targetValue - startValue);
-      const progress = totalChange > 0 ? (Math.abs(progressAmount) / totalChange) * 100 : 0;
-
-      setSelectedGoalDetails({
-        goalType: goal.type,
-        startValue,
-        currentValue,
-        targetValue,
-        progress: Math.min(100, Math.max(0, progress)),
-        progressAmount,
-        remaining,
-        status: goal.status
-      });
+      setSelectedGoalDetails(calculateGoalProgressFromGoal(goal));
     } catch (error) {
       console.error('Failed to load goal details:', error);
     }

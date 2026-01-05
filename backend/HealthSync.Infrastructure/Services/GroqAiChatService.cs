@@ -36,46 +36,10 @@ public class GroqAiChatService : IAiChatService
         // Parse context to extract detailed user info for optimized prompt
         var contextObj = JsonSerializer.Deserialize<JsonElement>(userContextData);
         
-        // Extract activity logs
-        string activityLogs = "";
-        if (contextObj.TryGetProperty("recentActivityLogs", out var logsElement) && 
-            logsElement.ValueKind == JsonValueKind.String)
-        {
-            activityLogs = logsElement.GetString() ?? "";
-        }
-        
-        // Extract profile data
-        string profileData = "Chưa có thông tin.";
-        string bmiStatus = "N/A";
-        if (contextObj.TryGetProperty("profile", out var profileElement))
-        {
-            var gender = profileElement.TryGetProperty("gender", out var g) ? g.GetString() ?? "N/A" : "N/A";
-            var age = profileElement.TryGetProperty("age", out var a) ? a.GetInt32().ToString() : "N/A";
-            var height = profileElement.TryGetProperty("heightCm", out var h) ? h.GetDecimal().ToString("F1") : "N/A";
-            var weight = profileElement.TryGetProperty("currentWeightKg", out var w) ? w.GetDecimal().ToString("F1") : "N/A";
-            var bmi = profileElement.TryGetProperty("bmi", out var b) ? b.GetDecimal().ToString("F1") : "N/A";
-            bmiStatus = profileElement.TryGetProperty("bmiStatus", out var bs) ? bs.GetString() ?? "N/A" : "N/A";
-            var bmr = profileElement.TryGetProperty("bmr", out var bmrVal) ? bmrVal.GetDecimal().ToString("F0") : "N/A";
-            var activityLevel = profileElement.TryGetProperty("activityLevel", out var al) ? al.GetString() ?? "N/A" : "N/A";
-            
-            profileData = $@"- Giới tính: {gender}
-- Tuổi: {age}
-- Chiều cao: {height}cm | Cân nặng: {weight}kg
-- BMI: {bmi} (Trạng thái: {bmiStatus})
-- BMR: {bmr} kcal/ngày (Năng lượng tiêu hao cơ bản)
-- Mức độ vận động: {activityLevel}";
-        }
-        
-        // Extract goal data
-        string goalData = "Chưa thiết lập mục tiêu.";
-        if (contextObj.TryGetProperty("goal", out var goalElement) && goalElement.ValueKind != JsonValueKind.Null)
-        {
-            var goalType = goalElement.TryGetProperty("type", out var gt) ? gt.GetString() ?? "N/A" : "N/A";
-            var targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
-            var deadline = goalElement.TryGetProperty("deadline", out var dl) ? dl.GetString() ?? "N/A" : "N/A";
-            
-            goalData = $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
-        }
+        // Extract data using helper methods (reduces cognitive complexity)
+        string activityLogs = ExtractActivityLogs(contextObj);
+        string profileData = ExtractProfileData(contextObj, out string bmiStatus);
+        string goalData = ExtractGoalData(contextObj);
         
         // System Prompt with Enhanced Context Injection
         string systemPrompt = $@"
@@ -181,5 +145,59 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
     {
         [JsonPropertyName("content")]
         public string? Content { get; set; }
+    }
+
+    private static string ExtractActivityLogs(JsonElement contextObj)
+    {
+        if (contextObj.TryGetProperty("recentActivityLogs", out var logsElement) && 
+            logsElement.ValueKind == JsonValueKind.String)
+        {
+            return logsElement.GetString() ?? "";
+        }
+        return "";
+    }
+
+    private static string ExtractProfileData(JsonElement contextObj, out string bmiStatus)
+    {
+        bmiStatus = "N/A";
+        if (!contextObj.TryGetProperty("profile", out var profileElement))
+        {
+            return "Chưa có thông tin.";
+        }
+
+        string gender = GetJsonStringProperty(profileElement, "gender");
+        string age = profileElement.TryGetProperty("age", out var a) ? a.GetInt32().ToString() : "N/A";
+        string height = profileElement.TryGetProperty("heightCm", out var h) ? h.GetDecimal().ToString("F1") : "N/A";
+        string weight = profileElement.TryGetProperty("currentWeightKg", out var w) ? w.GetDecimal().ToString("F1") : "N/A";
+        string bmi = profileElement.TryGetProperty("bmi", out var b) ? b.GetDecimal().ToString("F1") : "N/A";
+        bmiStatus = GetJsonStringProperty(profileElement, "bmiStatus");
+        string bmr = profileElement.TryGetProperty("bmr", out var bmrVal) ? bmrVal.GetDecimal().ToString("F0") : "N/A";
+        string activityLevel = GetJsonStringProperty(profileElement, "activityLevel");
+
+        return $@"- Giới tính: {gender}
+- Tuổi: {age}
+- Chiều cao: {height}cm | Cân nặng: {weight}kg
+- BMI: {bmi} (Trạng thái: {bmiStatus})
+- BMR: {bmr} kcal/ngày (Năng lượng tiêu hao cơ bản)
+- Mức độ vận động: {activityLevel}";
+    }
+
+    private static string ExtractGoalData(JsonElement contextObj)
+    {
+        if (!contextObj.TryGetProperty("goal", out var goalElement) || goalElement.ValueKind == JsonValueKind.Null)
+        {
+            return "Chưa thiết lập mục tiêu.";
+        }
+
+        string goalType = GetJsonStringProperty(goalElement, "type");
+        string targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
+        string deadline = GetJsonStringProperty(goalElement, "deadline");
+
+        return $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
+    }
+
+    private static string GetJsonStringProperty(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var prop) ? prop.GetString() ?? "N/A" : "N/A";
     }
 }

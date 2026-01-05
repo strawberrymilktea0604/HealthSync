@@ -48,47 +48,53 @@ const FoodSearch = () => {
     loadFoodItems();
   };
 
-  // Client-side filtering logic to match the UI selectors
-  const filteredItems = foodItems.filter(item => {
-    // 1. Category filter - based on food name patterns (Vietnamese food)
-    if (category !== 'all') {
-      const name = item.name.toLowerCase();
-      if (category === 'main') {
-        // Main dishes: rice, noodles, pho, etc.
-        if (!/(cơm|phở|bún|miến|hủ tiếu|bánh mì|mì|canh|lẩu)/.test(name)) return false;
-      } else if (category === 'side') {
-        // Side dishes: vegetables, soups
-        if (!/(rau|canh|súp|xào|luộc|gỏi|salad)/.test(name)) return false;
-      } else if (category === 'snack') {
-        // Snacks: fruits, desserts
-        if (!/(trái cây|bánh|chè|kem|sữa chua|trà|nước)/.test(name)) return false;
-      }
-    }
+  // Helper functions for filtering (reduces cognitive complexity)
+  const matchesCategory = (name: string, cat: string): boolean => {
+    if (cat === 'all') return true;
+    const lowerName = name.toLowerCase();
+    const categoryPatterns: Record<string, RegExp> = {
+      main: /(cơm|phở|bún|miến|hủ tiếu|bánh mì|mì|canh|lẩu)/,
+      side: /(rau|canh|súp|xào|luộc|gỏi|salad)/,
+      snack: /(trái cây|bánh|chè|kem|sữa chua|trà|nước)/
+    };
+    return categoryPatterns[cat]?.test(lowerName) ?? true;
+  };
 
-    // 2. Calorie Range
-    if (calorieRange !== 'all') {
-      const cal = item.caloriesKcal;
-      if (calorieRange === 'low' && cal > 200) return false;
-      if (calorieRange === 'medium' && (cal <= 200 || cal > 500)) return false;
-      if (calorieRange === 'high' && cal <= 500) return false;
-    }
+  const matchesCalorieRange = (cal: number, range: string): boolean => {
+    const ranges: Record<string, (c: number) => boolean> = {
+      all: () => true,
+      low: (c) => c <= 200,
+      medium: (c) => c > 200 && c <= 500,
+      high: (c) => c > 500
+    };
+    return ranges[range]?.(cal) ?? true;
+  };
 
-    // 3. Protein Range
-    if (proteinRange !== 'all') {
-      const p = item.proteinG;
-      if (proteinRange === 'high' && p < 20) return false;
-      if (proteinRange === 'low' && p >= 20) return false;
-    }
+  const matchesProteinRange = (protein: number, range: string): boolean => {
+    const ranges: Record<string, (p: number) => boolean> = {
+      all: () => true,
+      high: (p) => p >= 20,
+      low: (p) => p < 20
+    };
+    return ranges[range]?.(protein) ?? true;
+  };
 
-    // 4. Carb Range
-    if (carbRange !== 'all') {
-      const c = item.carbsG;
-      if (carbRange === 'low' && c > 30) return false;
-      if (carbRange === 'high' && c <= 30) return false;
-    }
+  const matchesCarbRange = (carbs: number, range: string): boolean => {
+    const ranges: Record<string, (c: number) => boolean> = {
+      all: () => true,
+      low: (c) => c <= 30,
+      high: (c) => c > 30
+    };
+    return ranges[range]?.(carbs) ?? true;
+  };
 
-    return true;
-  });
+  // Client-side filtering logic using helper functions
+  const filteredItems = foodItems.filter(item =>
+    matchesCategory(item.name, category) &&
+    matchesCalorieRange(item.caloriesKcal, calorieRange) &&
+    matchesProteinRange(item.proteinG, proteinRange) &&
+    matchesCarbRange(item.carbsG, carbRange)
+  );
 
   return (
     <div className="min-h-screen bg-[#FDFBD4] font-sans selection:bg-[#EBE9C0] selection:text-black">

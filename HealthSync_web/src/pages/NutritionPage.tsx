@@ -99,32 +99,41 @@ const NutritionPage: React.FC = () => {
     loadFoodItems(searchQuery);
   };
 
-  // Apply filters to food items
-  const filteredFoodItems = foodItems.filter(item => {
-    // Calorie filter
-    if (calorieFilter !== 'all') {
-      const cal = item.caloriesKcal;
-      if (calorieFilter === 'low' && cal > 200) return false;
-      if (calorieFilter === 'medium' && (cal <= 200 || cal > 500)) return false;
-      if (calorieFilter === 'high' && cal <= 500) return false;
-    }
+  // Helper functions for filtering (reduces cognitive complexity)
+  const matchesCalorieFilter = (cal: number, filter: string): boolean => {
+    const ranges: Record<string, (c: number) => boolean> = {
+      all: () => true,
+      low: (c) => c <= 200,
+      medium: (c) => c > 200 && c <= 500,
+      high: (c) => c > 500
+    };
+    return ranges[filter]?.(cal) ?? true;
+  };
 
-    // Protein filter
-    if (proteinFilter !== 'all') {
-      const p = item.proteinG;
-      if (proteinFilter === 'high' && p < 20) return false;
-      if (proteinFilter === 'low' && p >= 20) return false;
-    }
+  const matchesProteinFilter = (protein: number, filter: string): boolean => {
+    const ranges: Record<string, (p: number) => boolean> = {
+      all: () => true,
+      high: (p) => p >= 20,
+      low: (p) => p < 20
+    };
+    return ranges[filter]?.(protein) ?? true;
+  };
 
-    // Carb filter
-    if (carbFilter !== 'all') {
-      const c = item.carbsG;
-      if (carbFilter === 'low' && c > 30) return false;
-      if (carbFilter === 'high' && c <= 30) return false;
-    }
+  const matchesCarbFilter = (carbs: number, filter: string): boolean => {
+    const ranges: Record<string, (c: number) => boolean> = {
+      all: () => true,
+      low: (c) => c <= 30,
+      high: (c) => c > 30
+    };
+    return ranges[filter]?.(carbs) ?? true;
+  };
 
-    return true;
-  });
+  // Apply filters to food items using helper functions
+  const filteredFoodItems = foodItems.filter(item =>
+    matchesCalorieFilter(item.caloriesKcal, calorieFilter) &&
+    matchesProteinFilter(item.proteinG, proteinFilter) &&
+    matchesCarbFilter(item.carbsG, carbFilter)
+  );
 
   const handleAddFood = async () => {
     if (!selectedFoodItem || quantity <= 0) {
@@ -514,7 +523,7 @@ const NutritionPage: React.FC = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Food Info */}
                       <div className="flex-1">
                         <p className="font-bold text-[#2d2d2d]">{entry.foodItemName}</p>
@@ -527,7 +536,7 @@ const NutritionPage: React.FC = () => {
                           P: {entry.proteinG.toFixed(1)}g | C: {entry.carbsG.toFixed(1)}g | F: {entry.fatG.toFixed(1)}g
                         </p>
                       </div>
-                      
+
                       {/* Delete Button */}
                       <Button
                         variant="ghost"

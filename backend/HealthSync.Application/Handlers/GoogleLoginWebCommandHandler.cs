@@ -60,93 +60,11 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
 
         if (user == null)
         {
-            // Create new user for first-time Google login
-            user = new ApplicationUser
-            {
-                Email = googleUser.Email,
-                PasswordHash = "", // No password for OAuth users
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                AvatarUrl = googleUser.Picture ?? ""
-            };
-
-            _context.Add(user);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            // Get Customer role
-            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer", cancellationToken);
-            if (customerRole != null)
-            {
-                var userRole = new UserRole
-                {
-                    UserId = user.UserId,
-                    RoleId = customerRole.Id
-                };
-                _context.Add(userRole);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
-
-            // Create profile with Google info
-            var profile = new UserProfile
-            {
-                UserId = user.UserId,
-                FullName = googleUser.Name ?? googleUser.Email,
-                AvatarUrl = googleUser.Picture ?? "",
-                Dob = DateTime.UtcNow.AddYears(-25), // Default age
-                Gender = "Unknown",
-                HeightCm = 0, // Will be filled later
-                WeightKg = 0, // Will be filled later
-                ActivityLevel = "Moderate"
-            };
-
-            _context.Add(profile);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            // Reload user with profile and permissions
-            user = await _context.ApplicationUsers
-                .Include(u => u.Profile)
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
-                        .ThenInclude(r => r.RolePermissions)
-                            .ThenInclude(rp => rp.Permission)
-                .FirstOrDefaultAsync(u => u.UserId == user.UserId, cancellationToken);
+            user = await CreateNewGoogleUserAsync(googleUser, cancellationToken);
         }
         else
         {
-            // User exists (either from regular registration or previous Google login)
-            // Update profile with latest Google info if available
-            if (!string.IsNullOrEmpty(googleUser.Picture))
-            {
-                bool hasUpdates = false;
-
-                if (user.Profile != null)
-                {
-                    // Only update if avatar is NOT set
-                    if (string.IsNullOrEmpty(user.Profile.AvatarUrl))
-                    {
-                        user.Profile.AvatarUrl = googleUser.Picture;
-                        hasUpdates = true;
-                    }
-
-                    if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
-                    {
-                        user.Profile.FullName = googleUser.Name;
-                        hasUpdates = true;
-                    }
-                }
-                
-                // Also update ApplicationUser.AvatarUrl if NOT set
-                if (string.IsNullOrEmpty(user.AvatarUrl))
-                {
-                    user.AvatarUrl = googleUser.Picture;
-                    hasUpdates = true;
-                }
-                
-                if (hasUpdates)
-                {
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-            }
+            await UpdateExistingUserFromGoogleAsync(user, googleUser, cancellationToken);
         }
 
         // Ensure user and profile are loaded
@@ -197,5 +115,83 @@ public class GoogleLoginWebCommandHandler : IRequestHandler<GoogleLoginWebComman
         };
 
         return response;
+    }
+
+    private async Task<ApplicationUser> CreateNewGoogleUserAsync(GoogleUserInfo googleUser, CancellationToken cancellationToken)
+    {
+        var user = new ApplicationUser
+        {
+            Email = googleUser.Email,
+            PasswordHash = "",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            AvatarUrl = googleUser.Picture ?? ""
+        };
+
+        _context.Add(user);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer", cancellationToken);
+        if (customerRole != null)
+        {
+            _context.Add(new UserRole { UserId = user.UserId, RoleId = customerRole.Id });
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        var profile = new UserProfile
+        {
+            UserId = user.UserId,
+            FullName = googleUser.Name ?? googleUser.Email,
+            AvatarUrl = googleUser.Picture ?? "",
+            Dob = DateTime.UtcNow.AddYears(-25),
+            Gender = "Unknown",
+            HeightCm = 0,
+            WeightKg = 0,
+            ActivityLevel = "Moderate"
+        };
+
+        _context.Add(profile);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        // Reload user with profile and permissions
+        return await _context.ApplicationUsers
+            .Include(u => u.Profile)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .FirstOrDefaultAsync(u => u.UserId == user.UserId, cancellationToken) ?? user;
+    }
+
+    private async Task UpdateExistingUserFromGoogleAsync(ApplicationUser user, GoogleUserInfo googleUser, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(googleUser.Picture)) return;
+
+        bool hasUpdates = false;
+
+        if (user.Profile != null)
+        {
+            if (string.IsNullOrEmpty(user.Profile.AvatarUrl))
+            {
+                user.Profile.AvatarUrl = googleUser.Picture;
+                hasUpdates = true;
+            }
+            if (string.IsNullOrEmpty(user.Profile.FullName) && !string.IsNullOrEmpty(googleUser.Name))
+            {
+                user.Profile.FullName = googleUser.Name;
+                hasUpdates = true;
+            }
+        }
+
+        if (string.IsNullOrEmpty(user.AvatarUrl))
+        {
+            user.AvatarUrl = googleUser.Picture;
+            hasUpdates = true;
+        }
+
+        if (hasUpdates)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }
