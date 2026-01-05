@@ -117,8 +117,8 @@ export default function NutritionHistory() {
               variant={viewMode === "week" ? "default" : "outline"}
               size="lg"
               className={`rounded-2xl px-6 font-semibold transition-all ${viewMode === "week"
-                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
-                  : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
+                ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
+                : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
                 }`}
               onClick={() => setViewMode("week")}
             >
@@ -129,8 +129,8 @@ export default function NutritionHistory() {
               variant={viewMode === "month" ? "default" : "outline"}
               size="lg"
               className={`rounded-2xl px-6 font-semibold transition-all ${viewMode === "month"
-                  ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
-                  : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
+                ? "bg-[#4A6F6F] hover:bg-[#3d5c5c] text-white shadow-md"
+                : "bg-white/80 hover:bg-white border-2 border-[#4A6F6F]/20"
                 }`}
               onClick={() => setViewMode("month")}
             >
@@ -312,7 +312,7 @@ export default function NutritionHistory() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
 
               {logs.length === 0 && (
