@@ -45,9 +45,9 @@ public class InfrastructureTests
     }
 
     [Fact]
-    public void GeminiAiChatService_ShouldImplementInterface()
+    public void GroqAiChatService_ShouldImplementInterface()
     {
-        var serviceType = typeof(GeminiAiChatService);
+        var serviceType = typeof(GroqAiChatService);
         var interfaceType = typeof(IAiChatService);
         Assert.True(interfaceType.IsAssignableFrom(serviceType));
     }

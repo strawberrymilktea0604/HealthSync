@@ -1,35 +1,31 @@
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.Extensions.Configuration;
 using HealthSync.Domain.Interfaces;
-
-#pragma warning disable SKEXP0070
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HealthSync.Infrastructure.Services;
 
-public class GeminiAiChatService : IAiChatService
+public class GroqAiChatService : IAiChatService
 {
-    private readonly Kernel _kernel;
-    private readonly IChatCompletionService _chatCompletionService;
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+    private readonly string _modelId;
 
-    public GeminiAiChatService(IConfiguration configuration)
+    public GroqAiChatService(IConfiguration configuration)
     {
         // Đọc từ environment variable trước, fallback về appsettings
-        var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") 
-                     ?? configuration["Gemini:ApiKey"] 
-                     ?? throw new InvalidOperationException("Gemini API Key is not configured. Set GEMINI_API_KEY environment variable or Gemini:ApiKey in appsettings.json");
-        var modelId = configuration["Gemini:ModelId"] ?? "gemini-1.5-flash";
-
-        var builder = Kernel.CreateBuilder();
+        _apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
+                  ?? configuration["Groq:ApiKey"] 
+                  ?? throw new InvalidOperationException("Groq API Key is not configured. Set GROQ_API_KEY environment variable or Groq:ApiKey in appsettings.json");
         
-        builder.AddGoogleAIGeminiChatCompletion(
-            modelId: modelId,
-            apiKey: apiKey
-        );
-
-        _kernel = builder.Build();
-        _chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+        _modelId = configuration["Groq:ModelId"] ?? "openai/gpt-oss-120b";
+        
+        _httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("https://api.groq.com/openai/v1/")
+        };
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
     }
 
     public async Task<string> GetHealthAdviceAsync(
@@ -37,22 +33,20 @@ public class GeminiAiChatService : IAiChatService
         string userQuestion, 
         CancellationToken cancellationToken = default)
     {
-        var history = new ChatHistory();
-
         // Parse context to extract detailed user info for optimized prompt
-        var contextObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(userContextData);
+        var contextObj = JsonSerializer.Deserialize<JsonElement>(userContextData);
         
         // Extract activity logs
         string activityLogs = "";
         if (contextObj.TryGetProperty("recentActivityLogs", out var logsElement) && 
-            logsElement.ValueKind == System.Text.Json.JsonValueKind.String)
+            logsElement.ValueKind == JsonValueKind.String)
         {
             activityLogs = logsElement.GetString() ?? "";
         }
         
         // Extract profile data
         string profileData = "Chưa có thông tin.";
-        string bmiStatus = "N/A"; // Declare outside if block to use in prompt
+        string bmiStatus = "N/A";
         if (contextObj.TryGetProperty("profile", out var profileElement))
         {
             var gender = profileElement.TryGetProperty("gender", out var g) ? g.GetString() ?? "N/A" : "N/A";
@@ -74,7 +68,7 @@ public class GeminiAiChatService : IAiChatService
         
         // Extract goal data
         string goalData = "Chưa thiết lập mục tiêu.";
-        if (contextObj.TryGetProperty("goal", out var goalElement) && goalElement.ValueKind != System.Text.Json.JsonValueKind.Null)
+        if (contextObj.TryGetProperty("goal", out var goalElement) && goalElement.ValueKind != JsonValueKind.Null)
         {
             var goalType = goalElement.TryGetProperty("type", out var gt) ? gt.GetString() ?? "N/A" : "N/A";
             var targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
@@ -83,7 +77,7 @@ public class GeminiAiChatService : IAiChatService
             goalData = $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
         }
         
-        // System Prompt with Enhanced Context Injection (Ultimate Prompt Strategy)
+        // System Prompt with Enhanced Context Injection
         string systemPrompt = $@"
 🏋️‍♂️ Bạn là HealthSync Coach - Trợ lý sức khỏe cá nhân chuyên nghiệp, thấu hiểu và luôn động viên.
 
@@ -131,27 +125,61 @@ thì món này hơi cao so với BMR {profileData}. Chiều nay cố gắng tậ
 ════════════════════════════════════════════════════════════════
 Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT CẢ thông tin trên.
 ════════════════════════════════════════════════════════════════";
-        
-        history.AddSystemMessage(systemPrompt);
-        history.AddUserMessage(userQuestion);
 
-        // Call Gemini API
-        var executionSettings = new PromptExecutionSettings
+        var requestBody = new
         {
-            ExtensionData = new Dictionary<string, object>
+            model = _modelId,
+            messages = new[]
             {
-                { "maxOutputTokens", 500 },
-                { "temperature", 0.7 }
-            }
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userQuestion }
+            },
+            max_completion_tokens = 8192,
+            temperature = 1,
+            top_p = 1,
+            stream = false,
+            reasoning_effort = "medium",
+            stop = (string?)null
         };
 
-        var result = await _chatCompletionService.GetChatMessageContentAsync(
-            history,
-            executionSettings: executionSettings,
-            kernel: _kernel,
-            cancellationToken: cancellationToken
+        var jsonContent = new StringContent(
+            JsonSerializer.Serialize(requestBody),
+            Encoding.UTF8,
+            "application/json"
         );
 
-        return result.Content ?? "Xin lỗi, tôi không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại sau. 🙏";
+        try
+        {
+            var response = await _httpClient.PostAsync("chat/completions", jsonContent, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<GroqResponse>(responseContent);
+
+            return result?.Choices?.FirstOrDefault()?.Message?.Content 
+                   ?? "Xin lỗi, tôi không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại sau. 🙏";
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Error calling Groq API: {ex.Message}", ex);
+        }
+    }
+
+    private class GroqResponse
+    {
+        [JsonPropertyName("choices")]
+        public List<Choice>? Choices { get; set; }
+    }
+
+    private class Choice
+    {
+        [JsonPropertyName("message")]
+        public Message? Message { get; set; }
+    }
+
+    private class Message
+    {
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
     }
 }

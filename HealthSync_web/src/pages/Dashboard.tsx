@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { dashboardService, CustomerDashboard, GoalSummary } from "@/services/dashboardService";
 import { goalService, Goal } from "@/services/goalService";
 import Header from "@/components/Header";
-import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, TrendingUp, Activity, ChevronRight, BarChart3, ChevronDown, Send, User } from "lucide-react";
+import { Loader2, Utensils, Dumbbell, X, Bot, TrendingDown, TrendingUp, Activity, ChevronRight, BarChart3, ChevronDown, Send, User, MessageSquarePlus, History, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 import { format } from "date-fns";
@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [inputMessage, setInputMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
+  const [showChatHistory, setShowChatHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
@@ -159,7 +160,13 @@ export default function Dashboard() {
   // Chat functions
   useEffect(() => {
     if (showChat) {
-      loadChatHistory();
+      // Only load chat history if user is logged in
+      const userJson = localStorage.getItem('user');
+      if (userJson) {
+        loadChatHistory();
+      } else {
+        console.warn('User not logged in - cannot load chat history');
+      }
     }
   }, [showChat]);
 
@@ -176,11 +183,26 @@ export default function Dashboard() {
     try {
       const history = await chatService.getChatHistory();
       setMessages(history);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading chat history:', error);
+      // Don't show error to user, just set empty messages
+      if (error.response?.status === 401) {
+        console.warn('User not authenticated for chat');
+      }
+      setMessages([]);
     } finally {
       setLoadingChat(false);
     }
+  };
+
+  const handleNewChat = () => {
+    if (messages.length > 0) {
+      const confirmNew = window.confirm('Bạn có muốn bắt đầu cuộc trò chuyện mới? Cuộc trò chuyện hiện tại sẽ được lưu vào lịch sử.');
+      if (!confirmNew) return;
+    }
+    setMessages([]);
+    setInputMessage('');
+    setShowChatHistory(false);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -579,106 +601,219 @@ export default function Dashboard() {
         <AnimatePresence>
           {showChat && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              initial={{ opacity: 0, scale: 0.85, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              className="absolute bottom-20 right-0 w-96 h-[32rem] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 origin-bottom-right flex flex-col"
+              exit={{ opacity: 0, scale: 0.85, y: 30 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute bottom-20 right-0 w-[90vw] max-w-[420px] h-[85vh] max-h-[600px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200/50 origin-bottom-right flex flex-col backdrop-blur-xl"
             >
               {/* Header */}
-              <div className="bg-[#EBE9C0] p-4 flex justify-between items-center border-b border-gray-200">
-                <span className="font-bold text-[#2d2d2d] flex items-center gap-2">
-                  <Bot className="w-5 h-5" /> Assistant
-                </span>
-                <button onClick={() => setShowChat(false)} className="hover:bg-black/10 p-1 rounded-full text-[#2d2d2d]">
-                  <X className="w-4 h-4" />
-                </button>
+              <div className="bg-gradient-to-br from-[#EBE9C0] via-[#E5E3B5] to-[#D9D7B6] px-4 py-3.5 flex justify-between items-center border-b border-gray-200/50 backdrop-blur-sm shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center backdrop-blur-sm">
+                    <Bot className="w-6 h-6 text-[#2d2d2d]" />
+                  </div>
+                  <span className="font-bold text-[#2d2d2d]">Assistant</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleNewChat}
+                    className="hover:bg-white/30 p-2 rounded-lg transition-colors text-[#2d2d2d]"
+                    title="Tạo cuộc trò chuyện mới"
+                  >
+                    <MessageSquarePlus className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setShowChatHistory(!showChatHistory)}
+                    className="hover:bg-white/30 p-2 rounded-lg transition-colors text-[#2d2d2d]"
+                    title="Xem lịch sử chat"
+                  >
+                    <History className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={loadChatHistory}
+                    className="hover:bg-white/30 p-2 rounded-lg transition-colors text-[#2d2d2d]"
+                    disabled={loadingChat}
+                    title="Làm mới"
+                  >
+                    <RefreshCw className={`w-5 h-5 ${loadingChat ? 'animate-spin' : ''}`} />
+                  </button>
+                  <button
+                    onClick={() => setShowChat(false)}
+                    className="hover:bg-white/30 p-2 rounded-lg transition-colors text-[#2d2d2d] ml-1"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
-                {loadingChat ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#D4C5A9]" />
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                    <Bot className="w-16 h-16 mb-3 opacity-20" />
-                    <p className="text-sm">Bắt đầu cuộc trò chuyện</p>
-                  </div>
-                ) : (
-                  messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      {message.role === 'assistant' && (
-                        <div className="w-8 h-8 rounded-full bg-[#D4C5A9] flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-4 h-4 text-white" />
+              {/* Main Content Area */}
+              <div className="flex-1 flex overflow-hidden">
+                {/* Chat History Sidebar */}
+                {showChatHistory && (
+                  <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+                    <div className="px-3 py-2 border-b border-gray-200">
+                      <h3 className="text-sm font-semibold text-gray-700">Lịch sử</h3>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+                      {messages.length > 0 ? (
+                        <div className="space-y-1.5">
+                          <div className="p-2.5 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex items-center gap-2 mb-1">
+                              <MessageSquarePlus className="w-3.5 h-3.5 text-[#4A6F6F]" />
+                              <span className="text-xs font-medium text-gray-800">Hiện tại</span>
+                            </div>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {messages[0]?.content.substring(0, 50)}...
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {messages.length} tin nhắn
+                            </p>
+                          </div>
+                          <div className="text-xs text-gray-500 px-2 py-1">Trước đó</div>
+                          <div className="p-2.5 text-center text-xs text-gray-500">
+                            Chưa có lịch sử
+                          </div>
                         </div>
-                      )}
-
-                      <div
-                        className={`max-w-[75%] rounded-2xl px-3 py-2 ${
-                          message.role === 'user'
-                            ? 'bg-[#2d2d2d] text-white'
-                            : 'bg-white border border-gray-200'
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                        <p
-                          className={`text-xs mt-1 ${
-                            message.role === 'user' ? 'text-white/70' : 'text-gray-500'
-                          }`}
-                        >
-                          {formatTime(message.createdAt)}
-                        </p>
-                      </div>
-
-                      {message.role === 'user' && (
-                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                          <User className="w-4 h-4 text-white" />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                          <History className="w-10 h-10 mb-2 opacity-30" />
+                          <p className="text-xs">Chưa có lịch sử</p>
                         </div>
                       )}
                     </div>
-                  ))
+                  </div>
                 )}
-                <div ref={messagesEndRef} />
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/30 to-gray-50/60 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                  {loadingChat ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="w-8 h-8 animate-spin text-[#D4C5A9]" />
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in">
+                      <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-[#EBE9C0]/40 to-[#D9D7B6]/30 flex items-center justify-center mb-4 shadow-lg"
+                      >
+                        <Bot className="w-11 h-11 text-[#4A6F6F] opacity-60" />
+                      </motion.div>
+                      <p className="text-base font-semibold text-gray-700">Xin chào! 👋</p>
+                      <p className="text-sm text-gray-500 mt-2 text-center px-8">Tôi là trợ lý sức khỏe của bạn.<br/>Hỏi tôi bất cứ điều gì!</p>
+                    </div>
+                  ) : (
+                    messages.map((message, index) => (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        className={`flex gap-2.5 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        {message.role === 'assistant' && (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EBE9C0] to-[#D9D7B6] flex items-center justify-center flex-shrink-0 shadow-md ring-2 ring-white/50">
+                            <Bot className="w-5 h-5 text-[#2d2d2d]" />
+                          </div>
+                        )}
+
+                        <div
+                          className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
+                            message.role === 'user'
+                              ? 'bg-gradient-to-br from-[#2d2d2d] via-[#252525] to-[#1a1a1a] text-white shadow-lg'
+                              : 'bg-white border border-gray-200/80 shadow-md hover:shadow-lg transition-shadow'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                          <p
+                            className={`text-[11px] mt-1.5 ${
+                              message.role === 'user' ? 'text-white/60' : 'text-gray-400'
+                            }`}
+                          >
+                            {formatTime(message.createdAt)}
+                          </p>
+                        </div>
+
+                        {message.role === 'user' && (
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md ring-2 ring-white/50">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                      </motion.div>
+                    )))
+                  }
+                  {isSending && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex gap-2.5 justify-start"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EBE9C0] to-[#D9D7B6] flex items-center justify-center flex-shrink-0 shadow-md ring-2 ring-white/50">
+                        <Bot className="w-5 h-5 text-[#2d2d2d]" />
+                      </div>
+                      <div className="bg-white border border-gray-200/80 shadow-md rounded-2xl px-4 py-3">
+                        <div className="flex gap-1.5">
+                          <motion.div
+                            animate={{ scale: [1, 1.3, 1] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                            className="w-2 h-2 bg-gray-400 rounded-full"
+                          />
+                          <motion.div
+                            animate={{ scale: [1, 1.3, 1] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                            className="w-2 h-2 bg-gray-400 rounded-full"
+                          />
+                          <motion.div
+                            animate={{ scale: [1, 1.3, 1] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                            className="w-2 h-2 bg-gray-400 rounded-full"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
 
               {/* Input Form */}
-              <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-200">
-                <div className="flex gap-2">
+              <form onSubmit={handleSendMessage} className="p-3.5 bg-white border-t border-gray-200/50 backdrop-blur-sm">
+                <div className="flex gap-2.5">
                   <input
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder="Nhập câu hỏi của bạn..."
                     disabled={isSending}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D4C5A9] focus:border-transparent text-sm disabled:bg-gray-100"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#D4C5A9] focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed transition-all placeholder:text-gray-400"
                   />
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={isSending || !inputMessage.trim()}
-                    className="w-10 h-10 bg-[#2d2d2d] text-[#EBE9C0] rounded-full flex items-center justify-center hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="w-11 h-11 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] text-[#EBE9C0] rounded-full flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0 shadow-md"
                   >
                     {isSending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <Send className="w-5 h-5" />
+                      <Send className="w-4.5 h-4.5" />
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               </form>
             </motion.div>
           )}
         </AnimatePresence>
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.08, rotate: 5 }}
+          whileTap={{ scale: 0.92 }}
           onClick={() => setShowChat(!showChat)}
-          className="w-14 h-14 bg-[#2d2d2d] rounded-2xl shadow-xl flex items-center justify-center text-[#EBE9C0] hover:bg-black transition-colors"
+          className="w-16 h-16 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] rounded-2xl shadow-2xl flex items-center justify-center text-[#EBE9C0] hover:shadow-[#2d2d2d]/30 transition-all ring-2 ring-white/10"
         >
-          <Bot className="w-7 h-7" />
+          <Bot className="w-8 h-8" />
         </motion.button>
       </div>
 

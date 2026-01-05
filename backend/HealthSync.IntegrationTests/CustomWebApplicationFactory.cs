@@ -45,7 +45,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 ["Email:SmtpPort"] = "587",
                 ["Email:SenderEmail"] = "test@test.com",
                 ["Email:SenderPassword"] = "testpassword",
-                ["Gemini:ApiKey"] = "test-api-key",
+                ["Groq:ApiKey"] = "test-api-key",
                 ["SkipEmailVerification"] = "true",
                 ["Google:ClientId"] = "test-client-id-for-integration-tests",
                 ["Google:ClientSecret"] = "test-client-secret-for-integration-tests",

@@ -31,7 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         
         // Register AI Chat Service
-        services.AddSingleton<IAiChatService, GeminiAiChatService>();
+        services.AddSingleton<IAiChatService, GroqAiChatService>();
 
         // Register DbContext interface
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<HealthSyncDbContext>());
