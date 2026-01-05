@@ -78,6 +78,8 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
         {
             var age = DateTime.Now.Year - profile.Dob.Year;
             var bmr = CalculateBMR(profile.Gender, profile.WeightKg, profile.HeightCm, age);
+            var bmi = CalculateBMI(profile.WeightKg, profile.HeightCm);
+            var bmiStatus = GetBMIStatus(bmi);
 
             context.Profile = new ProfileContextDto
             {
@@ -86,6 +88,8 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
                 HeightCm = profile.HeightCm,
                 CurrentWeightKg = profile.WeightKg,
                 Bmr = bmr,
+                Bmi = bmi,
+                BmiStatus = bmiStatus,
                 ActivityLevel = profile.ActivityLevel
             };
         }
@@ -206,5 +210,20 @@ public class ChatWithBotQueryHandler : IRequestHandler<ChatWithBotQuery, ChatRes
         {
             return 10 * weightKg + 6.25m * heightCm - 5 * age - 161;
         }
+    }
+
+    private static decimal CalculateBMI(decimal weightKg, decimal heightCm)
+    {
+        // BMI = weight(kg) / (height(m))^2
+        var heightM = heightCm / 100;
+        return weightKg / (heightM * heightM);
+    }
+
+    private static string GetBMIStatus(decimal bmi)
+    {
+        if (bmi < 18.5m) return "Thiếu cân";
+        if (bmi < 25m) return "Bình thường";
+        if (bmi < 30m) return "Thừa cân";
+        return "Béo phì";
     }
 }

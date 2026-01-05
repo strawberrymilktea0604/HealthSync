@@ -17,6 +17,8 @@ public class ProfileContextDto
     public decimal HeightCm { get; set; }
     public decimal CurrentWeightKg { get; set; }
     public decimal Bmr { get; set; }
+    public decimal Bmi { get; set; }
+    public string BmiStatus { get; set; } = string.Empty; // "Underweight", "Normal", "Overweight", "Obese"
     public string ActivityLevel { get; set; } = string.Empty;
 }
 

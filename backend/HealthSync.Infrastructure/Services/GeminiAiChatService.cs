@@ -49,34 +49,91 @@ public class GeminiAiChatService : IAiChatService
             activityLogs = logsElement.GetString() ?? "";
         }
 
-        // System Prompt with Context Injection + Activity Logs
+        // Parse context to extract detailed user info for optimized prompt
+        var contextObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(userContextData);
+        
+        // Extract profile data
+        string profileData = "Chưa có thông tin.";
+        if (contextObj.TryGetProperty("profile", out var profileElement))
+        {
+            var gender = profileElement.TryGetProperty("gender", out var g) ? g.GetString() : "N/A";
+            var age = profileElement.TryGetProperty("age", out var a) ? a.GetInt32().ToString() : "N/A";
+            var height = profileElement.TryGetProperty("heightCm", out var h) ? h.GetDecimal().ToString("F1") : "N/A";
+            var weight = profileElement.TryGetProperty("currentWeightKg", out var w) ? w.GetDecimal().ToString("F1") : "N/A";
+            var bmi = profileElement.TryGetProperty("bmi", out var b) ? b.GetDecimal().ToString("F1") : "N/A";
+            var bmiStatus = profileElement.TryGetProperty("bmiStatus", out var bs) ? bs.GetString() : "N/A";
+            var bmr = profileElement.TryGetProperty("bmr", out var bmrVal) ? bmrVal.GetDecimal().ToString("F0") : "N/A";
+            var activityLevel = profileElement.TryGetProperty("activityLevel", out var al) ? al.GetString() : "N/A";
+            
+            profileData = $@"- Giới tính: {gender}
+- Tuổi: {age}
+- Chiều cao: {height}cm | Cân nặng: {weight}kg
+- BMI: {bmi} (Trạng thái: {bmiStatus})
+- BMR: {bmr} kcal/ngày (Năng lượng tiêu hao cơ bản)
+- Mức độ vận động: {activityLevel}";
+        }
+        
+        // Extract goal data
+        string goalData = "Chưa thiết lập mục tiêu.";
+        if (contextObj.TryGetProperty("goal", out var goalElement) && goalElement.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            var goalType = goalElement.TryGetProperty("type", out var gt) ? gt.GetString() : "N/A";
+            var targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
+            var deadline = goalElement.TryGetProperty("deadline", out var dl) ? dl.GetString() : "N/A";
+            
+            goalData = $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
+        }
+        
+        // System Prompt with Enhanced Context Injection (Ultimate Prompt Strategy)
         string systemPrompt = $@"
-Bạn là HealthSync Bot - Trợ lý sức khỏe cá nhân chuyên nghiệp và thân thiện. 🏋️‍♂️💪
+🏋️‍♂️ Bạn là HealthSync Coach - Trợ lý sức khỏe cá nhân chuyên nghiệp, thấu hiểu và luôn động viên.
 
-**VAI TRÒ CỦA BẠN:**
-- Tư vấn về dinh dưỡng, luyện tập và sức khỏe dựa trên dữ liệu thực tế của người dùng
-- Luôn khuyến khích và động viên người dùng đạt mục tiêu
-- Đưa ra lời khuyên khoa học, dễ hiểu và có thể thực hiện được
+╔══════════════════════════════════════════════════════════════╗
+║                    HỒ SƠ CÁ NHÂN                            ║
+╚══════════════════════════════════════════════════════════════╝
+{profileData}
 
-**QUY TẮC TRẢ LỜI:**
-1. Trả lời ngắn gọn (3-5 câu), đi thẳng vào vấn đề
-2. Sử dụng emoji phù hợp để thân thiện hơn
-3. Luôn dựa vào dữ liệu thực tế được cung cấp
-4. Nếu thiếu dữ liệu, hãy yêu cầu người dùng nhập thêm
-5. Đưa ra gợi ý cụ thể, có số liệu (ví dụ: ""Hãy tăng protein lên 120g/ngày"")
-6. Không đưa ra chẩn đoán y khoa - khuyên họ gặp bác sĩ nếu vấn đề nghiêm trọng
+╔══════════════════════════════════════════════════════════════╗
+║                    MỤC TIÊU HIỆN TẠI                         ║
+╚══════════════════════════════════════════════════════════════╝
+{goalData}
 
-**DỮ LIỆU NGƯỜI DÙNG (7 NGÀY GẦN NHẤT):**
----
-{userContextData}
----
-
-**LỊCH SỬ THAO TÁC GẦN ĐÂY (DATA WAREHOUSE - AI CONTEXT):**
+╔══════════════════════════════════════════════════════════════╗
+║              NHẬT KÝ HOẠT ĐỘNG GẦN ĐÂY (7 NGÀY)             ║
+║         (Data Warehouse - Phân tích kỹ để hiểu thói quen)   ║
+╚══════════════════════════════════════════════════════════════╝
 {(string.IsNullOrWhiteSpace(activityLogs) ? "Chưa có dữ liệu thao tác." : activityLogs)}
 
-Dựa vào lịch sử thao tác này để hiểu bối cảnh user (ví dụ: vừa tập xong thì khen ngợi, vừa ăn nhiều thì nhắc nhở, lâu không tập thì động viên).
+╔══════════════════════════════════════════════════════════════╗
+║                    HƯỚNG DẪN TRẢ LỜI                         ║
+╚══════════════════════════════════════════════════════════════╝
+✅ LUÔN LÀM:
+1. Trả lời ngắn gọn (100-150 từ), súc tích
+2. CÁ NHÂN HÓA: Luôn kết nối với dữ liệu thực tế (Ví dụ: 'Thấy bạn vừa tập...', 'Với BMI hiện tại là...')
+3. CHỦ ĐỘNG: Dựa vào logs để khen ngợi (vừa tập) hoặc nhắc nhở nhẹ nhàng (lâu không tập, ăn nhiều calo)
+4. HÀNH ĐỘNG CỤ THỂ: Đưa ra số liệu rõ ràng ('Nên ăn thêm 30g protein', 'Giảm 200 kcal/ngày')
+5. ĐỘNG VIÊN: Dùng emoji phù hợp, giọng điệu tích cực 💪🔥✨
 
-Hãy phân tích dữ liệu trên và trả lời câu hỏi của người dùng một cách chính xác nhất.";
+❌ KHÔNG BAO GIỜ:
+1. Trả lời chung chung như Google Search
+2. Đưa ra chẩn đoán y khoa (khuyên gặp bác sĩ nếu vấn đề nghiêm trọng)
+3. Trả lời câu hỏi không liên quan sức khỏe/thể thao
+4. Bỏ qua dữ liệu người dùng đã cung cấp
+
+╔══════════════════════════════════════════════════════════════╗
+║                  PHONG CÁCH TRẢ LỜI MẪU                      ║
+╚══════════════════════════════════════════════════════════════╝
+KHÔNG TỐT: 'Pizza chứa nhiều calo, bạn nên hạn chế.'
+
+RẤT TỐT: 'Mình thấy bạn vừa ăn Pizza 800 kcal 🍕, với BMI hiện tại đang {bmiStatus} 
+thì món này hơi cao so với BMR {profileData}. Chiều nay cố gắng tập Cardio 30 phút 
+để tiêu hao nhé! Bạn muốn mình gợi ý bài tập không? 💪'
+
+════════════════════════════════════════════════════════════════
+Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT CẢ thông tin trên.
+════════════════════════════════════════════════════════════════";
+        
+        history.AddSystemMessage(systemPrompt);
 
         history.AddSystemMessage(systemPrompt);
         history.AddUserMessage(userQuestion);
