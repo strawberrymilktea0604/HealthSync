@@ -14,7 +14,7 @@ public class GroqAiChatService : IAiChatService
 
 
 
-    public GroqAiChatService(IConfiguration configuration)
+    public GroqAiChatService(IConfiguration configuration, HttpClient? httpClient = null)
     {
         // Đọc từ environment variable trước, fallback về appsettings
         var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
@@ -25,11 +25,22 @@ public class GroqAiChatService : IAiChatService
         var baseUrl = configuration["Groq:BaseUrl"] 
                       ?? throw new InvalidOperationException("Groq Base URL is not configured. Set Groq:BaseUrl in appsettings.json");
         
-        _httpClient = new HttpClient
+        if (httpClient != null)
         {
-            BaseAddress = new Uri(baseUrl)
-        };
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+            _httpClient = httpClient;
+        }
+        else
+        {
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri(baseUrl)
+            };
+        }
+
+        if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+        {
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        }
     }
 
     public async Task<string> GetHealthAdviceAsync(
@@ -271,27 +282,32 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
 
     private static void ProcessWorkoutLog(JsonElement day, StringBuilder sb)
     {
-        if (day.TryGetProperty("workout", out var work) && work.ValueKind == JsonValueKind.Object)
+        if (!day.TryGetProperty("workout", out var work) || work.ValueKind != JsonValueKind.Object)
         {
-            var status = work.TryGetProperty("status", out var s) ? s.GetString() : "Rest";
-            if (status != "Rest" && status != null)
-            {
-                var dur = work.TryGetProperty("durationMin", out var dm) ? dm.GetInt32().ToString() : "0";
-
-                string exercises = "";
-                if (work.TryGetProperty("exercises", out var exs) && exs.ValueKind == JsonValueKind.Array)
-                {
-                    var items = new List<string>();
-                    foreach (var item in exs.EnumerateArray()) items.Add(item.GetString() ?? "");
-                    exercises = string.Join(", ", items);
-                }
-
-                sb.AppendLine($"   [Tập luyện] {status} ({dur} phút). Bài tập: {exercises}");
-            }
-            else
-            {
-                sb.AppendLine($"   [Tập luyện] Nghỉ ngơi");
-            }
+            return;
         }
+
+        var status = work.TryGetProperty("status", out var s) ? s.GetString() : "Rest";
+
+        if (status == "Rest" || string.IsNullOrEmpty(status))
+        {
+            sb.AppendLine("   [Tập luyện] Nghỉ ngơi");
+            return;
+        }
+
+        var dur = work.TryGetProperty("durationMin", out var dm) ? dm.GetInt32().ToString() : "0";
+        string exercises = "";
+
+        if (work.TryGetProperty("exercises", out var exs) && exs.ValueKind == JsonValueKind.Array)
+        {
+            var items = new List<string>();
+            foreach (var item in exs.EnumerateArray())
+            {
+                items.Add(item.GetString() ?? "");
+            }
+            exercises = string.Join(", ", items);
+        }
+
+        sb.AppendLine($"   [Tập luyện] {status} ({dur} phút). Bài tập: {exercises}");
     }
 }

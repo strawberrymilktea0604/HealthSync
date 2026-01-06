@@ -1,21 +1,21 @@
 Summary
-  Generated on: 1/6/2026 - 1:35:22 PM
+  Generated on: 1/6/2026 - 1:50:48 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
   Classes: 108
   Files: 106
   Line coverage: 99.7%
-  Covered lines: 1731
-  Uncovered lines: 4
-  Coverable lines: 1735
-  Total lines: 9063
-  Branch coverage: 81.2% (450 of 554)
-  Covered branches: 450
-  Total branches: 554
+  Covered lines: 1736
+  Uncovered lines: 5
+  Coverable lines: 1741
+  Total lines: 9079
+  Branch coverage: 81% (452 of 558)
+  Covered branches: 452
+  Total branches: 558
   Method coverage: 99.4% (195 of 196)
-  Full method coverage: 98.4% (193 of 196)
+  Full method coverage: 97.9% (192 of 196)
   Covered methods: 195
-  Fully covered methods: 193
+  Fully covered methods: 192
   Total methods: 196
 
 HealthSync.Application                                                     99.5%
@@ -99,7 +99,7 @@ HealthSync.Domain                                                           100%
   HealthSync.Domain.Entities.UserRole                                       100%
   HealthSync.Domain.Entities.WorkoutLog                                     100%
 
-HealthSync.Infrastructure                                                  99.8%
+HealthSync.Infrastructure                                                  99.7%
   HealthSync.Infrastructure.Authorization.PermissionAuthorizationHandler    100%
   HealthSync.Infrastructure.Authorization.PermissionPolicyProvider         99.1%
   HealthSync.Infrastructure.Authorization.PermissionRequirement             100%
@@ -115,7 +115,7 @@ HealthSync.Infrastructure                                                  99.8%
   HealthSync.Infrastructure.Services.CurrentUserService                     100%
   HealthSync.Infrastructure.Services.EmailService                           100%
   HealthSync.Infrastructure.Services.GoogleAuthService                      100%
-  HealthSync.Infrastructure.Services.GroqAiChatService                      100%
+  HealthSync.Infrastructure.Services.GroqAiChatService                     98.7%
   HealthSync.Infrastructure.Services.JwtTokenService                        100%
   HealthSync.Infrastructure.Services.MinioStorageService                    100%
 

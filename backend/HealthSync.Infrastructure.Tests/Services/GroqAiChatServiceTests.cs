@@ -1,6 +1,10 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
 using HealthSync.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Moq.Protected;
 
 namespace HealthSync.Infrastructure.Tests.Services;
 
@@ -456,5 +460,118 @@ public class GroqAiChatServiceTests
         {
             await service.GetHealthAdviceAsync(context, "Test question");
         });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_ReturnsContent_WhenApiCallSucceeds()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var expectedResponse = "Here is some health advice.";
+        var apiResponse = new
+        {
+            choices = new[]
+            {
+                new { message = new { content = expectedResponse } }
+            }
+        };
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonSerializer.Serialize(apiResponse), Encoding.UTF8, "application/json")
+            });
+
+        var httpClient = new HttpClient(handlerMock.Object)
+        {
+            BaseAddress = new Uri("https://api.groq.com/openai/v1")
+        };
+
+        var service = new GroqAiChatService(configurationMock.Object, httpClient);
+
+        var context = @"{
+            ""profile"": { ""gender"": ""Male"" },
+            ""goal"": { ""type"": ""Leisure"" }
+        }";
+
+        // Act
+        var result = await service.GetHealthAdviceAsync(context, "Help me");
+
+        // Assert
+        Assert.Equal(expectedResponse, result);
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_CoversMissingExercises_WhenStatusIsNotRest()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var apiResponse = new
+        {
+            choices = new[]
+            {
+                new { message = new { content = "Advice" } }
+            }
+        };
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonSerializer.Serialize(apiResponse))
+            });
+
+        var httpClient = new HttpClient(handlerMock.Object)
+        {
+            BaseAddress = new Uri("https://api.groq.com/openai/v1")
+        };
+
+        var service = new GroqAiChatService(configurationMock.Object, httpClient);
+
+        // Workout status is Active but exercises array is missing
+        var context = @"{
+            ""recentLogsLast7Days"": [
+                {
+                    ""date"": ""2024-01-01"",
+                    ""workout"": { ""status"": ""Active"", ""durationMin"": 30 } 
+                }
+            ]
+        }";
+
+        // Act
+        var result = await service.GetHealthAdviceAsync(context, "Help me");
+
+        // Assert
+        Assert.Equal("Advice", result);
+        
+        handlerMock.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req => 
+                req.Content != null && 
+                req.Content.ReadAsStringAsync().Result.Contains("Active")), 
+            ItExpr.IsAny<CancellationToken>()
+        );
     }
 }
