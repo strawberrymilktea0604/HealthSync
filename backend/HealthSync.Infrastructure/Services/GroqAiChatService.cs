@@ -1,45 +1,54 @@
-using Microsoft.Extensions.Configuration;
-using HealthSync.Domain.Interfaces;
+using System.Text.Encodings.Web;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
+using HealthSync.Domain.Interfaces;
 
 namespace HealthSync.Infrastructure.Services;
 
 public class GroqAiChatService : IAiChatService
 {
     private readonly HttpClient _httpClient;
-
     private readonly string _modelId;
 
-
-
-    public GroqAiChatService(IConfiguration configuration, HttpClient? httpClient = null)
+    public GroqAiChatService(HttpClient httpClient, IConfiguration configuration)
     {
-        // Đọc từ environment variable trước, fallback về appsettings
-        var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
-                  ?? configuration["Groq:ApiKey"] 
-                  ?? throw new InvalidOperationException("Groq API Key is not configured. Set GROQ_API_KEY environment variable or Groq:ApiKey in appsettings.json");
-        
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _modelId = configuration["Groq:ModelId"] ?? "openai/gpt-oss-120b";
-        var baseUrl = configuration["Groq:BaseUrl"] 
-                      ?? throw new InvalidOperationException("Groq Base URL is not configured. Set Groq:BaseUrl in appsettings.json");
-        
-        if (httpClient != null)
-        {
-            _httpClient = httpClient;
-        }
-        else
-        {
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
-        }
 
-        if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+        // Ensuring BaseAddress is set is primarily the responsibility of DI registration.
+        // However, we can perform a check to catch configuration errors early.
+        if (_httpClient.BaseAddress == null)
         {
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+            var baseUrl = configuration["Groq:BaseUrl"];
+            // If base URL is provided in config but not set on client, try to set it.
+            // This covers scenarios where HttpClient is created manually or via default factory without configuration.
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                _httpClient.BaseAddress = new Uri(baseUrl);
+            }
+            else
+            {
+                // If checking BaseAddress is critical:
+                // throw new InvalidOperationException("HttpClient has no BaseAddress and Groq:BaseUrl is missing in configuration.");
+                // For now, we allow it to be null if the user intends to use absolute URIs, 
+                // but our code uses relative URI "chat/completions", so it WILL fail if null.
+                // We'll throw to be safe.
+                 throw new InvalidOperationException("HttpClient BaseAddress is not configured. Ensure Groq:BaseUrl is set in appsettings.json.");
+            }
+        }
+        
+        // Ensure Authorization header is present
+        if (_httpClient.DefaultRequestHeaders.Authorization == null)
+        {
+             var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
+                   ?? configuration["Groq:ApiKey"];
+             
+             if (!string.IsNullOrEmpty(apiKey))
+             {
+                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+             }
         }
     }
 
@@ -48,18 +57,73 @@ public class GroqAiChatService : IAiChatService
         string userQuestion, 
         CancellationToken cancellationToken = default)
     {
-        // Parse context to extract detailed user info for optimized prompt
-        var contextObj = JsonSerializer.Deserialize<JsonElement>(userContextData);
-        
-        // Extract data using helper methods (reduces cognitive complexity)
+        try
+        {
+            // Parse context to extract detailed user info for optimized prompt
+            var contextObj = JsonSerializer.Deserialize<JsonElement>(userContextData);
+            
+            string systemPrompt = BuildSystemPrompt(contextObj);
+
+            var requestBody = new
+            {
+                model = _modelId,
+                messages = new[]
+                {
+                    new { role = "system", content = systemPrompt },
+                    new { role = "user", content = userQuestion }
+                },
+                max_completion_tokens = 8192,
+                temperature = 1,
+                top_p = 1,
+                stream = false,
+                reasoning_effort = "medium"
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var jsonContent = new StringContent(
+                JsonSerializer.Serialize(requestBody, jsonOptions),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            // Use PostAsync with manually serialized content to avoid dependency on System.Net.Http.Json
+            var response = await _httpClient.PostAsync("chat/completions", jsonContent, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<GroqResponse>(responseContent);
+
+            return result?.Choices?.FirstOrDefault()?.Message?.Content 
+                   ?? "Xin lỗi, tôi không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại sau. 🙏";
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Error calling Groq API: {ex.Message}", ex);
+        }
+    }
+
+    private string BuildSystemPrompt(JsonElement contextObj)
+    {
+        // Extract data using helper methods
         string activityLogs = ExtractActivityLogs(contextObj);
         string profileData = ExtractProfileData(contextObj, out string bmiStatus);
         string goalData = ExtractGoalData(contextObj);
         string dailyLogs = ExtractDailyLogs(contextObj);
         string completedGoals = ExtractCompletedGoals(contextObj);
         
-        // System Prompt with Enhanced Context Injection
-        string systemPrompt = $@"
+        // Safely extract BMR for example template
+        string bmrExample = "N/A";
+        if (contextObj.TryGetProperty("profile", out var profileElement))
+        {
+            bmrExample = GetJsonDecimalString(profileElement, "bmr", "F0");
+        }
+
+        return $@"
 🏋️‍♂️ Bạn là HealthSync Coach - Trợ lý sức khỏe cá nhân chuyên nghiệp, thấu hiểu và luôn động viên.
 
 ╔══════════════════════════════════════════════════════════════╗
@@ -109,50 +173,12 @@ public class GroqAiChatService : IAiChatService
 KHÔNG TỐT: 'Pizza chứa nhiều calo, bạn nên hạn chế.'
 
 RẤT TỐT: 'Mình thấy bạn vừa ăn Pizza 800 kcal 🍕, với BMI hiện tại đang {bmiStatus} 
-thì món này hơi cao so với BMR {profileData}. Chiều nay cố gắng tập Cardio 30 phút 
+thì món này hơi cao so với BMR {bmrExample}. Chiều nay cố gắng tập Cardio 30 phút 
 để tiêu hao nhé! Bạn muốn mình gợi ý bài tập không? 💪'
 
 ════════════════════════════════════════════════════════════════
 Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT CẢ thông tin trên.
 ════════════════════════════════════════════════════════════════";
-
-        var requestBody = new
-        {
-            model = _modelId,
-            messages = new[]
-            {
-                new { role = "system", content = systemPrompt },
-                new { role = "user", content = userQuestion }
-            },
-            max_completion_tokens = 8192,
-            temperature = 1,
-            top_p = 1,
-            stream = false,
-            reasoning_effort = "medium",
-            stop = (string?)null
-        };
-
-        var jsonContent = new StringContent(
-            JsonSerializer.Serialize(requestBody),
-            Encoding.UTF8,
-            "application/json"
-        );
-
-        try
-        {
-            var response = await _httpClient.PostAsync("chat/completions", jsonContent, cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<GroqResponse>(responseContent);
-
-            return result?.Choices?.FirstOrDefault()?.Message?.Content 
-                   ?? "Xin lỗi, tôi không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại sau. 🙏";
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Error calling Groq API: {ex.Message}", ex);
-        }
     }
 
     private sealed class GroqResponse
@@ -192,12 +218,12 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
         }
 
         string gender = GetJsonStringProperty(profileElement, "gender");
-        string age = profileElement.TryGetProperty("age", out var a) ? a.GetInt32().ToString() : "N/A";
-        string height = profileElement.TryGetProperty("heightCm", out var h) ? h.GetDecimal().ToString("F1") : "N/A";
-        string weight = profileElement.TryGetProperty("currentWeightKg", out var w) ? w.GetDecimal().ToString("F1") : "N/A";
-        string bmi = profileElement.TryGetProperty("bmi", out var b) ? b.GetDecimal().ToString("F1") : "N/A";
+        string age = GetJsonNumberString(profileElement, "age");
+        string height = GetJsonDecimalString(profileElement, "heightCm", "F1");
+        string weight = GetJsonDecimalString(profileElement, "currentWeightKg", "F1");
+        string bmi = GetJsonDecimalString(profileElement, "bmi", "F1");
         bmiStatus = GetJsonStringProperty(profileElement, "bmiStatus");
-        string bmr = profileElement.TryGetProperty("bmr", out var bmrVal) ? bmrVal.GetDecimal().ToString("F0") : "N/A";
+        string bmr = GetJsonDecimalString(profileElement, "bmr", "F0");
         string activityLevel = GetJsonStringProperty(profileElement, "activityLevel");
 
         return $@"- Giới tính: {gender}
@@ -216,7 +242,7 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
         }
 
         string goalType = GetJsonStringProperty(goalElement, "type");
-        string targetWeight = goalElement.TryGetProperty("targetWeightKg", out var tw) ? tw.GetDecimal().ToString("F1") : "N/A";
+        string targetWeight = GetJsonDecimalString(goalElement, "targetWeightKg", "F1");
         string deadline = GetJsonStringProperty(goalElement, "deadline");
 
         return $"- Loại mục tiêu: {goalType}\n- Cân nặng mục tiêu: {targetWeight}kg\n- Thời hạn: {deadline}";
@@ -225,6 +251,24 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
     private static string GetJsonStringProperty(JsonElement element, string propertyName)
     {
         return element.TryGetProperty(propertyName, out var prop) ? prop.GetString() ?? "N/A" : "N/A";
+    }
+
+    private static string GetJsonNumberString(JsonElement element, string propertyName)
+    {
+         if (element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.Number)
+         {
+             return prop.GetInt32().ToString();
+         }
+         return "N/A";
+    }
+
+    private static string GetJsonDecimalString(JsonElement element, string propertyName, string format)
+    {
+         if (element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.Number)
+         {
+             return prop.GetDecimal().ToString(format);
+         }
+         return "N/A";
     }
 
     private static string ExtractCompletedGoals(JsonElement contextObj)

@@ -30,8 +30,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         
-        // Register AI Chat Service
-        services.AddSingleton<IAiChatService, GroqAiChatService>();
+        // Register AI Chat Service with Typed HttpClient
+        services.AddHttpClient<IAiChatService, GroqAiChatService>((sp, client) =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var baseUrl = configuration["Groq:BaseUrl"]
+                          ?? throw new InvalidOperationException("Groq:BaseUrl is not configured in appsettings.json");
+            
+            var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") 
+                          ?? configuration["Groq:ApiKey"] 
+                          ?? throw new InvalidOperationException("Groq:ApiKey is not configured. Set GROQ_API_KEY environment variable or Groq:ApiKey in appsettings.json");
+
+            client.BaseAddress = new Uri(baseUrl);
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        });
 
         // Register DbContext interface
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<HealthSyncDbContext>());
