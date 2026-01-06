@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
-using System.Security.Claims;
+
 using Xunit;
 using MockQueryable.Moq;
 using Microsoft.EntityFrameworkCore;

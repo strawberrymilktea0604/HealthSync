@@ -401,5 +401,60 @@ public class GroqAiChatServiceTests
             await service.GetHealthAdviceAsync(context, "Test question");
         });
     }
-}
+    
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithDailyLogsAndCompletedGoals_ParsesCorrectly()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
 
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": {
+                ""gender"": ""Male"",
+                ""age"": 25
+            },
+            ""recentLogsLast7Days"": [
+                { ""date"": ""2024-01-01"", ""nutrition"": { ""calories"": 2000, ""foodItems"": [""Rice"", ""Chicken""] }, ""workout"": { ""status"": ""Completed"", ""durationMin"": 60, ""exercises"": [""Push up"", ""Running""] } },
+                { ""date"": ""2024-01-02"", ""nutrition"": { ""calories"": 1800 }, ""workout"": { ""status"": ""Rest"" } }
+            ],
+            ""completedGoalsHistory"": [""Lost 5kg"", ""Ran 10km""]
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            // This invocation will calculate the 'dailyLogs' and 'completedGoals' strings internally
+            // before failing at the HTTP request step.
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+
+    [Fact]
+    public async Task GetHealthAdviceAsync_WithMalformedDailyLogsAndGoals_HandlesGracefully()
+    {
+        // Arrange
+        var configurationMock = new Mock<IConfiguration>();
+        configurationMock.Setup(c => c["Groq:ApiKey"]).Returns("test-api-key");
+        configurationMock.Setup(c => c["Groq:ModelId"]).Returns("groq-beta");
+        configurationMock.Setup(c => c["Groq:BaseUrl"]).Returns("https://api.groq.com/openai/v1");
+
+        var service = new GroqAiChatService(configurationMock.Object);
+
+        var context = @"{
+            ""profile"": { ""gender"": ""Male"" },
+            ""recentLogsLast7Days"": null,
+            ""completedGoalsHistory"": ""NotAnArray""
+        }";
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await service.GetHealthAdviceAsync(context, "Test question");
+        });
+    }
+}

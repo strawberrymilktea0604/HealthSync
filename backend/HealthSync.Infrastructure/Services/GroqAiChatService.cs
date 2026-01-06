@@ -44,6 +44,8 @@ public class GroqAiChatService : IAiChatService
         string activityLogs = ExtractActivityLogs(contextObj);
         string profileData = ExtractProfileData(contextObj, out string bmiStatus);
         string goalData = ExtractGoalData(contextObj);
+        string dailyLogs = ExtractDailyLogs(contextObj);
+        string completedGoals = ExtractCompletedGoals(contextObj);
         
         // System Prompt with Enhanced Context Injection
         string systemPrompt = $@"
@@ -60,8 +62,17 @@ public class GroqAiChatService : IAiChatService
 {goalData}
 
 ╔══════════════════════════════════════════════════════════════╗
-║              NHẬT KÝ HOẠT ĐỘNG GẦN ĐÂY (7 NGÀY)             ║
-║         (Data Warehouse - Phân tích kỹ để hiểu thói quen)   ║
+║                 THÀNH TÍCH ĐÃ ĐẠT ĐƯỢC                       ║
+╚══════════════════════════════════════════════════════════════╝
+{(string.IsNullOrWhiteSpace(completedGoals) ? "Chưa có mục tiêu hoàn thành." : completedGoals)}
+
+╔══════════════════════════════════════════════════════════════╗
+║         NHẬT KÝ DINH DƯỠNG & TẬP LUYỆN (7 NGÀY QUA)          ║
+╚══════════════════════════════════════════════════════════════╝
+{dailyLogs}
+
+╔══════════════════════════════════════════════════════════════╗
+║              LỊCH SỬ THAO TÁC HỆ THỐNG                      ║
 ╚══════════════════════════════════════════════════════════════╝
 {(string.IsNullOrWhiteSpace(activityLogs) ? "Chưa có dữ liệu thao tác." : activityLogs)}
 
@@ -203,5 +214,78 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
     private static string GetJsonStringProperty(JsonElement element, string propertyName)
     {
         return element.TryGetProperty(propertyName, out var prop) ? prop.GetString() ?? "N/A" : "N/A";
+    }
+
+    private static string ExtractCompletedGoals(JsonElement contextObj)
+    {
+        if (!contextObj.TryGetProperty("completedGoalsHistory", out var goalsArray) || goalsArray.ValueKind != JsonValueKind.Array)
+        {
+            return "";
+        }
+
+        var sb = new StringBuilder();
+        foreach (var p in goalsArray.EnumerateArray())
+        {
+            sb.AppendLine($"- {p.GetString()}");
+        }
+        return sb.ToString();
+    }
+
+    private static string ExtractDailyLogs(JsonElement contextObj)
+    {
+        if (!contextObj.TryGetProperty("recentLogsLast7Days", out var logsArray) || logsArray.ValueKind != JsonValueKind.Array)
+        {
+            return "Chưa có dữ liệu chi tiết.";
+        }
+
+        var sb = new StringBuilder();
+        foreach (var day in logsArray.EnumerateArray())
+        {
+            var date = day.TryGetProperty("date", out var d) ? d.GetDateTime().ToString("dd/MM") : "N/A";
+            sb.AppendLine($"--- Ngày {date} ---");
+
+            // Nutrition
+            if (day.TryGetProperty("nutrition", out var nut) && nut.ValueKind == JsonValueKind.Object)
+            {
+                var cal = nut.TryGetProperty("calories", out var c) ? c.GetDecimal().ToString("F0") : "0";
+                
+                string foodItems = "";
+                if (nut.TryGetProperty("foodItems", out var fItems) && fItems.ValueKind == JsonValueKind.Array)
+                {
+                    // Manually build string to avoid Linq dependency if missing
+                    var items = new List<string>();
+                    foreach (var item in fItems.EnumerateArray()) items.Add(item.GetString() ?? "");
+                    foodItems = string.Join(", ", items);
+                }
+
+                sb.AppendLine($"   [Ăn uống] {cal} kcal. Món: {foodItems}");
+            }
+
+            // Workout
+            if (day.TryGetProperty("workout", out var work) && work.ValueKind == JsonValueKind.Object)
+            {
+                var status = work.TryGetProperty("status", out var s) ? s.GetString() : "Rest";
+                if (status != "Rest" && status != null)
+                {
+                    var dur = work.TryGetProperty("durationMin", out var dm) ? dm.GetInt32().ToString() : "0";
+                    
+                    string exercises = "";
+                    if (work.TryGetProperty("exercises", out var exs) && exs.ValueKind == JsonValueKind.Array)
+                    {
+                         var items = new List<string>();
+                         foreach (var item in exs.EnumerateArray()) items.Add(item.GetString() ?? "");
+                         exercises = string.Join(", ", items);
+                    }
+                    
+                    sb.AppendLine($"   [Tập luyện] {status} ({dur} phút). Bài tập: {exercises}");
+                }
+                else
+                {
+                    sb.AppendLine($"   [Tập luyện] Nghỉ ngơi");
+                }
+            }
+        }
+        
+        return sb.Length > 0 ? sb.ToString() : "Không có dữ liệu trong 7 ngày qua.";
     }
 }

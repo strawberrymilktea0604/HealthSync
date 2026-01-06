@@ -57,7 +57,7 @@ public class CurrentUserServiceTests
     {
         // Arrange
         var mockHttpContext = new Mock<HttpContext>();
-        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal?)null);
+        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal)null!);
 
         var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         mockHttpContextAccessor.Setup(a => a.HttpContext).Returns(mockHttpContext.Object);
@@ -120,7 +120,7 @@ public class CurrentUserServiceTests
     {
         // Arrange
         var mockHttpContext = new Mock<HttpContext>();
-        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal?)null);
+        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal)null!);
 
         var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         mockHttpContextAccessor.Setup(a => a.HttpContext).Returns(mockHttpContext.Object);
@@ -204,7 +204,7 @@ public class CurrentUserServiceTests
     {
         // Arrange
         var mockHttpContext = new Mock<HttpContext>();
-        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal?)null);
+        mockHttpContext.Setup(c => c.User).Returns((ClaimsPrincipal)null!);
 
         var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         mockHttpContextAccessor.Setup(a => a.HttpContext).Returns(mockHttpContext.Object);
