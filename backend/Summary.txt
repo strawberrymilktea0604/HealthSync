@@ -1,5 +1,5 @@
 Summary
-  Generated on: 1/6/2026 - 2:13:10 PM
+  Generated on: 1/6/2026 - 2:26:35 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
   Classes: 108
@@ -8,7 +8,7 @@ Summary
   Covered lines: 1817
   Uncovered lines: 4
   Coverable lines: 1821
-  Total lines: 9135
+  Total lines: 9130
   Branch coverage: 81.3% (457 of 562)
   Covered branches: 457
   Total branches: 562

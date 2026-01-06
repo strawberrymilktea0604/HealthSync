@@ -30,11 +30,6 @@ public class GroqAiChatService : IAiChatService
             }
             else
             {
-                // If checking BaseAddress is critical:
-                // throw new InvalidOperationException("HttpClient has no BaseAddress and Groq:BaseUrl is missing in configuration.");
-                // For now, we allow it to be null if the user intends to use absolute URIs, 
-                // but our code uses relative URI "chat/completions", so it WILL fail if null.
-                // We'll throw to be safe.
                  throw new InvalidOperationException("HttpClient BaseAddress is not configured. Ensure Groq:BaseUrl is set in appsettings.json.");
             }
         }
@@ -107,7 +102,7 @@ public class GroqAiChatService : IAiChatService
         }
     }
 
-    private string BuildSystemPrompt(JsonElement contextObj)
+    private static string BuildSystemPrompt(JsonElement contextObj)
     {
         // Extract data using helper methods
         string activityLogs = ExtractActivityLogs(contextObj);
