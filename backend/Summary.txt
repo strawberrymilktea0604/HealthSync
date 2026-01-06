@@ -1,22 +1,22 @@
 Summary
-  Generated on: 1/6/2026 - 1:24:43 PM
+  Generated on: 1/6/2026 - 1:35:22 PM
   Parser: MultiReport (5x OpenCover)
   Assemblies: 4
   Classes: 108
   Files: 106
   Line coverage: 99.7%
-  Covered lines: 1727
+  Covered lines: 1731
   Uncovered lines: 4
-  Coverable lines: 1731
-  Total lines: 9057
+  Coverable lines: 1735
+  Total lines: 9063
   Branch coverage: 81.2% (450 of 554)
   Covered branches: 450
   Total branches: 554
-  Method coverage: 99.4% (193 of 194)
-  Full method coverage: 98.4% (191 of 194)
-  Covered methods: 193
-  Fully covered methods: 191
-  Total methods: 194
+  Method coverage: 99.4% (195 of 196)
+  Full method coverage: 98.4% (193 of 196)
+  Covered methods: 195
+  Fully covered methods: 193
+  Total methods: 196
 
 HealthSync.Application                                                     99.5%
   HealthSync.Application.Common.Behaviors.AuditLogBehavior<T1, T2>         95.3%

@@ -244,48 +244,54 @@ Bây giờ hãy trả lời câu hỏi của người dùng dựa trên TẤT C�
             var date = day.TryGetProperty("date", out var d) ? d.GetDateTime().ToString("dd/MM") : "N/A";
             sb.AppendLine($"--- Ngày {date} ---");
 
-            // Nutrition
-            if (day.TryGetProperty("nutrition", out var nut) && nut.ValueKind == JsonValueKind.Object)
-            {
-                var cal = nut.TryGetProperty("calories", out var c) ? c.GetDecimal().ToString("F0") : "0";
-                
-                string foodItems = "";
-                if (nut.TryGetProperty("foodItems", out var fItems) && fItems.ValueKind == JsonValueKind.Array)
-                {
-                    // Manually build string to avoid Linq dependency if missing
-                    var items = new List<string>();
-                    foreach (var item in fItems.EnumerateArray()) items.Add(item.GetString() ?? "");
-                    foodItems = string.Join(", ", items);
-                }
+            ProcessNutritionLog(day, sb);
+            ProcessWorkoutLog(day, sb);
+        }
 
-                sb.AppendLine($"   [Ăn uống] {cal} kcal. Món: {foodItems}");
+        return sb.Length > 0 ? sb.ToString() : "Không có dữ liệu trong 7 ngày qua.";
+    }
+
+    private static void ProcessNutritionLog(JsonElement day, StringBuilder sb)
+    {
+        if (day.TryGetProperty("nutrition", out var nut) && nut.ValueKind == JsonValueKind.Object)
+        {
+            var cal = nut.TryGetProperty("calories", out var c) ? c.GetDecimal().ToString("F0") : "0";
+
+            string foodItems = "";
+            if (nut.TryGetProperty("foodItems", out var fItems) && fItems.ValueKind == JsonValueKind.Array)
+            {
+                var items = new List<string>();
+                foreach (var item in fItems.EnumerateArray()) items.Add(item.GetString() ?? "");
+                foodItems = string.Join(", ", items);
             }
 
-            // Workout
-            if (day.TryGetProperty("workout", out var work) && work.ValueKind == JsonValueKind.Object)
+            sb.AppendLine($"   [Ăn uống] {cal} kcal. Món: {foodItems}");
+        }
+    }
+
+    private static void ProcessWorkoutLog(JsonElement day, StringBuilder sb)
+    {
+        if (day.TryGetProperty("workout", out var work) && work.ValueKind == JsonValueKind.Object)
+        {
+            var status = work.TryGetProperty("status", out var s) ? s.GetString() : "Rest";
+            if (status != "Rest" && status != null)
             {
-                var status = work.TryGetProperty("status", out var s) ? s.GetString() : "Rest";
-                if (status != "Rest" && status != null)
+                var dur = work.TryGetProperty("durationMin", out var dm) ? dm.GetInt32().ToString() : "0";
+
+                string exercises = "";
+                if (work.TryGetProperty("exercises", out var exs) && exs.ValueKind == JsonValueKind.Array)
                 {
-                    var dur = work.TryGetProperty("durationMin", out var dm) ? dm.GetInt32().ToString() : "0";
-                    
-                    string exercises = "";
-                    if (work.TryGetProperty("exercises", out var exs) && exs.ValueKind == JsonValueKind.Array)
-                    {
-                         var items = new List<string>();
-                         foreach (var item in exs.EnumerateArray()) items.Add(item.GetString() ?? "");
-                         exercises = string.Join(", ", items);
-                    }
-                    
-                    sb.AppendLine($"   [Tập luyện] {status} ({dur} phút). Bài tập: {exercises}");
+                    var items = new List<string>();
+                    foreach (var item in exs.EnumerateArray()) items.Add(item.GetString() ?? "");
+                    exercises = string.Join(", ", items);
                 }
-                else
-                {
-                    sb.AppendLine($"   [Tập luyện] Nghỉ ngơi");
-                }
+
+                sb.AppendLine($"   [Tập luyện] {status} ({dur} phút). Bài tập: {exercises}");
+            }
+            else
+            {
+                sb.AppendLine($"   [Tập luyện] Nghỉ ngơi");
             }
         }
-        
-        return sb.Length > 0 ? sb.ToString() : "Không có dữ liệu trong 7 ngày qua.";
     }
 }
