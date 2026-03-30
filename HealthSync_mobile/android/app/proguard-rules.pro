@@ -9,3 +9,4 @@
 -keep class io.flutter.plugins.** { *; }
 
 # Nếu bạn dùng thư viện Google Maps, Firebase... có thể cần thêm luật riêng của họ vào đây.
+-dontwarn com.google.android.play.core.**
