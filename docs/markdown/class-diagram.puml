@@ -1,0 +1,572 @@
+@startuml HealthSync Class Diagram
+
+!define ENTITY_COLOR #E8F5E9
+!define INTERFACE_COLOR #E3F2FD
+!define SERVICE_COLOR #FFF9C4
+!define CONTROLLER_COLOR #FFE0B2
+
+skinparam class {
+    BackgroundColor<<Entity>> ENTITY_COLOR
+    BackgroundColor<<Interface>> INTERFACE_COLOR
+    BackgroundColor<<Service>> SERVICE_COLOR
+    BackgroundColor<<Controller>> CONTROLLER_COLOR
+    BorderColor Black
+    ArrowColor Black
+}
+
+' ===========================
+' Domain Entities
+' ===========================
+
+package "Domain.Entities" <<Rectangle>> {
+    
+    class ApplicationUser <<Entity>> {
+        + UserId: int
+        + UserName: string
+        + Email: string
+        + PasswordHash: string
+        + IsActive: bool
+        + EmailConfirmed: bool
+        + CreatedAt: DateTime
+        + LastLoginAt: DateTime?
+        + AvatarUrl: string?
+        --
+        + Profile: UserProfile?
+        + WorkoutLogs: ICollection<WorkoutLog>
+        + NutritionLogs: ICollection<NutritionLog>
+        + Goals: ICollection<Goal>
+        + UserRoles: ICollection<UserRole>
+        + ChatMessages: ICollection<ChatMessage>
+    }
+
+    class UserProfile <<Entity>> {
+        + UserId: int
+        + FullName: string
+        + Dob: DateTime
+        + Gender: string
+        + HeightCm: decimal
+        + WeightKg: decimal
+        + ActivityLevel: string
+        + AvatarUrl: string?
+        --
+        + User: ApplicationUser
+        --
+        + IsComplete(): bool
+    }
+
+    class WorkoutLog <<Entity>> {
+        + WorkoutLogId: int
+        + UserId: int
+        + WorkoutDate: DateTime
+        + DurationMin: int
+        + Notes: string?
+        --
+        + User: ApplicationUser
+        + ExerciseSessions: ICollection<ExerciseSession>
+    }
+
+    class ExerciseSession <<Entity>> {
+        + ExerciseSessionId: int
+        + WorkoutLogId: int
+        + ExerciseId: int
+        + Sets: int
+        + Reps: int
+        + WeightKg: decimal
+        + RestSec: int?
+        + Rpe: decimal?
+        --
+        + WorkoutLog: WorkoutLog
+        + Exercise: Exercise
+    }
+
+    class Exercise <<Entity>> {
+        + ExerciseId: int
+        + Name: string
+        + MuscleGroup: string
+        + Difficulty: string
+        + Equipment: string?
+        + Description: string?
+        + ImageUrl: string?
+        --
+        + ExerciseSessions: ICollection<ExerciseSession>
+    }
+
+    class NutritionLog <<Entity>> {
+        + NutritionLogId: int
+        + UserId: int
+        + LogDate: DateTime
+        + TotalCalories: decimal
+        + ProteinG: decimal
+        + CarbsG: decimal
+        + FatG: decimal
+        + Notes: string?
+        --
+        + User: ApplicationUser
+        + FoodEntries: ICollection<FoodEntry>
+    }
+
+    class FoodEntry <<Entity>> {
+        + FoodEntryId: int
+        + NutritionLogId: int
+        + FoodItemId: int
+        + Quantity: decimal
+        + MealType: string
+        + CaloriesKcal: decimal?
+        + ProteinG: decimal?
+        + CarbsG: decimal?
+        + FatG: decimal?
+        --
+        + NutritionLog: NutritionLog
+        + FoodItem: FoodItem
+    }
+
+    class FoodItem <<Entity>> {
+        + FoodItemId: int
+        + Name: string
+        + ServingSize: decimal
+        + ServingUnit: string
+        + CaloriesKcal: decimal
+        + ProteinG: decimal
+        + CarbsG: decimal
+        + FatG: decimal
+        + ImageUrl: string?
+        --
+        + FoodEntries: ICollection<FoodEntry>
+    }
+
+    class Goal <<Entity>> {
+        + GoalId: int
+        + UserId: int
+        + Type: string
+        + TargetValue: decimal
+        + StartDate: DateTime
+        + EndDate: DateTime?
+        + Status: string
+        + Notes: string?
+        --
+        + User: ApplicationUser
+        + ProgressRecords: ICollection<ProgressRecord>
+    }
+
+    class ProgressRecord <<Entity>> {
+        + ProgressRecordId: int
+        + GoalId: int
+        + RecordDate: DateTime
+        + Value: decimal
+        + Notes: string?
+        + WeightKg: decimal
+        + WaistCm: decimal
+        --
+        + Goal: Goal
+    }
+
+    class ChatMessage <<Entity>> {
+        + ChatMessageId: Guid
+        + UserId: int
+        + Role: string
+        + Content: string
+        + CreatedAt: DateTime
+        + ContextData: string?
+        --
+        + User: ApplicationUser
+    }
+
+    class Role <<Entity>> {
+        + Id: int
+        + RoleName: string
+        + Description: string?
+        + CreatedAt: DateTime
+        --
+        + UserRoles: ICollection<UserRole>
+        + RolePermissions: ICollection<RolePermission>
+    }
+
+    class Permission <<Entity>> {
+        + Id: int
+        + PermissionCode: string
+        + Description: string?
+        + Category: string?
+        + CreatedAt: DateTime
+        --
+        + RolePermissions: ICollection<RolePermission>
+    }
+
+    class UserRole <<Entity>> {
+        + UserId: int
+        + RoleId: int
+        + AssignedAt: DateTime
+        --
+        + User: ApplicationUser
+        + Role: Role
+    }
+
+    class RolePermission <<Entity>> {
+        + RoleId: int
+        + PermissionId: int
+        + GrantedAt: DateTime
+        --
+        + Role: Role
+        + Permission: Permission
+    }
+
+    class UserActionLog <<Entity>> {
+        + LogId: int
+        + UserId: int
+        + Action: string
+        + Timestamp: DateTime
+        + Details: string?
+    }
+}
+
+' ===========================
+' Domain Interfaces
+' ===========================
+
+package "Domain.Interfaces" <<Rectangle>> {
+    
+    interface IRepository<T> <<Interface>> {
+        + GetByIdAsync(id: Guid): Task<T?>
+        + GetAllAsync(): Task<IEnumerable<T>>
+        + AddAsync(entity: T): Task
+        + UpdateAsync(entity: T): Task
+        + DeleteAsync(entity: T): Task
+    }
+
+    interface IAuthService <<Interface>> {
+        + HashPassword(password: string): string
+        + VerifyPassword(password: string, hashedPassword: string): bool
+        + GenerateJwtToken(user: ApplicationUser): string
+    }
+
+    interface IAiChatService <<Interface>> {
+        + GetHealthAdviceAsync(userContextData: string, userQuestion: string, cancellationToken: CancellationToken): Task<string>
+    }
+
+    interface IApplicationUserService <<Interface>> {
+        + GetUserByIdAsync(id: int): Task<ApplicationUser?>
+        + GetUserByEmailAsync(email: string): Task<ApplicationUser?>
+        + GetAllUsersAsync(): Task<IEnumerable<ApplicationUser>>
+        + CreateUserAsync(email: string, password: string, role: string): Task<ApplicationUser>
+    }
+
+    interface IApplicationUserRepository <<Interface>> {
+        + GetByIdAsync(id: int): Task<ApplicationUser?>
+        + GetByEmailAsync(email: string): Task<ApplicationUser?>
+        + GetAllAsync(): Task<IEnumerable<ApplicationUser>>
+    }
+
+    interface IUserProfileRepository <<Interface>> {
+        + GetByUserIdAsync(userId: int): Task<UserProfile?>
+        + CreateAsync(profile: UserProfile): Task
+        + UpdateAsync(profile: UserProfile): Task
+    }
+
+    interface IStorageService <<Interface>> {
+        + UploadFileAsync(stream: Stream, fileName: string): Task<string>
+        + DeleteFileAsync(fileName: string): Task
+        + GetFileUrlAsync(fileName: string): string
+    }
+
+    interface IAvatarStorageService <<Interface>> {
+        + SaveAvatarAsync(userId: int, avatarStream: Stream, fileExtension: string): Task<string>
+        + DeleteAvatarAsync(userId: int): Task
+        + GetAvatarUrlAsync(userId: int): string
+    }
+
+    interface IGoogleAuthService <<Interface>> {
+        + ValidateGoogleTokenAsync(idToken: string): Task<GoogleTokenInfo>
+    }
+
+    interface IEmailService <<Interface>> {
+        + SendEmailAsync(to: string, subject: string, body: string): Task
+        + SendVerificationEmailAsync(to: string, code: string): Task
+    }
+
+    interface IApplicationDbContext <<Interface>> {
+        + ApplicationUsers: IQueryable<ApplicationUser>
+        + UserProfiles: IQueryable<UserProfile>
+        + Goals: IQueryable<Goal>
+        + ProgressRecords: IQueryable<ProgressRecord>
+        + WorkoutLogs: IQueryable<WorkoutLog>
+        + ExerciseSessions: IQueryable<ExerciseSession>
+        + Exercises: IQueryable<Exercise>
+        + NutritionLogs: IQueryable<NutritionLog>
+        + FoodEntries: IQueryable<FoodEntry>
+        + FoodItems: IQueryable<FoodItem>
+        + Roles: IQueryable<Role>
+        + Permissions: IQueryable<Permission>
+        + RolePermissions: IQueryable<RolePermission>
+        + UserRoles: IQueryable<UserRole>
+        + ChatMessages: IQueryable<ChatMessage>
+        + UserActionLogs: IQueryable<UserActionLog>
+        --
+        + SaveChangesAsync(cancellationToken: CancellationToken): Task<int>
+        + Add<T>(entity: T): void
+        + Update<T>(entity: T): void
+        + Remove<T>(entity: T): void
+        + CanConnectAsync(cancellationToken: CancellationToken): Task<bool>
+    }
+}
+
+' ===========================
+' Application Services
+' ===========================
+
+package "Application.Services" <<Rectangle>> {
+    
+    class ApplicationUserService <<Service>> {
+        - _userRepository: IApplicationUserRepository
+        - _authService: IAuthService
+        --
+        + GetUserByIdAsync(id: int): Task<ApplicationUser?>
+        + GetUserByEmailAsync(email: string): Task<ApplicationUser?>
+        + GetAllUsersAsync(): Task<IEnumerable<ApplicationUser>>
+        + CreateUserAsync(email: string, password: string, role: string): Task<ApplicationUser>
+    }
+
+    class OtpService <<Service>> {
+        + GenerateOtp(): string
+        + ValidateOtp(otp: string, storedOtp: string, timestamp: DateTime): bool
+    }
+
+    class VerificationCodeStore <<Service>> {
+        - _codes: Dictionary<string, VerificationCode>
+        --
+        + StoreCode(email: string, code: string): void
+        + ValidateCode(email: string, code: string): bool
+        + RemoveCode(email: string): void
+    }
+
+    interface IJwtTokenService <<Interface>> {
+        + GenerateAccessToken(user: ApplicationUser): string
+        + GenerateRefreshToken(): string
+        + ValidateToken(token: string): ClaimsPrincipal?
+    }
+}
+
+' ===========================
+' Infrastructure Services
+' ===========================
+
+package "Infrastructure.Services" <<Rectangle>> {
+    
+    class AuthService <<Service>> {
+        - _configuration: IConfiguration
+        --
+        + HashPassword(password: string): string
+        + VerifyPassword(password: string, hashedPassword: string): bool
+        + GenerateJwtToken(user: ApplicationUser): string
+    }
+
+    class GroqAiChatService <<Service>> {
+        - _httpClient: HttpClient
+        - _modelId: string
+        --
+        + GetHealthAdviceAsync(userContextData: string, userQuestion: string, cancellationToken: CancellationToken): Task<string>
+    }
+
+    class JwtTokenService <<Service>> {
+        - _configuration: IConfiguration
+        --
+        + GenerateAccessToken(user: ApplicationUser): string
+        + GenerateRefreshToken(): string
+        + ValidateToken(token: string): ClaimsPrincipal?
+    }
+
+    class EmailService <<Service>> {
+        - _smtpClient: SmtpClient
+        - _configuration: IConfiguration
+        --
+        + SendEmailAsync(to: string, subject: string, body: string): Task
+        + SendVerificationEmailAsync(to: string, code: string): Task
+    }
+
+    class GoogleAuthService <<Service>> {
+        - _httpClient: HttpClient
+        --
+        + ValidateGoogleTokenAsync(idToken: string): Task<GoogleTokenInfo>
+    }
+
+    class MinioStorageService <<Service>> {
+        - _minioClient: IMinioClient
+        - _bucketName: string
+        --
+        + UploadFileAsync(stream: Stream, fileName: string): Task<string>
+        + DeleteFileAsync(fileName: string): Task
+        + GetFileUrlAsync(fileName: string): string
+    }
+
+    class AvatarStorageService <<Service>> {
+        - _storageService: IStorageService
+        --
+        + SaveAvatarAsync(userId: int, avatarStream: Stream, fileExtension: string): Task<string>
+        + DeleteAvatarAsync(userId: int): Task
+        + GetAvatarUrlAsync(userId: int): string
+    }
+
+    class CurrentUserService <<Service>> {
+        - _httpContextAccessor: IHttpContextAccessor
+        --
+        + GetCurrentUserId(): int?
+        + GetCurrentUserEmail(): string?
+    }
+}
+
+' ===========================
+' Presentation Controllers
+' ===========================
+
+package "Presentation.Controllers" <<Rectangle>> {
+    
+    class AuthController <<Controller>> {
+        - _context: IApplicationDbContext
+        - _authService: IAuthService
+        --
+        + Register(request: RegisterRequest): Task<IActionResult>
+        + Login(request: LoginRequest): Task<IActionResult>
+        + GoogleLogin(request: GoogleLoginRequest): Task<IActionResult>
+        + RefreshToken(request: RefreshTokenRequest): Task<IActionResult>
+    }
+
+    class UserProfileController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetProfile(userId: int): Task<IActionResult>
+        + UpdateProfile(userId: int, request: UpdateProfileRequest): Task<IActionResult>
+    }
+
+    class WorkoutController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetWorkoutLogs(userId: int): Task<IActionResult>
+        + CreateWorkoutLog(request: CreateWorkoutLogRequest): Task<IActionResult>
+        + DeleteWorkoutLog(logId: int): Task<IActionResult>
+    }
+
+    class NutritionController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetNutritionLogs(userId: int): Task<IActionResult>
+        + CreateNutritionLog(request: CreateNutritionLogRequest): Task<IActionResult>
+        + DeleteNutritionLog(logId: int): Task<IActionResult>
+    }
+
+    class GoalsController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetGoals(userId: int): Task<IActionResult>
+        + CreateGoal(request: CreateGoalRequest): Task<IActionResult>
+        + UpdateGoal(goalId: int, request: UpdateGoalRequest): Task<IActionResult>
+        + DeleteGoal(goalId: int): Task<IActionResult>
+    }
+
+    class ChatController <<Controller>> {
+        - _context: IApplicationDbContext
+        - _aiChatService: IAiChatService
+        --
+        + SendMessage(request: ChatRequest): Task<IActionResult>
+        + GetChatHistory(userId: int): Task<IActionResult>
+    }
+
+    class ExercisesController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetExercises(): Task<IActionResult>
+        + CreateExercise(request: CreateExerciseRequest): Task<IActionResult>
+        + UpdateExercise(exerciseId: int, request: UpdateExerciseRequest): Task<IActionResult>
+    }
+
+    class FoodItemsController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetFoodItems(): Task<IActionResult>
+        + CreateFoodItem(request: CreateFoodItemRequest): Task<IActionResult>
+        + UpdateFoodItem(foodItemId: int, request: UpdateFoodItemRequest): Task<IActionResult>
+    }
+
+    class AdminController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetAllUsers(): Task<IActionResult>
+        + BanUser(userId: int): Task<IActionResult>
+        + UnbanUser(userId: int): Task<IActionResult>
+        + GetUserActionLogs(): Task<IActionResult>
+    }
+
+    class DashboardController <<Controller>> {
+        - _context: IApplicationDbContext
+        --
+        + GetDashboardData(userId: int): Task<IActionResult>
+        + GetStatistics(userId: int): Task<IActionResult>
+    }
+}
+
+' ===========================
+' Relationships - Entities
+' ===========================
+
+ApplicationUser "1" -- "1" UserProfile : has
+ApplicationUser "1" -- "*" WorkoutLog : tracks
+ApplicationUser "1" -- "*" NutritionLog : records
+ApplicationUser "1" -- "*" Goal : sets
+ApplicationUser "1" -- "*" ChatMessage : sends
+ApplicationUser "*" -- "*" Role : has
+(ApplicationUser, Role) .. UserRole
+
+WorkoutLog "1" -- "*" ExerciseSession : contains
+Exercise "1" -- "*" ExerciseSession : used in
+
+NutritionLog "1" -- "*" FoodEntry : contains
+FoodItem "1" -- "*" FoodEntry : used in
+
+Goal "1" -- "*" ProgressRecord : tracks
+
+Role "*" -- "*" Permission : has
+(Role, Permission) .. RolePermission
+
+' ===========================
+' Relationships - Services & Interfaces
+' ===========================
+
+ApplicationUserService ..|> IApplicationUserService
+ApplicationUserService --> IApplicationUserRepository : uses
+ApplicationUserService --> IAuthService : uses
+
+AuthService ..|> IAuthService
+GroqAiChatService ..|> IAiChatService
+JwtTokenService ..|> IJwtTokenService
+EmailService ..|> IEmailService
+GoogleAuthService ..|> IGoogleAuthService
+MinioStorageService ..|> IStorageService
+AvatarStorageService ..|> IAvatarStorageService
+AvatarStorageService --> IStorageService : uses
+
+' ===========================
+' Relationships - Controllers
+' ===========================
+
+AuthController --> IApplicationDbContext : uses
+AuthController --> IAuthService : uses
+UserProfileController --> IApplicationDbContext : uses
+WorkoutController --> IApplicationDbContext : uses
+NutritionController --> IApplicationDbContext : uses
+GoalsController --> IApplicationDbContext : uses
+ChatController --> IApplicationDbContext : uses
+ChatController --> IAiChatService : uses
+ExercisesController --> IApplicationDbContext : uses
+FoodItemsController --> IApplicationDbContext : uses
+AdminController --> IApplicationDbContext : uses
+DashboardController --> IApplicationDbContext : uses
+
+' ===========================
+' Legend
+' ===========================
+
+legend right
+    |<ENTITY_COLOR>| Domain Entities |
+    |<INTERFACE_COLOR>| Interfaces |
+    |<SERVICE_COLOR>| Services |
+    |<CONTROLLER_COLOR>| Controllers |
+endlegend
+
+@enduml
