@@ -19,7 +19,7 @@
 
 ## 👥 Nhóm Sinh Viên Thực Hiện & Phân Công Nhiệm Vụ Chi Tiết
 
-Dự án này là kết quả của sự nỗ lực, cày cuốc ngày đêm suốt hơn 4 tháng của 5 thành viên Nhóm 8 - Lớp 67CS chúng em. Để dự án chạy được mượt mà, nhóm em đã phân chia công việc cực kỳ chi tiết theo đúng sở trường và bám sát theo file Checklist tiến độ:
+Dự án này là kết quả của sự nỗ lực, cày cuốc ngày đêm suốt hơn 4 tháng của 5 thành viên Nhóm 8 - Lớp 67CS chúng em. Để dự án chạy được mượt mà, nhóm em đã phân chia công việc cực kỳ chi tiết theo đúng sở trường và bám sát theo tệp Checklist tiến độ:
 
 ### 1. Lã Minh Khánh - 4004267 (Trưởng nhóm / Backend & DevOps)
 * **Môi trường & Triển khai (DevOps):** Dockerize Backend API, React Web/Admin; viết tệp `docker-compose.yml` để thiết lập môi trường chạy đa container (SQL Server, MinIO Object Storage, Nginx).
@@ -66,22 +66,34 @@ Trong thời kỳ công nghiệp hóa hiện đại, sức khỏe đang trở th
 Để giải quyết bài toán đó, chúng em đã xây dựng **HealthSync** - một hệ sinh thái quản lý sức khỏe toàn diện đa nền tảng. Dự án không chỉ là một cuốn sổ tay số hóa ghi nhận nhật ký ăn uống, tập luyện, mà còn đóng vai trò như một **"Huấn luyện viên sức khỏe cá nhân (Health Coach) ảo"** nhờ tích hợp Chatbot AI thông minh, đưa ra lời khuyên cá nhân hóa 100% dựa trên chỉ số BMI, BMR, TDEE của từng người dùng.
 
 ### 📸 Giao diện Demo thực tế của ứng dụng
-Dưới đây là một số hình ảnh giao diện thực tế được trích xuất từ tài liệu thiết kế đồ án của nhóm:
+Dưới đây là các hình ảnh giao diện chụp thực tế của cả hai phiên bản Web và Mobile App từ tài liệu đồ án của nhóm:
 
-| Giao diện chính Web Dashboard | Giao diện chính Mobile Dashboard |
+#### 🖥️ Giao diện Trình duyệt Web (React TypeScript)
+| Trang chủ giới thiệu & Figma Mockup (Web) | Giao diện Thư viện Bài tập (Web) |
 |:---:|:---:|
-| ![Web Dashboard](docs/images/web_dashboard.png) | ![Mobile Dashboard](docs/images/mobile_dashboard.png) |
-| *Giao diện theo dõi biểu đồ lượng calo và tiến độ mục tiêu trên trình duyệt Web (React)* | *Giao diện trực quan của App di động Flutter, hiển thị nhanh chỉ số BMI/BMR/TDEE* |
+| ![Web Landing Page](docs/images/web_landing_page.png) | ![Web Exercise Library](docs/images/web_exercise_library.png) |
+| *Bản thiết kế giao diện giới thiệu dịch vụ luyện tập trên Web* | *Danh sách bài tập trực quan hiển thị trên màn hình Web lớn* |
 
-| Màn hình Lịch sử Luyện tập (Mobile) | Màn hình Ghi nhật ký buổi tập (Mobile) |
+#### 📱 Giao diện Ứng dụng Di động (Flutter App)
+| Màn hình chính Dashboard | Màn hình Tư vấn Chatbot AI |
 |:---:|:---:|
-| ![Mobile Workout History](docs/images/mobile_workout_history.png) | ![Mobile Workout Log](docs/images/mobile_workout_log.png) |
-| *Xem lại lịch sử tập luyện phân chia rõ theo từng ngày* | *Ghi chép số Sets, Reps, khối lượng tạ và thời gian nghỉ của mỗi bài tập* |
+| ![Mobile Dashboard](docs/images/mobile_dashboard.png) | ![Mobile Chatbot](docs/images/mobile_chatbot.png) |
+| *Trang chủ Mobile hiển thị các chỉ số BMI/BMR, mục tiêu hiện tại, tổng thời gian tập luyện* | *Giao diện hội thoại tương tác với trợ lý sức khỏe HealthBot nhận lời khuyên dinh dưỡng* |
 
-| Màn hình Dinh dưỡng - Nhật ký ăn uống | Màn hình Tư vấn sức khỏe Chatbot AI |
+| Thư viện Bài tập (Mobile) | Ghi Nhật ký Buổi tập (Mobile) |
 |:---:|:---:|
-| ![Mobile Nutrition List](docs/images/mobile_nutrition_list.png) | ![Mobile Chatbot](docs/images/mobile_chatbot.png) |
-| *Giao diện ghi chép calo món ăn nạp vào trong ngày* | *Giao diện chat với trợ lý AI tư vấn bài tập và thực đơn dinh dưỡng* |
+| ![Mobile Workout Library](docs/images/mobile_workout_library.png) | ![Mobile Workout Log](docs/images/mobile_workout_log.png) |
+| *Giao diện tìm kiếm, lọc bài tập theo nhóm cơ, độ khó, thiết bị* | *Form ghi chép chi tiết Sets, Reps, Weight thực tế của buổi tập* |
+
+| Nhật ký Ăn uống (Dinh dưỡng) | Tìm kiếm món ăn |
+|:---:|:---:|
+| ![Mobile Nutrition Diary](docs/images/mobile_nutrition_diary.png) | ![Mobile Nutrition Search](docs/images/mobile_nutrition_search.png) |
+| *Ghi nhận lượng Calories nạp vào qua các bữa Sáng, Trưa, Tối, Snack* | *Tra cứu và thêm nhanh khẩu phần dinh dưỡng của thực phẩm* |
+
+| Tạo Mục tiêu Mới | Danh sách Mục tiêu của tôi |
+|:---:|:---:|
+| ![Mobile Goal Create](docs/images/mobile_goal_create.png) | ![Mobile Goal List](docs/images/mobile_goal_list.png) |
+| *Form thiết lập mục tiêu giảm cân/tăng cơ với cân nặng mong muốn và hạn định* | *Xem danh sách các mục tiêu sức khỏe đang trong quá trình thực hiện* |
 
 ---
 
@@ -89,10 +101,10 @@ Dưới đây là một số hình ảnh giao diện thực tế được trích
 
 Để đảm bảo hệ thống có khả năng chịu tải tốt và hoạt động ổn định trên môi trường Producton, nhóm em đã dành nhiều thời gian nghiên cứu thiết kế hệ thống vững chắc từ ban đầu.
 
-### 📐 Sơ đồ kiến trúc tổng thể (System Architecture)
-Hệ thống được thiết kế theo kiến trúc Client-Server kết hợp Containerization. Nginx đóng vai trò là Reverse Proxy và Load Balancer ở rìa hệ thống để điều hướng request.
+### 📐 Sơ đồ kiến trúc triển khai thực tế (System Architecture)
+Hệ thống được đóng gói hoàn chỉnh bằng Docker và chạy Nginx làm Reverse Proxy để điều phối lưu lượng.
 
-![Overall Architecture](docs/images/overall_architecture.png)
+![Deployment Architecture](docs/images/deployment_architecture.png)
 
 * **Client Layer:** React Web App (chạy trên Nginx) và Flutter Mobile App kết nối với hệ thống qua HTTPS.
 * **Nginx Reverse Proxy:** Nhận request, xử lý SSL/TLS Termination, cấu hình Rate Limiting (100 req/s cho API thường, 10 req/s cho Auth) để chống spam, và cache các static assets để tối ưu hiệu năng.
@@ -116,14 +128,16 @@ Backend ASP.NET Core 8.0 được cấu trúc thành 4 lớp rõ rệt theo nguy
 ### 🗄️ Thiết kế Cơ sở dữ liệu & Sơ đồ lớp (Class Diagram)
 Hệ thống sử dụng mô hình dữ liệu quan hệ chặt chẽ. Hệ thống phân quyền được thiết kế dạng **RBAC (Role-Based Access Control)** linh hoạt: Một người dùng có thể có nhiều vai trò (`UserRoles`), mỗi vai trò liên kết với nhiều quyền cụ thể (`RolePermissions`), giúp dễ dàng mở rộng phân quyền ở mức chi tiết (ví dụ: `Workout.Create`, `Admin.BanUser`).
 
-![Class Diagram](docs/images/class_diagram.png)
+| Sơ đồ cơ sở dữ liệu quan hệ (ERD) | Sơ đồ lớp chi tiết (Class Diagram) |
+|:---:|:---:|
+| ![Database Schema](docs/images/database_schema.png) | ![Class Diagram](docs/images/class_diagram.png) |
 
 ---
 
 ### 🤖 Phân hệ Chatbot AI (Groq Cloud API)
 Chatbot AI của HealthSync không hoạt động một cách "mơ hồ" hay trả lời chung chung như Google Search. Tụi em đã áp dụng kỹ thuật **Context Injection** (Tiêm ngữ cảnh) cực kỳ chi tiết trước khi gửi request đến API của **Groq AI** (Sử dụng model `openai/gpt-oss-120b` phản hồi siêu tốc dưới 1 giây):
 
-![Chatbot Workflow](docs/images/chatbot_workflow.png)
+![Chatbot Architecture & Flow](docs/images/chatbot_architecture_flow.png)
 
 Mỗi khi người dùng đặt câu hỏi, `ChatWithBotQueryHandler` sẽ tự động đóng gói một đối tượng JSON `UserContextDto` bao gồm:
 1. **Thông tin sinh trắc học:** Giới tính, Tuổi, Chiều cao, Cân nặng, chỉ số BMI, BMR, TDEE.
@@ -133,6 +147,19 @@ Mỗi khi người dùng đặt câu hỏi, `ChatWithBotQueryHandler` sẽ tự 
 5. **System Awareness:** Đọc danh sách các bài tập và thực phẩm đang có sẵn trong database hệ thống.
 
 System Prompt được viết chi tiết để ép AI phải kết nối các thông tin trên và gợi ý các món ăn/bài tập chính xác có sẵn trong ứng dụng. Nhờ vậy, Chatbot AI hoạt động như một huấn luyện viên thực thụ, thấu hiểu thể trạng của người dùng.
+
+---
+
+### 📊 Sơ đồ Hoạt động & Logic luồng Nghiệp vụ (Activity Diagrams)
+Để làm rõ luồng hoạt động thực tế của từng phân hệ nghiệp vụ chính, nhóm em đã xây dựng các sơ đồ hoạt động (Activity Diagrams) chi tiết sau:
+
+* **Đăng ký & Thiết lập hồ sơ:** [Xem sơ đồ đăng ký](docs/images/activity_register.png)
+* **Xác thực & Bảo mật (JWT):** [Xem sơ đồ xác thực](docs/images/activity_auth.png)
+* **Ghi nhật ký dinh dưỡng:** [Xem sơ đồ dinh dưỡng](docs/images/activity_nutrition.png)
+* **Ghi nhật ký luyện tập:** [Xem sơ đồ luyện tập](docs/images/activity_workout.png)
+* **Quản lý mục tiêu:** [Xem sơ đồ mục tiêu](docs/images/activity_goals.png)
+* **Tư vấn AI Chatbot:** [Xem sơ đồ AI Chatbot](docs/images/activity_chatbot.png)
+* **Quản trị nội dung Admin:** [Xem sơ đồ Admin](docs/images/sequence_admin_management.png)
 
 ---
 
