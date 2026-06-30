@@ -66,31 +66,42 @@ Trong thời kỳ công nghiệp hóa hiện đại, sức khỏe đang trở th
 Để giải quyết bài toán đó, chúng em đã xây dựng **HealthSync** - một hệ sinh thái quản lý sức khỏe toàn diện đa nền tảng. Dự án không chỉ là một cuốn sổ tay số hóa ghi nhận nhật ký ăn uống, tập luyện, mà còn đóng vai trò như một **"Huấn luyện viên sức khỏe cá nhân (Health Coach) ảo"** nhờ tích hợp Chatbot AI thông minh, đưa ra lời khuyên cá nhân hóa 100% dựa trên chỉ số BMI, BMR, TDEE của từng người dùng.
 
 ### 📸 Giao diện Demo thực tế của ứng dụng
-Dưới đây là các hình ảnh giao diện chụp thực tế của cả hai phiên bản Web và Mobile App từ tài liệu đồ án của nhóm:
+Dưới đây là hình ảnh giao diện chụp thực tế của dự án, được phân tách rõ ràng theo từng phân hệ Web (Hội viên & Quản trị) và Mobile App:
 
-#### 🖥️ Giao diện Trình duyệt Web (React TypeScript)
-| Trang chủ giới thiệu & Figma Mockup (Web) | Giao diện Thư viện Bài tập (Web) |
+#### 🖥️ Giao diện phía Người dùng trên Web (React TypeScript)
+| Trang chủ giới thiệu (Web Mockup) | Giao diện Lịch sử Luyện tập (Web) | Giao diện Thiết lập Hồ sơ (Web) |
+|:---:|:---:|:---:|
+| ![Web Landing Page](docs/images/web_landing_page.png) | ![Web User Workout History](docs/images/web_user_workout_history.png) | ![Web User Profile Settings](docs/images/web_user_profile_settings.png) |
+| *Bản thiết kế giao diện giới thiệu dịch vụ luyện tập trên Web* | *Màn hình xem lại lịch sử các buổi tập đã thực hiện trên trình duyệt* | *Màn hình thiết lập thông tin cơ thể (chiều cao, cân nặng, mức vận động)* |
+
+#### 👑 Giao diện Cổng Quản trị dành cho Admin (React Web Portal)
+| Dashboard Thống kê Admin | Trang Quản lý Người dùng |
 |:---:|:---:|
-| ![Web Landing Page](docs/images/web_landing_page.png) | ![Web Exercise Library](docs/images/web_exercise_library.png) |
-| *Bản thiết kế giao diện giới thiệu dịch vụ luyện tập trên Web* | *Danh sách bài tập trực quan hiển thị trên màn hình Web lớn* |
+| ![Web Admin Dashboard](docs/images/web_admin_dashboard.png) | ![Web Admin User Management](docs/images/web_admin_user_management.png) |
+| *Trang Dashboard hiển thị tổng số tài khoản, biểu đồ tăng trưởng người dùng, tỷ lệ mục tiêu thành công* | *Màn hình CRUD quản lý danh sách người dùng và trạng thái kích hoạt tài khoản* |
+
+| Trang Quản lý Thư viện Bài tập | Trang Quản lý Thư viện Thực phẩm |
+|:---:|:---:|
+| ![Web Admin Exercise Management](docs/images/web_admin_exercise_management.png) | ![Web Admin Food Management](docs/images/web_admin_food_management.png) |
+| *Danh sách quản lý bài tập của hệ thống: Tên bài tập, nhóm cơ, độ khó, thiết bị* | *Màn hình quản lý danh sách thực phẩm cùng lượng calories và macronutrients chi tiết* |
 
 #### 📱 Giao diện Ứng dụng Di động (Flutter App)
-| Màn hình chính Dashboard | Màn hình Tư vấn Chatbot AI |
-|:---:|:---:|
-| ![Mobile Dashboard](docs/images/mobile_dashboard.png) | ![Mobile Chatbot](docs/images/mobile_chatbot.png) |
-| *Trang chủ Mobile hiển thị các chỉ số BMI/BMR, mục tiêu hiện tại, tổng thời gian tập luyện* | *Giao diện hội thoại tương tác với trợ lý sức khỏe HealthBot nhận lời khuyên dinh dưỡng* |
+| Màn hình chính Dashboard | Màn hình Tư vấn Chatbot AI | Thư viện Bài tập (Mobile) |
+|:---:|:---:|:---:|
+| ![Mobile Dashboard](docs/images/mobile_dashboard.png) | ![Mobile Chatbot](docs/images/mobile_chatbot.png) | ![Mobile Workout Library](docs/images/mobile_workout_library.png) |
+| *Trang chủ di động hiển thị các chỉ số BMI/BMR, mục tiêu hiện tại, tổng thời gian tập luyện* | *Giao diện hội thoại tương tác với trợ lý sức khỏe HealthBot nhận lời khuyên dinh dưỡng* | *Giao diện tìm kiếm, lọc bài tập theo nhóm cơ, độ khó, thiết bị* |
 
-| Thư viện Bài tập (Mobile) | Ghi Nhật ký Buổi tập (Mobile) |
-|:---:|:---:|
-| ![Mobile Workout Library](docs/images/mobile_workout_library.png) | ![Mobile Workout Log](docs/images/mobile_workout_log.png) |
-| *Giao diện tìm kiếm, lọc bài tập theo nhóm cơ, độ khó, thiết bị* | *Form ghi chép chi tiết Sets, Reps, Weight thực tế của buổi tập* |
+| Ghi Nhật ký Buổi tập (Mobile) | Lịch sử Luyện tập (Mobile) | Nhật ký Ăn uống (Mobile) |
+|:---:|:---:|:---:|
+| ![Mobile Workout Log](docs/images/mobile_workout_log.png) | ![Mobile Workout History](docs/images/mobile_workout_history.png) | ![Mobile Nutrition Diary](docs/images/mobile_nutrition_diary.png) |
+| *Form ghi chép chi tiết Sets, Reps, Weight thực tế của buổi tập* | *Lịch sử chi tiết các buổi tập luyện được lưu theo thời gian* | *Ghi nhận lượng Calories nạp vào qua các bữa Sáng, Trưa, Tối, Snack* |
 
-| Nhật ký Ăn uống (Dinh dưỡng) | Tìm kiếm món ăn |
-|:---:|:---:|
-| ![Mobile Nutrition Diary](docs/images/mobile_nutrition_diary.png) | ![Mobile Nutrition Search](docs/images/mobile_nutrition_search.png) |
-| *Ghi nhận lượng Calories nạp vào qua các bữa Sáng, Trưa, Tối, Snack* | *Tra cứu và thêm nhanh khẩu phần dinh dưỡng của thực phẩm* |
+| Báo cáo Dinh dưỡng (Mobile) | Tìm kiếm món ăn | Cập nhật Cân nặng |
+|:---:|:---:|:---:|
+| ![Mobile Nutrition Report](docs/images/mobile_nutrition_report.png) | ![Mobile Nutrition Search](docs/images/mobile_nutrition_search.png) | ![Mobile Weight Update](docs/images/mobile_weight_update.png) |
+| *Biểu đồ Calo hôm nay và chất dinh dưỡng đa lượng (Carbs/Protein/Fat)* | *Tra cứu và thêm nhanh khẩu phần dinh dưỡng của thực phẩm* | *Form nhập nhanh cân nặng hiện tại để theo dõi tiến độ* |
 
-| Tạo Mục tiêu Mới | Danh sách Mục tiêu của tôi |
+| Tạo Mục tiêu Mới | Danh sách Mục tiêu sức khỏe |
 |:---:|:---:|
 | ![Mobile Goal Create](docs/images/mobile_goal_create.png) | ![Mobile Goal List](docs/images/mobile_goal_list.png) |
 | *Form thiết lập mục tiêu giảm cân/tăng cơ với cân nặng mong muốn và hạn định* | *Xem danh sách các mục tiêu sức khỏe đang trong quá trình thực hiện* |
@@ -99,7 +110,7 @@ Dưới đây là các hình ảnh giao diện chụp thực tế của cả hai
 
 ## 2. Phương Pháp & Kiến Trúc Hệ Thống (System Design)
 
-Để đảm bảo hệ thống có khả năng chịu tải tốt và hoạt động ổn định trên môi trường Producton, nhóm em đã dành nhiều thời gian nghiên cứu thiết kế hệ thống vững chắc từ ban đầu.
+Để đảm bảo hệ thống có khả năng chịu tải tốt và hoạt động ổn định trên môi trường Production, nhóm em đã dành nhiều thời gian nghiên cứu thiết kế hệ thống vững chắc từ ban đầu.
 
 ### 📐 Sơ đồ kiến trúc triển khai thực tế (System Architecture)
 Hệ thống được đóng gói hoàn chỉnh bằng Docker và chạy Nginx làm Reverse Proxy để điều phối lưu lượng.
