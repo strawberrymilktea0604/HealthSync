@@ -71,8 +71,8 @@ export default function CreateWorkoutPage() {
   };
 
   const addExercise = (exercise: Exercise) => {
-    const existing = selectedExercises.find(ex => ex.exerciseId === exercise.exerciseId);
-    if (existing) {
+    const isExisting = selectedExercises.some(ex => ex.exerciseId === exercise.exerciseId);
+    if (isExisting) {
       toast.warning('Bài tập này đã được thêm');
       return;
     }
